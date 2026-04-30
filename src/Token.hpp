@@ -5,15 +5,17 @@
 enum class eTOKENS
 {
     UNKNOWN = -1,
-    DIGIT   = 0,
-    OPERATOR,
-    PARENTHESES,
+    NUM     = 0,
+    SUM_OP,    // +|-
+    MUL_OP,    // *|/
+    LEFT_PARENTHESES,
+    RIGHT_PARENTHESES,
     SYMBOL,
 };
 
 struct Token
 {
     // public:
-    eTOKENS     token;
+    eTOKENS     token = eTOKENS::UNKNOWN;
     std::string value;
 };

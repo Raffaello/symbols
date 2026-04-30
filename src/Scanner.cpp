@@ -4,6 +4,8 @@
 #include <iostream>
 #include <format>
 
+// #include <stdexcept>
+
 // bool isDigit(const char c)
 // {
 //     return
@@ -21,12 +23,29 @@
 
 int Scanner::extractDigit_(const std::string_view line, const int start_pos)
 {
-    int j = start_pos + 1;
+    int  j   = start_pos + 1;
+    bool dot = false;
     for (; j < line.size(); ++j)
     {
         const unsigned int c2 = line[j];
         if (!std::isdigit(c2))
+        {
+            if (c2 == '.')
+            {
+                if (!dot)
+                {
+                    dot = true;
+                    continue;
+                }
+                else
+                {
+                    std::cerr << std::format("Error '.' at position: {}\n", j);
+                    return -1;
+                }
+            }
+
             break;
+        }
     }
 
     return j;
@@ -64,22 +83,40 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
 
         if (std::isdigit(c))
         {
-            int j   = extractDigit_(line, i);
-            t.token = eTOKENS::DIGIT;
+            int j = extractDigit_(line, i);
+            if (j == -1)
+                goto TOKENIZE_ERROR;
+
+            t.token = eTOKENS::NUM;
             t.value = line.substr(i, j - i);
             i       = j;
             res.push_back(t);
         }
-        else if (ch == '+' || ch == '-' || ch == '*' || ch == '/')
+        else if (ch == '+' || ch == '-')
         {
-            t.token = eTOKENS::OPERATOR;
+            t.token = eTOKENS::SUM_OP;
             t.value = ch;
             ++i;
             res.push_back(t);
         }
-        else if (ch == '(' || ch == ')')
+        else if (ch == '*' || ch == '/')
         {
-            t.token = eTOKENS::PARENTHESES;
+            t.token = eTOKENS::MUL_OP;
+            t.value = ch;
+            ++i;
+            res.push_back(t);
+        }
+        else if (ch == '(')
+
+        {
+            t.token = eTOKENS::LEFT_PARENTHESES;
+            t.value = ch;
+            ++i;
+            res.push_back(t);
+        }
+        else if (ch == ')')
+        {
+            t.token = eTOKENS::RIGHT_PARENTHESES;
             t.value = ch;
             ++i;
             res.push_back(t);
@@ -94,6 +131,7 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
         }
         else
         {
+        TOKENIZE_ERROR:
             std::cerr << std::format("Unknown char: {} at pos: {}\n", ch, i);
             res.clear();
             break;

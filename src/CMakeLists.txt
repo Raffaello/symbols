@@ -1,8 +1,18 @@
 cmake_minimum_required(VERSION 3.28)
 
 
-add_library(scanner Scanner.cpp)
+add_library(scanner)
+target_sources(scanner PRIVATE
+    Scanner.cpp
+)
 target_include_directories(scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
+
+add_library(parser)
+target_sources(parser PRIVATE
+    Parser.cpp
+    AST.cpp
+  )
+target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_executable(symbols main.cpp)
 target_compile_definitions(symbols PUBLIC
@@ -12,6 +22,7 @@ target_compile_options(symbols PRIVATE
 )
 
 target_sources(symbols PRIVATE
+
 )
 
 target_include_directories(symbols PRIVATE
@@ -19,4 +30,5 @@ target_include_directories(symbols PRIVATE
 )
 target_link_libraries(symbols PRIVATE
     scanner
+    parser
 )
