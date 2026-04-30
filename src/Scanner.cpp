@@ -19,6 +19,32 @@
 //     return std::isalpha(static_cast<unsigned int>(c));
 // }
 
+int Scanner::extractDigit_(const std::string_view line, const int start_pos)
+{
+    int j = start_pos + 1;
+    for (; j < line.size(); ++j)
+    {
+        const unsigned int c2 = line[j];
+        if (!std::isdigit(c2))
+            break;
+    }
+
+    return j;
+}
+
+int Scanner::extractSymbol_(const std::string_view line, const int start_pos)
+{
+    int j = start_pos + 1;
+    for (; j < line.size(); ++j)
+    {
+        const unsigned int c2 = line[j];
+        if (!(std::isalpha(c2) || std::isdigit(c2) || c2 == '_'))
+            break;
+    }
+
+    return j;
+}
+
 std::list<Token> Scanner::tokenize(const std::string_view line)
 {
     std::list<Token> res;
@@ -38,14 +64,7 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
 
         if (std::isdigit(c))
         {
-            int j = i + 1;
-            for (; j < line.size(); ++j)
-            {
-                const unsigned int c2 = line[j];
-                if (!std::isdigit(c2))
-                    break;
-            }
-
+            int j   = extractDigit_(line, i);
             t.token = eTOKENS::DIGIT;
             t.value = line.substr(i, j - i);
             i       = j;
@@ -67,14 +86,7 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
         }
         else if (std::isalpha(c))
         {
-            int j = i + 1;
-            for (; j < line.size(); ++j)
-            {
-                const unsigned int c2 = line[j];
-                if (!(std::isalpha(c2) || std::isdigit(c2) || c2 == '_'))
-                    break;
-            }
-
+            int j   = extractSymbol_(line, i);
             t.token = eTOKENS::SYMBOL;
             t.value = line.substr(i, j - i);
             i       = j;
