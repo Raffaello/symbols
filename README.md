@@ -1,8 +1,12 @@
 # Symbols
 
+> [WIP]
+
 Symbolic Computation Educational Project.
 
 # Scanner
+
+TODO: Create the DFA
 
 Tokens:
 - digit
@@ -17,6 +21,7 @@ BNF:
 expr   ::= expr + term
         |  expr - term
         |  term
+
 term   ::= term * factor
         |  term / factor
         |  factor
@@ -25,7 +30,7 @@ factor := digit
         | symbol
         | left_parentheses expr right_parentheses
 
-----
+---
 
 E  ::= T E'
 E' ::= + T E' | - T E' | e

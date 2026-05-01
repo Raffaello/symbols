@@ -43,7 +43,12 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("3.14", 1, std::vector<Token>{
                                        {.type = eTOKENS::NUM, .value = "3.14"},
                                    }),
-
+        std::make_tuple(".1", 1, std::vector<Token>{
+                                     {.type = eTOKENS::NUM, .value = ".1"},
+                                 }),
+        std::make_tuple("_1", 1, std::vector<Token>{
+                                     {.type = eTOKENS::SYMBOL, .value = "_1"},
+                                 }),
         std::make_tuple("1 + 2", 3, std::vector<Token>{
                                         {.type = eTOKENS::NUM, .value = "1"},
                                         {.type = eTOKENS::SUM_OP, .value = "+"},
@@ -54,6 +59,11 @@ INSTANTIATE_TEST_SUITE_P(
                                               {.type = eTOKENS::SUM_OP, .value = "+"},
                                               {.type = eTOKENS::NUM, .value = "2"},
                                           }),
+        std::make_tuple("1+2", 3, std::vector<Token>{
+                                      {.type = eTOKENS::NUM, .value = "1"},
+                                      {.type = eTOKENS::SUM_OP, .value = "+"},
+                                      {.type = eTOKENS::NUM, .value = "2"},
+                                  }),
         std::make_tuple("1 + x_1", 3, std::vector<Token>{
                                           {.type = eTOKENS::NUM, .value = "1"},
                                           {.type = eTOKENS::SUM_OP, .value = "+"},
@@ -95,7 +105,9 @@ INSTANTIATE_TEST_SUITE_P(
     ScannerTestSuite,
     TestScannerError,
     ::testing::Values(
-        std::make_tuple("1.1.1")));
+        std::make_tuple("1.1.1"),
+        std::make_tuple("._1"),
+        std::make_tuple("_.1")));
 
 int main(int argc, char** argv)
 {

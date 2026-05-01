@@ -6,31 +6,37 @@
 
 // #include <stdexcept>
 
-// bool isDigit(const char c)
-// {
-//     return
-// }
+bool Scanner::isDigit_(const char c)
+{
+    return std::isdigit(c) || c == '.';
+}
+
+bool Scanner::isSymbol_(const char c)
+{
+    return std::isalpha(c) || c == '_';
+}
+
+bool Scanner::isDelimiter(const char c)
+{
+    return std::isspace(c) || c == ')' || c == '+' || c == '-' || c == '*' || c == '/';
+}
 
 // bool isOperator(const char c)
 // {
 //     return
 // }
 
-// bool isVariable(const char c)
-// {
-//     return std::isalpha(static_cast<unsigned int>(c));
-// }
 
-int Scanner::extractDigit_(const std::string_view line, const int start_pos)
+int Scanner::extractDigit_(const std::string_view line, const int start_pos, bool dot)
 {
-    int  j   = start_pos + 1;
-    bool dot = false;
+    int j = start_pos + 1;
     for (; j < line.size(); ++j)
     {
-        const unsigned int c2 = line[j];
-        if (!std::isdigit(c2))
+        const char c = line[j];
+
+        if (!std::isdigit(c))
         {
-            if (c2 == '.')
+            if (c == '.')
             {
                 if (!dot)
                 {
@@ -43,8 +49,14 @@ int Scanner::extractDigit_(const std::string_view line, const int start_pos)
                     return -1;
                 }
             }
+            else if (isDelimiter(c))
+            {
+                // ++j;
+                break;
+            }
 
-            break;
+            std::cerr << std::format("Error '{}' at position: {}\n", c, j);
+            return -1;
         }
     }
 
@@ -56,9 +68,17 @@ int Scanner::extractSymbol_(const std::string_view line, const int start_pos)
     int j = start_pos + 1;
     for (; j < line.size(); ++j)
     {
-        const unsigned int c2 = line[j];
-        if (!(std::isalpha(c2) || std::isdigit(c2) || c2 == '_'))
-            break;
+        const char c = line[j];
+        if (!(isSymbol_(c) || std::isdigit(c)))
+        {
+            if (isDelimiter(c))
+                break;
+            else
+            {
+                std::cerr << std::format("Error '{}' at position: {}\n", c, j);
+                return -1;
+            }
+        }
     }
 
     return j;
@@ -71,8 +91,7 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
 
     for (int i = 0; i < line.size();)
     {
-        const char         ch = line[i];
-        const unsigned int c  = ch;
+        const char c = line[i];
 
         // skip whitespaces
         if (std::isspace(c))
@@ -81,9 +100,9 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
             continue;
         }
 
-        if (std::isdigit(c))
+        if (isDigit_(c))
         {
-            int j = extractDigit_(line, i);
+            int j = extractDigit_(line, i, c == '.');
             if (j == -1)
                 goto TOKENIZE_ERROR;
 
@@ -92,38 +111,40 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
             i       = j;
             res.push_back(t);
         }
-        else if (ch == '+' || ch == '-')
+        else if (c == '+' || c == '-')
         {
             t.type  = eTOKENS::SUM_OP;
-            t.value = ch;
+            t.value = c;
             ++i;
             res.push_back(t);
         }
-        else if (ch == '*' || ch == '/')
+        else if (c == '*' || c == '/')
         {
             t.type  = eTOKENS::MUL_OP;
-            t.value = ch;
+            t.value = c;
             ++i;
             res.push_back(t);
         }
-        else if (ch == '(')
-
+        else if (c == '(')
         {
             t.type  = eTOKENS::LEFT_PARENTHESES;
-            t.value = ch;
+            t.value = c;
             ++i;
             res.push_back(t);
         }
-        else if (ch == ')')
+        else if (c == ')')
         {
             t.type  = eTOKENS::RIGHT_PARENTHESES;
-            t.value = ch;
+            t.value = c;
             ++i;
             res.push_back(t);
         }
-        else if (std::isalpha(c))
+        else if (isSymbol_(c))
         {
-            int j   = extractSymbol_(line, i);
+            int j = extractSymbol_(line, i);
+            if (j == -1)
+                goto TOKENIZE_ERROR;
+
             t.type  = eTOKENS::SYMBOL;
             t.value = line.substr(i, j - i);
             i       = j;
@@ -132,7 +153,7 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
         else
         {
         TOKENIZE_ERROR:
-            std::cerr << std::format("Unknown char: {} at pos: {}\n", ch, i);
+            std::cerr << std::format("Unknown char: {} at pos: {}\n", c, i);
             res.clear();
             break;
         }
