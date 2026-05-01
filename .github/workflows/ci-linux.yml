@@ -35,9 +35,9 @@ jobs:
       - name: install other dependencies
         run: |
           sudo apt-get update -y && sudo apt-get install -y \
-            # libspdlog-dev \
             libgtest-dev \
             libgmock-dev \
+            # libspdlog-dev \
       - uses: actions/checkout@v5
       - name: create build dir
         run: mkdir build
