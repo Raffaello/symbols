@@ -84,6 +84,9 @@ int Scanner::extractSymbol_(const std::string_view line, const int start_pos)
     return j;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 std::list<Token> Scanner::tokenize(const std::string_view line)
 {
     std::list<Token> res;

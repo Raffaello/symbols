@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.28)
 
 add_library(scanner)
 target_sources(scanner PRIVATE
-    Scanner.cpp
+    Scanner.cpp # TODO remove
+    LexScanner.cpp
 )
 target_include_directories(scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 
