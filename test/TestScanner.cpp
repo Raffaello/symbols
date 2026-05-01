@@ -23,7 +23,7 @@ TEST_P(TestScanner, tokenizer)
     int i = 0;
     for (const auto& r : res)
     {
-        EXPECT_EQ(r.token, expTokens[i].token);
+        EXPECT_EQ(r.type, expTokens[i].type);
         EXPECT_STRCASEEQ(r.value.c_str(), expTokens[i].value.c_str());
         ++i;
     }
@@ -34,47 +34,47 @@ INSTANTIATE_TEST_SUITE_P(
     TestScanner,
     ::testing::Values(
         std::make_tuple("1", 1, std::vector<Token>{
-                                    {.token = eTOKENS::NUM, .value = "1"},
+                                    {.type = eTOKENS::NUM, .value = "1"},
 }),
         std::make_tuple("-1", 2, std::vector<Token>{
-                                     {.token = eTOKENS::SUM_OP, .value = "-"},
-                                     {.token = eTOKENS::NUM, .value = "1"},
+                                     {.type = eTOKENS::SUM_OP, .value = "-"},
+                                     {.type = eTOKENS::NUM, .value = "1"},
                                  }),
         std::make_tuple("3.14", 1, std::vector<Token>{
-                                       {.token = eTOKENS::NUM, .value = "3.14"},
+                                       {.type = eTOKENS::NUM, .value = "3.14"},
                                    }),
 
         std::make_tuple("1 + 2", 3, std::vector<Token>{
-                                        {.token = eTOKENS::NUM, .value = "1"},
-                                        {.token = eTOKENS::SUM_OP, .value = "+"},
-                                        {.token = eTOKENS::NUM, .value = "2"},
+                                        {.type = eTOKENS::NUM, .value = "1"},
+                                        {.type = eTOKENS::SUM_OP, .value = "+"},
+                                        {.type = eTOKENS::NUM, .value = "2"},
                                     }),
         std::make_tuple(" 1  + \t 2 ", 3, std::vector<Token>{
-                                              {.token = eTOKENS::NUM, .value = "1"},
-                                              {.token = eTOKENS::SUM_OP, .value = "+"},
-                                              {.token = eTOKENS::NUM, .value = "2"},
+                                              {.type = eTOKENS::NUM, .value = "1"},
+                                              {.type = eTOKENS::SUM_OP, .value = "+"},
+                                              {.type = eTOKENS::NUM, .value = "2"},
                                           }),
         std::make_tuple("1 + x_1", 3, std::vector<Token>{
-                                          {.token = eTOKENS::NUM, .value = "1"},
-                                          {.token = eTOKENS::SUM_OP, .value = "+"},
-                                          {.token = eTOKENS::SYMBOL, .value = "x_1"},
+                                          {.type = eTOKENS::NUM, .value = "1"},
+                                          {.type = eTOKENS::SUM_OP, .value = "+"},
+                                          {.type = eTOKENS::SYMBOL, .value = "x_1"},
                                       }),
         std::make_tuple("10 + 2 - X1 * 1 / 2 + (a - b)", 15, std::vector<Token>{
-                                                                 {.token = eTOKENS::NUM, .value = "10"},
-                                                                 {.token = eTOKENS::SUM_OP, .value = "+"},
-                                                                 {.token = eTOKENS::NUM, .value = "2"},
-                                                                 {.token = eTOKENS::SUM_OP, .value = "-"},
-                                                                 {.token = eTOKENS::SYMBOL, .value = "X1"},
-                                                                 {.token = eTOKENS::MUL_OP, .value = "*"},
-                                                                 {.token = eTOKENS::NUM, .value = "1"},
-                                                                 {.token = eTOKENS::MUL_OP, .value = "/"},
-                                                                 {.token = eTOKENS::NUM, .value = "2"},
-                                                                 {.token = eTOKENS::SUM_OP, .value = "+"},
-                                                                 {.token = eTOKENS::LEFT_PARENTHESES, .value = "("},
-                                                                 {.token = eTOKENS::SYMBOL, .value = "a"},
-                                                                 {.token = eTOKENS::SUM_OP, .value = "-"},
-                                                                 {.token = eTOKENS::SYMBOL, .value = "b"},
-                                                                 {.token = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                                                 {.type = eTOKENS::NUM, .value = "10"},
+                                                                 {.type = eTOKENS::SUM_OP, .value = "+"},
+                                                                 {.type = eTOKENS::NUM, .value = "2"},
+                                                                 {.type = eTOKENS::SUM_OP, .value = "-"},
+                                                                 {.type = eTOKENS::SYMBOL, .value = "X1"},
+                                                                 {.type = eTOKENS::MUL_OP, .value = "*"},
+                                                                 {.type = eTOKENS::NUM, .value = "1"},
+                                                                 {.type = eTOKENS::MUL_OP, .value = "/"},
+                                                                 {.type = eTOKENS::NUM, .value = "2"},
+                                                                 {.type = eTOKENS::SUM_OP, .value = "+"},
+                                                                 {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                                                 {.type = eTOKENS::SYMBOL, .value = "a"},
+                                                                 {.type = eTOKENS::SUM_OP, .value = "-"},
+                                                                 {.type = eTOKENS::SYMBOL, .value = "b"},
+                                                                 {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
                                                              })));
 
 class TestScannerError : public ::testing::TestWithParam<std::tuple<std::string_view>>

@@ -87,21 +87,21 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
             if (j == -1)
                 goto TOKENIZE_ERROR;
 
-            t.token = eTOKENS::NUM;
+            t.type  = eTOKENS::NUM;
             t.value = line.substr(i, j - i);
             i       = j;
             res.push_back(t);
         }
         else if (ch == '+' || ch == '-')
         {
-            t.token = eTOKENS::SUM_OP;
+            t.type  = eTOKENS::SUM_OP;
             t.value = ch;
             ++i;
             res.push_back(t);
         }
         else if (ch == '*' || ch == '/')
         {
-            t.token = eTOKENS::MUL_OP;
+            t.type  = eTOKENS::MUL_OP;
             t.value = ch;
             ++i;
             res.push_back(t);
@@ -109,14 +109,14 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
         else if (ch == '(')
 
         {
-            t.token = eTOKENS::LEFT_PARENTHESES;
+            t.type  = eTOKENS::LEFT_PARENTHESES;
             t.value = ch;
             ++i;
             res.push_back(t);
         }
         else if (ch == ')')
         {
-            t.token = eTOKENS::RIGHT_PARENTHESES;
+            t.type  = eTOKENS::RIGHT_PARENTHESES;
             t.value = ch;
             ++i;
             res.push_back(t);
@@ -124,7 +124,7 @@ std::list<Token> Scanner::tokenize(const std::string_view line)
         else if (std::isalpha(c))
         {
             int j   = extractSymbol_(line, i);
-            t.token = eTOKENS::SYMBOL;
+            t.type  = eTOKENS::SYMBOL;
             t.value = line.substr(i, j - i);
             i       = j;
             res.push_back(t);

@@ -16,6 +16,6 @@ enum class eTOKENS
 struct Token
 {
     // public:
-    eTOKENS     token = eTOKENS::UNKNOWN;
+    eTOKENS     type = eTOKENS::UNKNOWN;
     std::string value;
 };

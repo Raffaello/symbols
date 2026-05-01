@@ -1,6 +1,6 @@
 # Symbols
 
-Symbolic Computation.
+Symbolic Computation Educational Project.
 
 # Scanner
 
