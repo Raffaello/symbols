@@ -54,10 +54,10 @@ jobs:
         run: ctest --output-on-failure
         working-directory: build
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-            generate_release_notes: true
-            prerelease: false
-            files: "build/*.zip"
+      # - name: Release
+      #   uses: softprops/action-gh-release@v3
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   with:
+      #       generate_release_notes: true
+      #       prerelease: false
+      #       files: "build/*.zip"
