@@ -8,11 +8,15 @@ Symbolic Computation Educational Project.
 
 TODO: Create the DFA
 
+![DFA](./doc/NFA.drawio.svg)
+
 Tokens:
-- digit
+- num
 - symbol
-- operator
-- parentheses
+- sum_op
+- mul_op
+- left_parentheses
+- right_parentheses
 
 # Parser
 
