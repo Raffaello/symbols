@@ -5,13 +5,13 @@
 enum class eTOKENS
 {
     ERROR = -1,
-    NUM   = 0,
-    SUM_OP,    // +|-
-    MUL_OP,    // *|/
+    NUM   = 0,    // it could be expanded into INT and REAL
+    SUM_OP,       // +|-
+    MUL_OP,       // *|/
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
     SYMBOL,
-    END,
+    // END,
 };
 
 struct Token

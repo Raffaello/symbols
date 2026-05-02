@@ -3,26 +3,30 @@
 #include <ParserLL1.hpp>
 #include <array>
 
-class TestParserLL1 : public ::testing::TestWithParam<std::tuple<std::string_view, int, std::vector<Token>>>
+class TestParserLL1 : public ::testing::TestWithParam<std::tuple<std::string_view>>
 {
 public:
-    const std::string_view   line         = std::get<0>(GetParam());
-    const int                expNumTokens = std::get<1>(GetParam());
-    const std::vector<Token> expTokens    = std::get<2>(GetParam());
+    const std::string_view line = std::get<0>(GetParam());
+    // const int                expNumTokens = std::get<1>(GetParam());
+    // const std::vector<Token> expTokens    = std::get<2>(GetParam());
 };
 
 TEST_P(TestParserLL1, parser)
 {
-    FAIL();
+    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
+    ParserLL1  parser(scanner);
+
+    ASSERT_TRUE(parser.parse());
+
+    auto& ast = parser.ast();
+    // TODO: check the AST
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ParserLL1TestSuite,
     TestParserLL1,
     ::testing::Values(
-        std::make_tuple("1", 1, std::vector<Token>{
-                                    {.type = eTOKENS::NUM, .value = "1"},
-})));
+        std::make_tuple("1")));
 
 class TestParserLL1Error : public ::testing::TestWithParam<std::tuple<std::string_view>>
 {
