@@ -26,7 +26,10 @@ INSTANTIATE_TEST_SUITE_P(
     ParserLL1TestSuite,
     TestParserLL1,
     ::testing::Values(
-        std::make_tuple("1")));
+        std::make_tuple("1"),
+        std::make_tuple("x"),
+        std::make_tuple("(1)"),
+        std::make_tuple("(x)")));
 
 class TestParserLL1Error : public ::testing::TestWithParam<std::tuple<std::string_view>>
 {

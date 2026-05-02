@@ -79,14 +79,25 @@ std::unique_ptr<INode> ParserLL1::factor_()
             return nullptr;
         }
 
-        // TODO:
-        return nullptr;
+        auto node = expr_();
+        if (!expect_(eTOKENS::RIGHT_PARENTHESES))
+        {
+            std::cerr << std::format("ERROR: expected ')' instead {}\n", m_token.value);
+            return nullptr;
+        }
+
+        advance_();
+        return node;
     }
     break;
     case SYMBOL:
-        // TODO
-        return nullptr;
-        break;
+    {
+        auto node   = std::make_unique<LeafSymbol>();
+        node->value = m_token.value;
+        advance_();
+        return node;
+    }
+    break;
     case NUM:
     {
         size_t       pos = 0;
