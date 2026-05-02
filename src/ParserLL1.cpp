@@ -12,8 +12,10 @@ bool ParserLL1::advance_()
         if (m_token.type == eTOKENS::ERROR)
             std::cerr << std::format("Error: {}\n", m_token.value);
         else
-            m_end = true;
-        // throw std::runtime_error("LexicalScanner Error!");    // it shouldn't never reach here, unless there is a bug.
+        {
+            m_end         = true;
+            m_token.value = "";
+        }
 
         return false;
     }
@@ -33,13 +35,35 @@ std::unique_ptr<INode> ParserLL1::expr_()
     if (left == nullptr)
         return nullptr;
 
-    return left;
-
-    // TODO RIGHT
+    return exprPrime_(std::move(left));
 }
 
-void ParserLL1::exprPrime_()
+std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 {
+    if (m_token.type == eTOKENS::SUM_OP)
+    {
+        auto node   = std::make_unique<NodeBin>();
+        node->token = m_token;
+
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: Expected a factor after operator {}\n", node->token.value);
+            return nullptr;
+        }
+
+        auto right = term_();
+        if (right == nullptr)
+            return nullptr;
+
+        node->l = std::move(left);
+        node->r = std::move(right);
+
+        return exprPrime_(std::move(node));
+    }
+    else
+    {
+        return left;
+    }
 }
 
 std::unique_ptr<INode> ParserLL1::term_()
@@ -48,31 +72,43 @@ std::unique_ptr<INode> ParserLL1::term_()
     if (left == nullptr)
         return nullptr;
 
-    return left;
-
-    // TODO RIGHT (termPrime_)
-
-    // auto nodeBin = std::make_unique<NodeBin>();
-    // nodeBin->l   = std::move(left);
-
-    // return nodeBin;
+    return termPrime_(std::move(left));
 }
 
-void ParserLL1::termPrime_()
+std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
 {
+    if (m_token.type == eTOKENS::MUL_OP)
+    {
+        auto node   = std::make_unique<NodeBin>();
+        node->token = m_token;
+
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: Expected a factor after operator {}\n", node->token.value);
+            return nullptr;
+        }
+
+        auto right = factor_();
+        if (right == nullptr)
+            return nullptr;
+
+        node->l = std::move(left);
+        node->r = std::move(right);
+
+        return termPrime_(std::move(node));
+    }
+    else
+        return left;
 }
 
 std::unique_ptr<INode> ParserLL1::factor_()
 {
-
     switch (m_token.type)
     {
         using enum eTOKENS;
 
     case LEFT_PARENTHESES:
     {
-        // auto node   = std::make_unique<LeafNum>();
-        // node->token = m_token;
         if (!advance_())
         {
             std::cerr << std::format("ERROR: expected an expression after: '('\n");
@@ -80,6 +116,9 @@ std::unique_ptr<INode> ParserLL1::factor_()
         }
 
         auto node = expr_();
+        if (node == nullptr)
+            return nullptr;
+
         if (!expect_(eTOKENS::RIGHT_PARENTHESES))
         {
             std::cerr << std::format("ERROR: expected ')' instead {}\n", m_token.value);

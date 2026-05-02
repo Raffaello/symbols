@@ -29,9 +29,9 @@ private:
     bool expect_(const eTOKENS type);
 
     std::unique_ptr<INode> expr_();
-    void                   exprPrime_();
+    std::unique_ptr<INode> exprPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> term_();
-    void                   termPrime_();
+    std::unique_ptr<INode> termPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> factor_();
 
 public:
