@@ -13,7 +13,7 @@ public:
 
 TEST_P(TestLexScanner, tokenizer)
 {
-    LexScanner scanner(std::move(std::make_unique<std::istringstream>(line.data())));
+    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
 
     ASSERT_EQ(expNumTokens, expTokens.size());
 
@@ -173,7 +173,7 @@ public:
 
 TEST_P(TestLexScannerError, tokenizer_error)
 {
-    LexScanner scanner(std::move(std::make_unique<std::istringstream>(line.data())));
+    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
 
     EXPECT_FALSE(scanner.next());
     const auto t = scanner.lastToken();

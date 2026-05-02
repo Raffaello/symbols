@@ -5,7 +5,7 @@
 
 int main()
 {
-    LexScanner lex_scanner(std::move(std::make_unique<std::stringstream>("10 + 2 - X1 * 1 / 2 + (a - b)")));
+    LexScanner lex_scanner(std::make_unique<std::stringstream>("10 + 2 - X1 * 1 / 2 + (a - b)"));
 
     while (lex_scanner.next())
     {
