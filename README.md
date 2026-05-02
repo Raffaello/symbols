@@ -13,8 +13,9 @@ This is the NFA of the lexical scanner.
 
 # Parser
 
-BNF:
-```
+EBNF:
+
+```ebnf
 expr   ::= expr + term
         |  expr - term
         |  term
@@ -30,7 +31,7 @@ factor := digit
 
 LL(1) compatible grammar:
 
-```
+```ebnf
 E  ::= T E'
 E' ::= + T E' | - T E' | e
 T  ::= F T'
