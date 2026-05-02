@@ -18,5 +18,6 @@ int main()
     if (!parser.parse())
         return -1;
 
+    parser.ast().print();
     return 0;
 }

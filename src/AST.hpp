@@ -46,6 +46,8 @@ private:
     std::unique_ptr<INode> m_pRoot    = nullptr;
     INode*                 m_pCurrent = nullptr;
 
+    void print_(const INode* node, const int indent);
+
 public:
     AST()  = default;
     ~AST() = default;
@@ -59,4 +61,9 @@ public:
     // void add_right(const Token& token);
     // void move_left();
     // void move_right();
+
+    /**
+     * TODO: remove / use for debug only
+     */
+    void print();
 };

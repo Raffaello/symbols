@@ -39,10 +39,10 @@ public:
     ParserLL1(LexScanner& lex_scanner);
     bool parse();
 
-    inline const AST& ast() const noexcept;
+    inline AST& ast() noexcept;
 };
 
-inline const AST& ParserLL1::ast() const noexcept
+inline AST& ParserLL1::ast() noexcept
 {
     return m_ast;
 }
