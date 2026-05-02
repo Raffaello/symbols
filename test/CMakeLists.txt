@@ -57,9 +57,17 @@ macro(macro_test) # ${ARGN} link libraries
     gtest_discover_tests(${TEST_EXE} PROPERTIES TEST_DISCOVERY_TIMEOUT 600 DISCOVERY_TIMEOUT 600)
 endmacro()
 
+# TODO remove
+# macro_test(
+#     EXE TestScanner
+#     FILES "TestScanner.cpp"
+#     FIXTURES 
+#     LINKS_PRIVATE "lex_scanner"
+# )
+
 macro_test(
-    EXE TestScanner
-    FILES "TestScanner.cpp"
+    EXE LexScanner
+    FILES "TestLexScanner.cpp"
     FIXTURES 
-    LINKS_PRIVATE "scanner"
+    LINKS_PRIVATE "lex_scanner"
 )
