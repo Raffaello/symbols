@@ -180,7 +180,9 @@ INSTANTIATE_TEST_SUITE_P(
     TestLexScannerError,
     ::testing::Values(
         std::make_tuple("1.1.1"),
-        std::make_tuple("._1")));
+        std::make_tuple("._1"),
+        std::make_tuple("="),    // TODO: Not Supported Yet
+        std::make_tuple("!")));
 
 int main(int argc, char** argv)
 {
