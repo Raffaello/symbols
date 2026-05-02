@@ -30,7 +30,7 @@ TEST_P(TestLexScanner, tokenizer)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ScannerTestSuite,
+    LexScannerTestSuite,
     TestLexScanner,
     ::testing::Values(
         std::make_tuple("1", 1, std::vector<Token>{
@@ -91,6 +91,57 @@ INSTANTIATE_TEST_SUITE_P(
                                        {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
                                        {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
                                    }),
+        std::make_tuple(")(+-/*", 6, std::vector<Token>{
+                                         {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                         {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                         {.type = eTOKENS::SUM_OP, .value = "+"},
+                                         {.type = eTOKENS::SUM_OP, .value = "-"},
+                                         {.type = eTOKENS::MUL_OP, .value = "/"},
+                                         {.type = eTOKENS::MUL_OP, .value = "*"},
+                                     }),
+        std::make_tuple("(a", 2, std::vector<Token>{
+                                     {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                     {.type = eTOKENS::SYMBOL, .value = "a"},
+                                 }),
+        std::make_tuple(")a", 2, std::vector<Token>{
+                                     {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                     {.type = eTOKENS::SYMBOL, .value = "a"},
+                                 }),
+        std::make_tuple(")1(a", 4, std::vector<Token>{
+                                       {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                       {.type = eTOKENS::NUM, .value = "1"},
+                                       {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                       {.type = eTOKENS::SYMBOL, .value = "a"},
+                                   }),
+        std::make_tuple(")1.2(a", 4, std::vector<Token>{
+                                         {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                         {.type = eTOKENS::NUM, .value = "1.2"},
+                                         {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                         {.type = eTOKENS::SYMBOL, .value = "a"},
+                                     }),
+        std::make_tuple(")1.2_(_", 5, std::vector<Token>{
+                                          {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                          {.type = eTOKENS::NUM, .value = "1.2"},
+                                          {.type = eTOKENS::SYMBOL, .value = "_"},
+                                          {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                          {.type = eTOKENS::SYMBOL, .value = "_"},
+                                      }),
+        std::make_tuple("_.1", 2, std::vector<Token>{
+                                      {.type = eTOKENS::SYMBOL, .value = "_"},
+                                      {.type = eTOKENS::NUM, .value = ".1"},
+                                  }),
+        std::make_tuple(")a_(_", 4, std::vector<Token>{
+                                        {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                        {.type = eTOKENS::SYMBOL, .value = "a_"},
+                                        {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                        {.type = eTOKENS::SYMBOL, .value = "_"},
+                                    }),
+        std::make_tuple(")a4(1", 4, std::vector<Token>{
+                                        {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
+                                        {.type = eTOKENS::SYMBOL, .value = "a4"},
+                                        {.type = eTOKENS::LEFT_PARENTHESES, .value = "("},
+                                        {.type = eTOKENS::NUM, .value = "1"},
+                                    }),
         std::make_tuple("10 + 2 - X1 * 1 / 2 + (a - b)", 15, std::vector<Token>{
                                                                  {.type = eTOKENS::NUM, .value = "10"},
                                                                  {.type = eTOKENS::SUM_OP, .value = "+"},
@@ -125,13 +176,11 @@ TEST_P(TestLexScannerError, tokenizer_error)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ScannerTestSuite,
+    LexScannerTestSuite,
     TestLexScannerError,
     ::testing::Values(
         std::make_tuple("1.1.1"),
-        std::make_tuple("._1"),
-        std::make_tuple("_.1"),
-        std::make_tuple("a(")));    // TODO these could be 2 valid tokens, the parser instead should report error missing operator
+        std::make_tuple("._1")));
 
 int main(int argc, char** argv)
 {

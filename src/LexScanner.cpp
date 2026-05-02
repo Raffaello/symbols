@@ -44,7 +44,6 @@ char LexScanner::get_()
     }
 
     ++m_pos;
-
     return c;
 }
 
@@ -61,7 +60,7 @@ void LexScanner::unget_(const char c)
 void LexScanner::stateStart_(const char c)
 {
     if (c == '.')
-        m_state = eState::REAL;
+        m_state = eState::PRE_REAL;
     else if (std::isdigit(c))
         m_state = eState::INT;
     else if (c == '_' || std::isalpha(c))
@@ -99,17 +98,19 @@ bool LexScanner::stateInt_(const char c)
         m_curTokenValue << c;
         return true;
     }
-    else if (std::isspace(c))
-        return false;
-    else if (std::isalpha(c) || c == '(' || c == '_')
-    {
-        m_state = eState::ERROR;
-        m_curTokenValue << c;
-        return true;
-    }
 
     unget_(c);
     return false;
+}
+
+void LexScanner::statePreReal_(const char c)
+{
+    if (std::isdigit(c))
+        m_state = eState::REAL;
+    else
+        m_state = eState::ERROR;
+
+    m_curTokenValue << c;
 }
 
 bool LexScanner::stateReal_(const char c)
@@ -119,9 +120,7 @@ bool LexScanner::stateReal_(const char c)
         m_curTokenValue << c;
         return true;
     }
-    else if (std::isspace(c))
-        return false;
-    else if (std::isalpha(c) || c == '(' || c == '.' || c == '_')
+    else if (c == '.')
     {
         m_state = eState::ERROR;
         m_curTokenValue << c;
@@ -139,14 +138,6 @@ bool LexScanner::stateSymbol_(const char c)
         m_curTokenValue << c;
         return true;
     }
-    else if (std::isspace(c))
-        return false;
-    else if (c == '(' || c == '.')
-    {
-        m_state = eState::ERROR;
-        m_curTokenValue << c;
-        return true;
-    }
 
     unget_(c);
     return false;
@@ -159,118 +150,12 @@ bool LexScanner::stateFinal_(const eTOKENS type)
     return true;
 }
 
-Token LexScanner::nextToken()
-{
-    // TODO: use the state instead
-    //       flat the loop
-    //       return bool and use lastToken() to retrive the last token
-    //       set the state to start when a succesful token has been found
-    //       otherwise Error
-    //       when is on END it won't anymore re-start the state.
-
-    // Equivalent to DFA State END or ERROR
-    if (m_lastToken.type == eTOKENS::END || m_lastToken.type == eTOKENS::ERROR)
-        return lastToken();
-
-    do
-    {
-        const char c = get_();
-
-        // // nothing more to read
-        if (m_pInput->eof())
-        {
-            m_lastToken.type  = eTOKENS::END;
-            m_lastToken.value = "";
-            return lastToken();
-        }
-
-        // skip whitespaces
-        if (std::isspace(c))
-            continue;
-
-        // SUM_OP
-        if (c == '+' || c == '-')
-        {
-            m_lastToken.type  = eTOKENS::SUM_OP;
-            m_lastToken.value = c;
-
-            return lastToken();
-        }
-        // MUL_OP
-        else if (c == '*' || c == '/')
-        {
-            m_lastToken.type  = eTOKENS::MUL_OP;
-            m_lastToken.value = c;
-
-            return lastToken();
-        }
-        // PARENTHESES
-        else if (c == '(')
-        {
-            m_lastToken.type  = eTOKENS::LEFT_PARENTHESES;
-            m_lastToken.value = c;
-
-            return lastToken();
-        }
-        else if (c == ')')
-        {
-            m_lastToken.type  = eTOKENS::RIGHT_PARENTHESES;
-            m_lastToken.value = c;
-
-            return lastToken();
-        }
-        // NUM
-        // TODO: need to flat the loop and store the current state of the DFA
-        else if (c == '.' || std::isdigit(c))
-        {
-            char               c2 = c;
-            std::ostringstream buf;
-            do
-            {
-                buf << c2;
-                c2 = get_();
-            }
-            while (std::isdigit(c2));
-            unget_(c2);
-
-            m_lastToken.type  = eTOKENS::NUM;
-            m_lastToken.value = buf.str();
-            return lastToken();
-        }
-        // SYMBOL
-        else if (c == '_' || std::isalpha(c))
-        {
-            char               c2 = c;
-            std::ostringstream buf;
-
-            do
-            {
-                buf << c2;
-                c2 = get_();
-            }
-            while (c2 == '_' || std::isalnum(c));
-            unget_(c2);
-
-            m_lastToken.type  = eTOKENS::SYMBOL;
-            m_lastToken.value = buf.str();
-            return lastToken();
-        }
-        else
-        {
-            m_lastToken.type  = eTOKENS::ERROR;
-            m_lastToken.value = "";
-            return lastToken();
-        }
-    }
-    while (true);
-}
-
 bool LexScanner::next()
 {
     if (m_eof)
         return false;
 
-    if (m_state == eState::ERROR || m_state == eState::END)
+    if (m_state == eState::ERROR)
         return false;
 
     m_curTokenValue.str("");
@@ -296,11 +181,6 @@ bool LexScanner::next()
         case START:
             stateStart_(c);
             break;
-        case END:
-        {
-            stateFinal_(eTOKENS::END);
-            return false;
-        }
         case SUM_OP_PLUS:
             [[fallthrough]];
         case SUM_OP_MINUS:
@@ -320,6 +200,9 @@ bool LexScanner::next()
         case INT:
             if (!stateInt_(c))
                 return stateFinal_(eTOKENS::NUM);
+            break;
+        case PRE_REAL:
+            statePreReal_(c);
             break;
         case REAL:
             if (!stateReal_(c))

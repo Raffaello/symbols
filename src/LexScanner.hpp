@@ -27,7 +27,6 @@ private:
     enum class eState
     {
         START = 0,
-        END,
         SUM_OP_PLUS,
         SUM_OP_MINUS,
         MUL_OP_MUL,
@@ -35,6 +34,7 @@ private:
         PARENTHESES_LEFT,
         PARENTHESES_RIGHT,
         INT,
+        PRE_REAL,
         REAL,
         SYMBOL,
         ERROR,
@@ -54,18 +54,19 @@ private:
     void unget_(const char c);
 
     void stateStart_(const char c);
+    void statePreReal_(const char c);
+
+    // Final states return true if it isn't over yet
     bool stateInt_(const char c);
     bool stateReal_(const char c);
     bool stateSymbol_(const char c);
-    // etc...
 
     bool stateFinal_(const eTOKENS type);
 
 public:
     LexScanner(std::unique_ptr<std::istream> pInput);
 
-    Token nextToken();
-    bool  next();
+    bool next();
 
     inline Token lastToken() const noexcept;
 };
