@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.28)
 
 add_library(lex_scanner)
 target_sources(lex_scanner PRIVATE
-    Scanner.cpp # TODO remove
     LexScanner.cpp
 )
 target_include_directories(lex_scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)

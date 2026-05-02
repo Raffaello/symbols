@@ -1,13 +1,16 @@
-#include "Scanner.hpp"
+#include "LexScanner.hpp"
+
+#include <iostream>
+#include <format>
 
 int main()
 {
-    Scanner scanner;
+    LexScanner lex_scanner(std::move(std::make_unique<std::stringstream>("10 + 2 - X1 * 1 / 2 + (a - b)")));
 
-    const char* line = "10 + 2 - X1 * 1 / 2 + (a - b)";
-
-    auto res = scanner.tokenize(line);
-
+    while (lex_scanner.next())
+    {
+        std::cout << std::format("Token: type: {}, value={}\n", (int) lex_scanner.lastToken().type, lex_scanner.lastToken().value);
+    }
 
     return 0;
 }

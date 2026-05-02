@@ -16,11 +16,6 @@ enum class eTOKENS
 
 struct Token
 {
-    // public:
     eTOKENS     type = eTOKENS::ERROR;
     std::string value;
-
-    // Token(const eTOKENS type, const std::string& value) : type(type), value(value) {}
-
-    // Token() = default;
 };
