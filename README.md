@@ -4,20 +4,18 @@
 
 Symbolic Computation Educational Project.
 
-# Scanner
+# Lexical Scanner
 
-TODO: Create the DFA
+This is the NFA of the lexical scanner.
 
-Tokens:
-- digit
-- symbol
-- operator
-- parentheses
+![DFA](./doc/NFA.drawio.svg)
+
 
 # Parser
 
-BNF:
+EBNF:
 
+```ebnf
 expr   ::= expr + term
         |  expr - term
         |  term
@@ -29,13 +27,14 @@ term   ::= term * factor
 factor := digit 
         | symbol
         | left_parentheses expr right_parentheses
+```
 
----
+LL(1) compatible grammar:
 
+```ebnf
 E  ::= T E'
 E' ::= + T E' | - T E' | e
 T  ::= F T'
 T' ::= * F T' | / F T' | e
 F  ::= (E) | SYMBOL | NUM
-
-
+```

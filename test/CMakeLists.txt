@@ -58,8 +58,8 @@ macro(macro_test) # ${ARGN} link libraries
 endmacro()
 
 macro_test(
-    EXE TestScanner
-    FILES "TestScanner.cpp"
+    EXE TestLexScanner
+    FILES "TestLexScanner.cpp"
     FIXTURES 
-    LINKS_PRIVATE "scanner"
+    LINKS_PRIVATE "lex_scanner"
 )

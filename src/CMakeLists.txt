@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 
 
-add_library(scanner)
-target_sources(scanner PRIVATE
-    Scanner.cpp
+add_library(lex_scanner)
+target_sources(lex_scanner PRIVATE
+    LexScanner.cpp
 )
-target_include_directories(scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
+target_include_directories(lex_scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_library(parser)
 target_sources(parser PRIVATE
@@ -29,6 +29,6 @@ target_include_directories(symbols PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 target_link_libraries(symbols PRIVATE
-    scanner
+    lex_scanner
     parser
 )
