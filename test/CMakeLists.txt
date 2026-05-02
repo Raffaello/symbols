@@ -63,3 +63,10 @@ macro_test(
     FIXTURES 
     LINKS_PRIVATE "lex_scanner"
 )
+
+macro_test(
+    EXE TestParserLL1
+    FILES "TestParserLL1.cpp"
+    FIXTURES 
+    LINKS_PRIVATE "parser"
+)

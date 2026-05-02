@@ -9,7 +9,7 @@ target_include_directories(lex_scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_library(parser)
 target_sources(parser PRIVATE
-    Parser.cpp
+    ParserLL1.cpp
     AST.cpp
   )
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
