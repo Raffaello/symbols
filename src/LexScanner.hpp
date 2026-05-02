@@ -3,6 +3,7 @@
 #include <memory>
 #include <istream>
 #include <sstream>
+#include <cctype>
 
 #include "Token.hpp"
 
@@ -53,6 +54,11 @@ private:
     char get_();
     void unget_(const char c);
 
+    inline bool isDigit_(const char c) const noexcept;
+    inline bool isAlpha_(const char c) const noexcept;
+    inline bool isAlNum_(const char c) const noexcept;
+    inline bool isSpace_(const char c) const noexcept;
+
     void stateStart_(const char c);
     void statePreReal_(const char c);
 
@@ -74,4 +80,24 @@ public:
 inline Token LexScanner::lastToken() const noexcept
 {
     return m_lastToken;
+}
+
+inline bool LexScanner::isDigit_(const char c) const noexcept
+{
+    return std::isdigit(static_cast<unsigned char>(c));
+}
+
+inline bool LexScanner::isAlpha_(const char c) const noexcept
+{
+    return std::isalpha(static_cast<unsigned char>(c));
+}
+
+inline bool LexScanner::isAlNum_(const char c) const noexcept
+{
+    return std::isalnum(static_cast<unsigned char>(c));
+}
+
+inline bool LexScanner::isSpace_(const char c) const noexcept
+{
+    return std::isspace(static_cast<unsigned char>(c));
 }

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <format>
 #include <string>
-#include <cctype>
 #include <sstream>
 
 LexScanner::LexScanner(std::unique_ptr<std::istream> pInput) : m_pInput(std::move(pInput))
@@ -32,7 +31,7 @@ char LexScanner::get_()
     if (m_pInput->eof())
     {
         m_eof = true;
-        return EOF;
+        return -1;    // EOF;
     }
 
     // check for errors
@@ -61,9 +60,9 @@ void LexScanner::stateStart_(const char c)
 {
     if (c == '.')
         m_state = eState::PRE_REAL;
-    else if (std::isdigit(c))
+    else if (isDigit_(c))
         m_state = eState::INT;
-    else if (c == '_' || std::isalpha(c))
+    else if (c == '_' || isAlpha_(c))
         m_state = eState::SYMBOL;
     else if (c == '(')
         m_state = eState::PARENTHESES_LEFT;
@@ -77,7 +76,7 @@ void LexScanner::stateStart_(const char c)
         m_state = eState::MUL_OP_MUL;
     else if (c == '/')
         m_state = eState::MUL_OP_DIV;
-    else if (std::isspace(c))
+    else if (isSpace_(c))
         return;
     else
         m_state = eState::ERROR;
@@ -93,7 +92,7 @@ bool LexScanner::stateInt_(const char c)
         m_state = eState::REAL;
         return true;
     }
-    else if (std::isdigit(c))
+    else if (isDigit_(c))
     {
         m_curTokenValue << c;
         return true;
@@ -105,7 +104,7 @@ bool LexScanner::stateInt_(const char c)
 
 void LexScanner::statePreReal_(const char c)
 {
-    if (std::isdigit(c))
+    if (isDigit_(c))
         m_state = eState::REAL;
     else
         m_state = eState::ERROR;
@@ -115,7 +114,7 @@ void LexScanner::statePreReal_(const char c)
 
 bool LexScanner::stateReal_(const char c)
 {
-    if (std::isdigit(c))
+    if (isDigit_(c))
     {
         m_curTokenValue << c;
         return true;
@@ -133,7 +132,7 @@ bool LexScanner::stateReal_(const char c)
 
 bool LexScanner::stateSymbol_(const char c)
 {
-    if (c == '_' || std::isalnum(c))
+    if (c == '_' || isAlNum_(c))
     {
         m_curTokenValue << c;
         return true;

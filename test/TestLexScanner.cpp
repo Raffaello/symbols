@@ -21,6 +21,8 @@ TEST_P(TestLexScanner, tokenizer)
     while (scanner.next())
     {
         const auto t = scanner.lastToken();
+
+        ASSERT_LT(i, expNumTokens);
         EXPECT_EQ(t.type, expTokens[i].type);
         EXPECT_STRCASEEQ(t.value.c_str(), expTokens[i].value.c_str());
         ++i;
@@ -36,6 +38,9 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("1", 1, std::vector<Token>{
                                     {.type = eTOKENS::NUM, .value = "1"},
 }),
+        std::make_tuple("123", 1, std::vector<Token>{
+                                      {.type = eTOKENS::NUM, .value = "123"},
+                                  }),
         std::make_tuple("-1", 2, std::vector<Token>{
                                      {.type = eTOKENS::SUM_OP, .value = "-"},
                                      {.type = eTOKENS::NUM, .value = "1"},
