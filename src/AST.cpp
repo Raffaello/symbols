@@ -25,6 +25,14 @@ void AST::print_(const INode* node, const int indent)
         return;
     }
 
+    if (auto uni = dynamic_cast<const NodeUnary*>(node))
+    {
+        pad(indent);
+        std::cout << std::format("Unary({})\n", uni->token.value);
+        print_(uni->n.get(), indent + 1);
+        return;
+    }
+
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
         pad(indent);

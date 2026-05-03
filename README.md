@@ -6,6 +6,8 @@ Symbolic Computation Educational Project.
 
 # Lexical Scanner
 
+> TODO: not completed yet
+
 This is the NFA of the lexical scanner.
 
 ![DFA](./doc/NFA.drawio.svg)
@@ -13,20 +15,28 @@ This is the NFA of the lexical scanner.
 
 # Parser
 
+> TODO not completed yet
+
+The Grammar for the arithmetical expression is the following, it doesn't allow + or - chains operator like in C (`+-+-1` is valid in C, but i prefer a more mathematical approach so a user must write: `+(-(+(-1)))` eventually.
+
 EBNF:
 
 ```ebnf
-expr   ::= expr + term
-        |  expr - term
-        |  term
+expr      ::= expr + term
+           |  expr - term
+           |  term
 
-term   ::= term * factor
-        |  term / factor
-        |  factor
+term      ::= term * factor
+           |  term / factor
+           |  factor
 
-factor := digit 
-        | symbol
-        | left_parentheses expr right_parentheses
+factor    ::= unary predicate
+
+unary     :: + | - | epsilon
+
+predicate ::= digit
+           | symbol
+           | ( expr )
 ```
 
 LL(1) compatible grammar:
@@ -36,5 +46,7 @@ E  ::= T E'
 E' ::= + T E' | - T E' | e
 T  ::= F T'
 T' ::= * F T' | / F T' | e
-F  ::= (E) | SYMBOL | NUM
+F  ::= U P
+U  ::= + | - | e
+P  ::= (E) | SYMBOL | NUM
 ```

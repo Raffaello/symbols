@@ -15,7 +15,9 @@
  * E' ::= + T E' | - T E' | e
  * T  ::= F T'
  * T' ::= * F T' | / F T' | e
- * F  ::= (E) | SYMBOL | NUM
+ * F  ::= U P
+ * U  ::= + | - | e
+ * P  ::= (E) | SYMBOL | NUM
  */
 class ParserLL1
 {
@@ -33,6 +35,8 @@ private:
     std::unique_ptr<INode> term_();
     std::unique_ptr<INode> termPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> factor_();
+    std::unique_ptr<INode> unary_();
+    std::unique_ptr<INode> pred_();
 
 public:
     // bool parse(const std::list<Token>& tokens);
