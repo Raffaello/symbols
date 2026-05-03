@@ -30,18 +30,6 @@ struct NodeBin : public INode
 
 class AST
 {
-public:
-    // struct Node
-    // {
-    //     Token token;
-
-    // std::unique_ptr<Node> l = nullptr;
-    // std::unique_ptr<Node> r = nullptr;
-
-    // Node() = default;
-    // Node(const Token& token);
-    // };
-
 private:
     std::unique_ptr<INode> m_pRoot    = nullptr;
     INode*                 m_pCurrent = nullptr;
@@ -53,17 +41,11 @@ public:
     ~AST() = default;
 
     void setRoot(std::unique_ptr<INode>& root);
-    // void setCurrentToken(const Token& token);
-    // void setLeft(std::unique_ptr<BinaryAST::Node> node);
-    // void setRight(std::unique_ptr<BinaryAST::Node> node);
-
-    // void add_left(const Token& token);
-    // void add_right(const Token& token);
-    // void move_left();
-    // void move_right();
 
     /**
      * TODO: remove / use for debug only
      */
     void print();
+
+    // TODO: still missing how to navigate the AST...
 };
