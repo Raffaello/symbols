@@ -67,6 +67,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
             if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
             {
                 m_symbolTable[sym->value] = r;
+                m_lastValue               = r;
                 return true;
             }
 

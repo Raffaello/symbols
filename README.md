@@ -32,7 +32,6 @@ expr      ::= expr + term
 
 term      ::= term * factor
            |  term / factor
-           <!-- |  term = factor -->
            |  factor
 
 factor    ::= unary predicate
@@ -47,9 +46,9 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S  ::= E
+S  ::= E | E = E
 E  ::= T E'
-E' ::= + T E' | - T E' | = T E | e
+E' ::= + T E' | - T E' | e
 T  ::= F T'
 T' ::= * F T' | / F T' | e
 F  ::= U P

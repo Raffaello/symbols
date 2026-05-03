@@ -31,7 +31,37 @@ bool ParserLL1::expect_(const eTOKENS type)
 
 std::unique_ptr<INode> ParserLL1::stmt_()
 {
-    return expr_();
+    auto l = expr_();
+    if (m_token.type == eTOKENS::EQUAL)
+    {
+        Token t = m_token;
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: missing expression after {}\n", t.value);
+            return nullptr;
+        }
+
+        auto r = expr_();
+        if (r == nullptr)
+            return nullptr;
+
+        auto n   = std::make_unique<NodeBin>();
+        n->token = t;
+        n->l     = std::move(l);
+        n->r     = std::move(r);
+
+        return n;
+    }
+
+
+    // TOOD: replace with END token
+    if (!m_end)
+    {
+        std::cerr << std::format("\nERROR: unable to parse\n");
+        return nullptr;
+    }
+
+    return l;
 }
 
 std::unique_ptr<INode> ParserLL1::expr_()
@@ -45,7 +75,7 @@ std::unique_ptr<INode> ParserLL1::expr_()
 
 std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 {
-    if (m_token.type == eTOKENS::SUM_OP || m_token.type == eTOKENS::EQUAL)
+    if (m_token.type == eTOKENS::SUM_OP)
     {
         auto node   = std::make_unique<NodeBin>();
         node->token = m_token;
