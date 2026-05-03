@@ -43,5 +43,10 @@ int main()
         return -1;
 
     std::cout << std::format("\n- lastValue: {}\n", interpreter.lastValue());
+
+    for (const auto& [k, v] : interpreter.symbolTable())
+    {
+        std::cout << std::format("--| {} = {} |\n", k, v);
+    }
     return 0;
 }
