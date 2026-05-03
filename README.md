@@ -62,5 +62,5 @@ P  ::= (E) | SYMBOL | NUM
 
 Basic interpreter evaluating a single `AST` at time for now.
 
-Not supporting solving equation, but only if those are reduce to what is considered an assigment, e.g:
+Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
  `x=1`, but not `x+1=2`
