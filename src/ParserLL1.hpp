@@ -11,7 +11,7 @@
  * Recursive Descent LL1 Parsers
  *
  * Grammar:
- * E  ::= T E'
+ * S  ::= E | E = E
  * E' ::= + T E' | - T E' | e
  * T  ::= F T'
  * T' ::= * F T' | / F T' | e
@@ -30,6 +30,7 @@ private:
     bool advance_();
     bool expect_(const eTOKENS type);
 
+    std::unique_ptr<INode> stmt_();
     std::unique_ptr<INode> expr_();
     std::unique_ptr<INode> exprPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> term_();

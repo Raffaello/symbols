@@ -22,6 +22,10 @@ The Grammar for the arithmetical expression is the following, it doesn't allow +
 EBNF:
 
 ```ebnf
+stmt      ::= expr | equation
+
+equation ::= expr = expr
+
 expr      ::= expr + term
            |  expr - term
            |  term
@@ -42,6 +46,7 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
+S  ::= E | E = E
 E  ::= T E'
 E' ::= + T E' | - T E' | e
 T  ::= F T'
@@ -50,3 +55,12 @@ F  ::= U P
 U  ::= + | - | e
 P  ::= (E) | SYMBOL | NUM
 ```
+
+# Interpreter
+
+> TODO
+
+Basic interpreter evaluating a single `AST` at time for now.
+
+Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
+ `x=1`, but not `x+1=2`

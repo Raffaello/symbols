@@ -112,6 +112,18 @@ INSTANTIATE_TEST_SUITE_P(
                                      {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
                                      {.type = eTOKENS::SYMBOL, .value = "a"},
                                  }),
+        std::make_tuple("=", 1, std::vector<Token>{
+                                    {.type = eTOKENS::EQUAL, .value = "="},
+                                }),
+        std::make_tuple("9=", 2, std::vector<Token>{
+                                     {.type = eTOKENS::NUM, .value = "9"},
+                                     {.type = eTOKENS::EQUAL, .value = "="},
+                                 }),
+        std::make_tuple("x=1", 3, std::vector<Token>{
+                                      {.type = eTOKENS::SYMBOL, .value = "x"},
+                                      {.type = eTOKENS::EQUAL, .value = "="},
+                                      {.type = eTOKENS::NUM, .value = "1"},
+                                  }),
         std::make_tuple(")1(a", 4, std::vector<Token>{
                                        {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
                                        {.type = eTOKENS::NUM, .value = "1"},
@@ -186,7 +198,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_tuple("1.1.1"),
         std::make_tuple("._1"),
-        std::make_tuple("="),    // TODO: Not Supported Yet
         std::make_tuple("!")));
 
 int main(int argc, char** argv)

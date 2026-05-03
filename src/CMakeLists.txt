@@ -16,6 +16,14 @@ target_sources(parser PRIVATE
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(parser PUBLIC lex_scanner)
 
+add_library(interpreter)
+add_dependencies(interpreter parser)
+target_sources(interpreter PRIVATE
+    Interpreter.cpp
+  )
+target_include_directories(interpreter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
+target_link_libraries(interpreter PUBLIC parser)
+
 add_executable(symbols main.cpp)
 target_compile_definitions(symbols PUBLIC
 )
@@ -31,5 +39,5 @@ target_include_directories(symbols PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 target_link_libraries(symbols PRIVATE
-    parser
+    interpreter
 )

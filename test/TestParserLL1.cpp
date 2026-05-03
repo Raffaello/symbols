@@ -44,7 +44,16 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("+a"),
         std::make_tuple("-a"),
         std::make_tuple("-(+(-(+(-1))))"),
-        std::make_tuple("-(+(-(+(-a))))")));
+        std::make_tuple("-(+(-(+(-a))))"),
+        std::make_tuple("x=1"),
+        std::make_tuple("x=1+1"),
+        std::make_tuple("x=1+a"),
+        std::make_tuple("1=a"),
+        std::make_tuple("x=(1 * 10)   / 2. -+ 4.1"),
+        std::make_tuple("a+b = x+1"),    // accepting equation, the interpreter will trigger an error though
+        std::make_tuple("x = -(+(-(+(-a)))) * b")
+
+            ));
 
 class TestParserLL1Error : public ::testing::TestWithParam<std::string_view>
 {
@@ -74,10 +83,16 @@ INSTANTIATE_TEST_SUITE_P(
         "(x/",
         "--1",
         "+-1",
+        "-+1",
         "++1",
         "+-a",
         "++a",
-        "--a"));
+        "--a",
+        "=1",
+        "x==1",
+        // "1=a",
+        // "a+b = x+1",
+        "x="));
 
 int main(int argc, char** argv)
 {

@@ -29,6 +29,44 @@ bool ParserLL1::expect_(const eTOKENS type)
     return m_token.type == type;
 }
 
+std::unique_ptr<INode> ParserLL1::stmt_()
+{
+    auto l = expr_();
+    if (l == nullptr)
+        return nullptr;
+
+    if (m_token.type == eTOKENS::EQUAL)
+    {
+        Token t = m_token;
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: missing expression after {}\n", t.value);
+            return nullptr;
+        }
+
+        auto r = expr_();
+        if (r == nullptr)
+            return nullptr;
+
+        auto n   = std::make_unique<NodeBin>();
+        n->token = t;
+        n->l     = std::move(l);
+        n->r     = std::move(r);
+
+        return n;
+    }
+
+
+    // TOOD: replace with END token
+    if (!m_end)
+    {
+        std::cerr << std::format("\nERROR: unable to parse\n");
+        return nullptr;
+    }
+
+    return l;
+}
+
 std::unique_ptr<INode> ParserLL1::expr_()
 {
     auto left = term_();
@@ -206,15 +244,15 @@ bool ParserLL1::parse()
     if (!advance_())
         return false;
 
-    auto root = expr_();
+    auto root = stmt_();
     if (root == nullptr)
         return false;
 
     if (m_token.type == eTOKENS::ERROR)
-        std::runtime_error("debug");
+        throw std::runtime_error("debug");
 
     if (!m_end)
-        std::runtime_error("debug2");
+        throw std::runtime_error("debug2");
 
     m_ast.setRoot(root);
     return true;

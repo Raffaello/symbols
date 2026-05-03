@@ -64,6 +64,8 @@ void LexScanner::stateStart_(const char c)
         m_state = eState::INT;
     else if (c == '_' || isAlpha_(c))
         m_state = eState::SYMBOL;
+    else if (c == '=')
+        m_state = eState::EQUAL;
     else if (c == '(')
         m_state = eState::PARENTHESES_LEFT;
     else if (c == ')')
@@ -196,6 +198,9 @@ bool LexScanner::next()
         case PARENTHESES_RIGHT:
             unget_(c);
             return stateFinal_(eTOKENS::RIGHT_PARENTHESES);
+        case EQUAL:
+            unget_(c);
+            return stateFinal_(eTOKENS::EQUAL);
         case INT:
             if (!stateInt_(c))
                 return stateFinal_(eTOKENS::NUM);

@@ -70,3 +70,10 @@ macro_test(
     FIXTURES 
     LINKS_PRIVATE "parser"
 )
+
+macro_test(
+    EXE TestInterpreter
+    FILES "TestInterpreter.cpp"
+    FIXTURES 
+    LINKS_PRIVATE "interpreter"
+)

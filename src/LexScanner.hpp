@@ -14,17 +14,6 @@
 class LexScanner
 {
 private:
-    // enum class eAlphabet
-    // {
-    //     LETTERS,
-    //     NUMBERS,
-    //     DOT,
-    //     OPERATORS,
-    //     PARENTHESES, // symbols?
-    //     WHITE_SPACE,
-    //     SYMBOLS,
-    // };
-
     enum class eState
     {
         START = 0,
@@ -34,6 +23,7 @@ private:
         MUL_OP_DIV,
         PARENTHESES_LEFT,
         PARENTHESES_RIGHT,
+        EQUAL,
         INT,
         PRE_REAL,
         REAL,
