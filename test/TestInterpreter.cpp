@@ -11,8 +11,8 @@ public:
 
 TEST_P(TestInterpreter, parser)
 {
-    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
-    ParserLL1  parser(scanner);
+    // LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
+    // ParserLL1  parser(scanner);
 
     // TODO
     FAIL();
@@ -32,8 +32,8 @@ public:
 
 TEST_P(TestInterpreterError, parser_error)
 {
-    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
-    ParserLL1  parser(scanner);
+    // LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
+    // ParserLL1  parser(scanner);
 
     // TODO
     FAIL();

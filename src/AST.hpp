@@ -48,6 +48,8 @@ public:
 
     void setRoot(std::unique_ptr<INode>& root);
 
+    inline const INode* getRoot() const noexcept;
+
     /**
      * TODO: remove / use for debug only
      */
@@ -55,3 +57,8 @@ public:
 
     // TODO: still missing how to navigate the AST...
 };
+
+inline const INode* AST::getRoot() const noexcept
+{
+    return m_pRoot.get();
+}
