@@ -50,20 +50,6 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
         auto node   = std::make_unique<NodeBin>();
         node->token = m_token;
 
-        // TODO: constrain in the parser to do not accept equations
-        // if (m_token.type == eTOKENS::EQUAL)
-        // {
-        //     if (auto sym = dynamic_cast<const LeafSymbol*>(left.get()))
-        //     {
-        //     }
-        //     else
-        //     {
-        //         // ERROR
-        //         std::cerr << std::format("ERROR: equation not supported yet, only assigmnt");
-        //         return nullptr;
-        //     }
-        // }
-
         if (!advance_())
         {
             std::cerr << std::format("ERROR: Expected a factor after operator {}\n", node->token.value);
