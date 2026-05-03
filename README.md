@@ -60,3 +60,5 @@ P  ::= (E) | SYMBOL | NUM
 # Interpreter
 
 > TODO
+
+Basic interpreter evaluating a single `AST` at time for now.
