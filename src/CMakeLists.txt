@@ -8,11 +8,13 @@ target_sources(lex_scanner PRIVATE
 target_include_directories(lex_scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_library(parser)
+add_dependencies(parser lex_scanner)
 target_sources(parser PRIVATE
-    Parser.cpp
+    ParserLL1.cpp
     AST.cpp
   )
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
+target_link_libraries(parser PUBLIC lex_scanner)
 
 add_executable(symbols main.cpp)
 target_compile_definitions(symbols PUBLIC
@@ -29,6 +31,5 @@ target_include_directories(symbols PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 target_link_libraries(symbols PRIVATE
-    lex_scanner
     parser
 )

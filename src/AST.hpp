@@ -5,30 +5,47 @@
 #include <memory>
 #include <list>
 
+struct INode
+{
+    virtual ~INode() = default;
+};
+
+struct LeafNum : public INode
+{
+    double value;
+};
+
+struct LeafSymbol : public INode
+{
+    std::string value;
+};
+
+struct NodeBin : public INode
+{
+    Token token;
+
+    std::unique_ptr<INode> l = nullptr;
+    std::unique_ptr<INode> r = nullptr;
+};
+
 class AST
 {
-public:
-    struct Node
-    {
-        Token token;
-
-        std::unique_ptr<Node> l = nullptr;
-        std::unique_ptr<Node> r = nullptr;
-
-        Node() = default;
-        Node(const Token& token);
-    };
-
 private:
-    std::unique_ptr<Node> m_pRoot    = nullptr;
-    Node*                 m_pCurrent = nullptr;
+    std::unique_ptr<INode> m_pRoot    = nullptr;
+    INode*                 m_pCurrent = nullptr;
+
+    void print_(const INode* node, const int indent);
 
 public:
-    AST();
-    ~AST();
+    AST()  = default;
+    ~AST() = default;
 
-    void add_left(const Token& token);
-    void add_right(const Token& token);
-    void move_left();
-    void move_right();
+    void setRoot(std::unique_ptr<INode>& root);
+
+    /**
+     * TODO: remove / use for debug only
+     */
+    void print();
+
+    // TODO: still missing how to navigate the AST...
 };
