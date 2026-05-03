@@ -24,46 +24,14 @@ bool ParserLL1::advance_()
     return true;
 }
 
-std::unique_ptr<INode> ParserLL1::stmt_()
-{
-    auto expr = expr_();
-    if (auto sym = dynamic_cast<const LeafSymbol*>(expr.get()))
-    {
-        // then could be an assignment
-        if (m_token.type == eTOKENS::EQUAL)
-        {
-            Token t = m_token;
-            if (!advance_())
-            {
-                std::cerr << std::format("Expected an expression after {}\n", t.value);
-                return nullptr;
-            }
-
-            auto expr2 = expr_();
-            if (expr2 == nullptr)
-                return nullptr;
-
-            auto n   = std::make_unique<NodeBin>();
-            n->token = t;
-            n->l     = std::move(expr);
-            n->r     = std::move(expr2);
-
-            return n;
-        }
-    }
-
-    if (!m_end)
-    {
-        std::cerr << std::format("ERROR: invalid statement\n");
-        return nullptr;
-    }
-
-    return expr;
-}
-
 bool ParserLL1::expect_(const eTOKENS type)
 {
     return m_token.type == type;
+}
+
+std::unique_ptr<INode> ParserLL1::stmt_()
+{
+    return expr_();
 }
 
 std::unique_ptr<INode> ParserLL1::expr_()
@@ -77,10 +45,24 @@ std::unique_ptr<INode> ParserLL1::expr_()
 
 std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 {
-    if (m_token.type == eTOKENS::SUM_OP /*|| m_token.type == eTOKENS::EQUAL*/)
+    if (m_token.type == eTOKENS::SUM_OP || m_token.type == eTOKENS::EQUAL)
     {
         auto node   = std::make_unique<NodeBin>();
         node->token = m_token;
+
+        // TODO: constrain in the parser to do not accept equations
+        // if (m_token.type == eTOKENS::EQUAL)
+        // {
+        //     if (auto sym = dynamic_cast<const LeafSymbol*>(left.get()))
+        //     {
+        //     }
+        //     else
+        //     {
+        //         // ERROR
+        //         std::cerr << std::format("ERROR: equation not supported yet, only assigmnt");
+        //         return nullptr;
+        //     }
+        // }
 
         if (!advance_())
         {

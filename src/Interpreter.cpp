@@ -55,7 +55,7 @@ bool Interpreter::eval_(const INode* node)
                 return true;
             }
 
-            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol");
+            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, eqation not supported yet");
             return false;
         }
 

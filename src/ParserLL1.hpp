@@ -8,12 +8,15 @@
 #include <stack>
 
 /**
+ * @TODO: equation not supported yet, so post-poned,
+ *        after when the equation is implementented can be reduced to an assignment from the interpreter
+ *        [= T E']
+ *
  * Recursive Descent LL1 Parsers
  *
  * Grammar:
- * S  ::= SYMBOL = E | E
- * E  ::= T E'
- * E' ::= + T E' | - T E' | e      //| = T E'  (equation not supported yet, need a different operator from assigment, so post poned, after when the equation is implementented can be reduced to an assignment from the interpreter)
+ * S  ::= E
+ * E' ::= + T E' | - T E' | = T E' | e
  * T  ::= F T'
  * T' ::= * F T' | / F T' | e
  * F  ::= U P

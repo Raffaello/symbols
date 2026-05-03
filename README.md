@@ -22,9 +22,9 @@ The Grammar for the arithmetical expression is the following, it doesn't allow +
 EBNF:
 
 ```ebnf
-stmt      ::= assigment | expr
+stmt      ::= expr | equation
 
-assigment ::= symbol = expr
+equation ::= expr = expr
 
 expr      ::= expr + term
            |  expr - term
@@ -47,9 +47,9 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S  ::= | SYMBOL = E | E
+S  ::= E
 E  ::= T E'
-E' ::= + T E' | - T E' | e
+E' ::= + T E' | - T E' | = T E | e
 T  ::= F T'
 T' ::= * F T' | / F T' | e
 F  ::= U P
