@@ -4,7 +4,7 @@
 #include <iostream>
 #include <format>
 
-bool Interpreter::eval_(const INode* node)
+std::optional<bool> Interpreter::evalNum_(const INode* node)
 {
     if (auto num = dynamic_cast<const LeafNum*>(node))
     {
@@ -12,6 +12,11 @@ bool Interpreter::eval_(const INode* node)
         return true;
     }
 
+    return std::nullopt;
+}
+
+std::optional<bool> Interpreter::evalSym_(const INode* node)
+{
     if (auto sym = dynamic_cast<const LeafSymbol*>(node))
     {
         if (m_symbolTable.contains(sym->value))
@@ -26,6 +31,11 @@ bool Interpreter::eval_(const INode* node)
         }
     }
 
+    return std::nullopt;
+}
+
+std::optional<bool> Interpreter::evalUni_(const INode* node)
+{
     if (auto uni = dynamic_cast<const NodeUnary*>(node))
     {
         assert(uni->token.type == eTOKENS::SUM_OP);
@@ -39,6 +49,11 @@ bool Interpreter::eval_(const INode* node)
         return true;
     }
 
+    return std::nullopt;
+}
+
+std::optional<bool> Interpreter::evalBin_(const INode* node)
+{
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
         if (!eval_(bin->r.get()))
@@ -46,7 +61,7 @@ bool Interpreter::eval_(const INode* node)
 
         const double r = m_lastValue;
 
-        // specific for the assignemnt:
+        // TODO: specific for the assignemnt:
         if (bin->token.type == eTOKENS::EQUAL)
         {
             if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
@@ -101,6 +116,27 @@ bool Interpreter::eval_(const INode* node)
             return false;
         }
     }
+
+    return std::nullopt;
+}
+
+bool Interpreter::eval_(const INode* node)
+{
+    auto res = evalNum_(node);
+    if (res.has_value())
+        return *res;
+
+    res = evalSym_(node);
+    if (res.has_value())
+        return *res;
+
+    res = evalUni_(node);
+    if (res.has_value())
+        return *res;
+
+    res = evalBin_(node);
+    if (res.has_value())
+        return *res;
 
     std::cerr << std::format("ERROR: don't know how to interpret the input.\n");
     return false;

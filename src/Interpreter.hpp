@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <string>
 #include <limits>
+#include <optional>
 
 class Interpreter
 {
@@ -13,6 +14,11 @@ private:
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
     double m_lastValue = std::numeric_limits<double>::quiet_NaN();
+
+    std::optional<bool> evalNum_(const INode* node);
+    std::optional<bool> evalSym_(const INode* node);
+    std::optional<bool> evalUni_(const INode* node);
+    std::optional<bool> evalBin_(const INode* node);
 
     bool eval_(const INode* node);
 
