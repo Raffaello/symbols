@@ -243,7 +243,6 @@ bool ParserLL1::parse()
     if (!advance_())
         return false;
 
-    // auto root = expr_();
     auto root = stmt_();
     if (root == nullptr)
         return false;

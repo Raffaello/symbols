@@ -19,7 +19,10 @@ TEST_P(TestInterpreter, parser)
 
     ASSERT_TRUE(parser.parse());
     ASSERT_TRUE(interpreter.eval(parser.ast()));
-    ASSERT_EQ(interpreter.lastValue(), expVal);
+
+    // TODO: it should have the exact value, so it is needed to use the GNU MP
+    ASSERT_NEAR(interpreter.lastValue(), expVal, 1e-6);
+    // ASSERT_EQ(interpreter.lastValue(), expVal);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -34,7 +37,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("+1", 1.0),
         std::make_tuple("-(+(-(+(-1))))", -1.0),
         std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0),
-        std::make_tuple("x=1", 1.0)));
+        std::make_tuple("x=1", 1.0),
+        std::make_tuple("x=1 * 10  / 2. - 4.1", 0.9)));
 
 class TestInterpreterError : public ::testing::TestWithParam<std::string_view>
 {

@@ -87,7 +87,8 @@ INSTANTIATE_TEST_SUITE_P(
         "=1",
         "x==1",
         "1=a",
-        "a+b = x+1"));
+        "a+b = x+1",
+        "x="));
 
 int main(int argc, char** argv)
 {
