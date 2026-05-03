@@ -103,6 +103,40 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
 
 std::unique_ptr<INode> ParserLL1::factor_()
 {
+    auto u = unary_();
+    auto p = pred_();
+    if (p == nullptr)
+        return nullptr;
+
+    if (u == nullptr)
+        return p;
+
+    dynamic_cast<NodeUnary*>(u.get())->n = std::move(p);
+    return u;
+}
+
+std::unique_ptr<INode> ParserLL1::unary_()
+{
+    if (m_token.type == eTOKENS::SUM_OP)
+    {
+        Token t = m_token;
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: after: '{}'\n", t.value);
+            return nullptr;
+        }
+
+        auto n   = std::make_unique<NodeUnary>();
+        n->token = t;
+        n->n     = nullptr;
+        return n;
+    }
+    else
+        return nullptr;
+}
+
+std::unique_ptr<INode> ParserLL1::pred_()
+{
     switch (m_token.type)
     {
         using enum eTOKENS;

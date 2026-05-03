@@ -20,6 +20,12 @@ struct LeafSymbol : public INode
     std::string value;
 };
 
+struct NodeUnary : public INode
+{
+    Token                  token;
+    std::unique_ptr<INode> n = nullptr;
+};
+
 struct NodeBin : public INode
 {
     Token token;

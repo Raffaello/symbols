@@ -38,12 +38,18 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("(a-b + c - 1)"),
         std::make_tuple("(a-b) + (c - 1)"),
         std::make_tuple("(a*b) + (c / 1)"),
-        std::make_tuple("(a*b  +  c / 1)")));
+        std::make_tuple("(a*b  +  c / 1)"),
+        std::make_tuple("-1"),
+        std::make_tuple("+1"),
+        std::make_tuple("+a"),
+        std::make_tuple("-a"),
+        std::make_tuple("-(+(-(+(-1))))"),
+        std::make_tuple("-(+(-(+(-a))))")));
 
-class TestParserLL1Error : public ::testing::TestWithParam<std::tuple<std::string_view>>
+class TestParserLL1Error : public ::testing::TestWithParam<std::string_view>
 {
 public:
-    const std::string_view line = std::get<0>(GetParam());
+    const std::string_view line = GetParam();
 };
 
 TEST_P(TestParserLL1Error, parser_error)
@@ -58,14 +64,20 @@ INSTANTIATE_TEST_SUITE_P(
     ParserLL1TestSuite,
     TestParserLL1Error,
     ::testing::Values(
-        std::make_tuple("("),
-        std::make_tuple("(1"),
-        std::make_tuple("(x"),
-        std::make_tuple("(x"),
-        std::make_tuple("(x+"),
-        std::make_tuple("(2-"),
-        std::make_tuple("(2*"),
-        std::make_tuple("(x/")));
+        "(",
+        "(1",
+        "(x",
+        "(x",
+        "(x+",
+        "(2-",
+        "(2*",
+        "(x/",
+        "--1",
+        "+-1",
+        "++1",
+        "+-a",
+        "++a",
+        "--a"));
 
 int main(int argc, char** argv)
 {
