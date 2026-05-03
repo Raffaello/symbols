@@ -50,10 +50,10 @@ TEST_P(TestInterpreterError, parser_error)
 {
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
-    Interpreter Interpreter;
+    Interpreter interpreter;
 
     ASSERT_TRUE(parser.parse());
-    ASSERT_FALSE(Interpreter.eval(parser.ast()));
+    ASSERT_FALSE(interpreter.eval(parser.ast()));
 }
 
 INSTANTIATE_TEST_SUITE_P(

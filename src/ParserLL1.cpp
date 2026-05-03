@@ -248,10 +248,10 @@ bool ParserLL1::parse()
         return false;
 
     if (m_token.type == eTOKENS::ERROR)
-        std::runtime_error("debug");
+        throw std::runtime_error("debug");
 
     if (!m_end)
-        std::runtime_error("debug2");
+        throw std::runtime_error("debug2");
 
     m_ast.setRoot(root);
     return true;

@@ -23,7 +23,7 @@ public:
 
     inline double lastValue() const noexcept;
 
-    inline const std::unordered_map<std::string, double> symbolTable() const noexcept;
+    inline const std::unordered_map<std::string, double>& symbolTable() const noexcept;
 };
 
 inline double Interpreter::lastValue() const noexcept
@@ -31,7 +31,7 @@ inline double Interpreter::lastValue() const noexcept
     return m_lastValue;
 }
 
-inline const std::unordered_map<std::string, double> Interpreter::symbolTable() const noexcept
+inline const std::unordered_map<std::string, double>& Interpreter::symbolTable() const noexcept
 {
     return m_symbolTable;
 }

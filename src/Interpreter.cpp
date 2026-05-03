@@ -55,7 +55,7 @@ bool Interpreter::eval_(const INode* node)
                 return true;
             }
 
-            std::cerr << std::format("ERROR: Wrong assignment, LHR not a symbol");
+            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol");
             return false;
         }
 
@@ -89,6 +89,9 @@ bool Interpreter::eval_(const INode* node)
             }
             else if (bin->token.value == "/")
             {
+                if (r == 0.0)
+                    std::cout << std::format("WARN: division by zero detected\n");
+
                 m_lastValue = l / r;
                 return true;
             }
