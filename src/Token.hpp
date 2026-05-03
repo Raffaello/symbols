@@ -10,6 +10,7 @@ enum class eTOKENS
     MUL_OP,       // *|/
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
+    EQUAL,
     SYMBOL,
     // END, // TODO: this would be better if returned by the lexer as last token after finished tokenizing.
 };

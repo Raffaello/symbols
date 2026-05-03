@@ -11,8 +11,9 @@
  * Recursive Descent LL1 Parsers
  *
  * Grammar:
+ * S  ::= SYMBOL = E | E
  * E  ::= T E'
- * E' ::= + T E' | - T E' | e
+ * E' ::= + T E' | - T E' | e      //| = T E'  (equation not supported yet, need a different operator from assigment, so post poned, after when the equation is implementented can be reduced to an assignment from the interpreter)
  * T  ::= F T'
  * T' ::= * F T' | / F T' | e
  * F  ::= U P
@@ -30,6 +31,7 @@ private:
     bool advance_();
     bool expect_(const eTOKENS type);
 
+    std::unique_ptr<INode> stmt_();
     std::unique_ptr<INode> expr_();
     std::unique_ptr<INode> exprPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> term_();

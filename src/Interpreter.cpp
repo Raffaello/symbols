@@ -21,9 +21,6 @@ bool Interpreter::eval_(const INode* node)
         }
         else
         {
-            // TODO: i forgot the assigment operator '=' to implement :')
-            //       so for now is an error
-            // m_symbolTable[sym->value] =
             std::cerr << std::format("ERROR: Symbol {} not found!\n", sym->value);
             return false;
         }
@@ -44,15 +41,29 @@ bool Interpreter::eval_(const INode* node)
 
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
-        if (!eval_(bin->l.get()))
-            return false;
-
-        const double l = m_lastValue;
-
         if (!eval_(bin->r.get()))
             return false;
 
         const double r = m_lastValue;
+
+        // specific for the assignemnt:
+        if (bin->token.type == eTOKENS::EQUAL)
+        {
+            if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
+            {
+                m_symbolTable[sym->value] = r;
+                return true;
+            }
+
+            std::cerr << std::format("ERROR: Wrong assignment, LHR not a symbol");
+            return false;
+        }
+
+        if (!eval_(bin->l.get()))
+            return false;
+
+        const double l = m_lastValue;
+        m_lastValue    = r;
 
         switch (bin->token.type)
         {

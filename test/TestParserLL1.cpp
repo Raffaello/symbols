@@ -44,7 +44,13 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("+a"),
         std::make_tuple("-a"),
         std::make_tuple("-(+(-(+(-1))))"),
-        std::make_tuple("-(+(-(+(-a))))")));
+        std::make_tuple("-(+(-(+(-a))))"),
+        std::make_tuple("x=1"),
+        std::make_tuple("x=1+1"),
+        std::make_tuple("x=1+a"),
+        std::make_tuple("x = -(+(-(+(-a)))) * b")
+
+            ));
 
 class TestParserLL1Error : public ::testing::TestWithParam<std::string_view>
 {
@@ -77,7 +83,11 @@ INSTANTIATE_TEST_SUITE_P(
         "++1",
         "+-a",
         "++a",
-        "--a"));
+        "--a",
+        "=1",
+        "x==1",
+        "1=a",
+        "a+b = x+1"));
 
 int main(int argc, char** argv)
 {

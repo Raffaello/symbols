@@ -22,12 +22,17 @@ The Grammar for the arithmetical expression is the following, it doesn't allow +
 EBNF:
 
 ```ebnf
+stmt      ::= assigment | expr
+
+assigment ::= symbol = expr
+
 expr      ::= expr + term
            |  expr - term
            |  term
 
 term      ::= term * factor
            |  term / factor
+           <!-- |  term = factor -->
            |  factor
 
 factor    ::= unary predicate
@@ -43,7 +48,7 @@ LL(1) compatible grammar:
 
 ```ebnf
 E  ::= T E'
-E' ::= + T E' | - T E' | e
+E' ::= + T E' | - T E' | = T E'| e
 T  ::= F T'
 T' ::= * F T' | / F T' | e
 F  ::= U P

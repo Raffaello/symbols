@@ -33,7 +33,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("-1", -1.0),
         std::make_tuple("+1", 1.0),
         std::make_tuple("-(+(-(+(-1))))", -1.0),
-        std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0)));
+        std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0),
+        std::make_tuple("x=1", 1.0)));
 
 class TestInterpreterError : public ::testing::TestWithParam<std::string_view>
 {
