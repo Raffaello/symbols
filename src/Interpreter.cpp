@@ -3,12 +3,14 @@
 #include <cassert>
 #include <iostream>
 #include <format>
+#include <algorithm>
 
 std::optional<bool> Interpreter::evalNum_(const INode* node)
 {
     if (auto num = dynamic_cast<const LeafNum*>(node))
     {
         m_lastValue = num->value;
+        m_lastExpr  = std::to_string(num->value);
         return true;
     }
 
@@ -22,11 +24,14 @@ std::optional<bool> Interpreter::evalSym_(const INode* node)
         if (m_symbolTable.contains(sym->value))
         {
             m_lastValue = m_symbolTable[sym->value];
+            m_lastExpr  = std::format("{} = {}", sym->value, std::to_string(m_symbolTable[sym->value]));
             return true;
         }
         else
         {
             std::cerr << std::format("ERROR: Symbol {} not found!\n", sym->value);
+            m_lastValue = std::numeric_limits<double>::quiet_NaN();
+            m_lastExpr  = "";
             return false;
         }
     }
@@ -41,10 +46,17 @@ std::optional<bool> Interpreter::evalUni_(const INode* node)
         assert(uni->token.type == eTOKENS::SUM_OP);
 
         if (!eval_(uni->n.get()))
+        {
+            m_lastValue = std::numeric_limits<double>::quiet_NaN();
+            m_lastExpr  = "";
             return false;
+        }
 
         if (uni->token.value == "-")
+        {
             m_lastValue = -m_lastValue;
+            m_lastExpr  = std::format("-({})", m_lastExpr);
+        }
 
         return true;
     }
@@ -57,7 +69,11 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
         if (!eval_(bin->r.get()))
+        {
+            m_lastValue = std::numeric_limits<double>::quiet_NaN();
+            m_lastExpr  = "";
             return false;
+        }
 
         const double r = m_lastValue;
 
@@ -68,6 +84,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
             {
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
+                m_lastExpr                = std::format("{} = {}", sym->value, std::to_string(m_symbolTable[sym->value]));
                 return true;
             }
 
@@ -76,46 +93,42 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
         }
 
         if (!eval_(bin->l.get()))
+        {
+            m_lastValue = std::numeric_limits<double>::quiet_NaN();
+            m_lastExpr  = "";
             return false;
-
+        }
         const double l = m_lastValue;
-        m_lastValue    = r;
-
         switch (bin->token.type)
         {
             using enum eTOKENS;
 
         case SUM_OP:
             if (bin->token.value == "+")
-            {
                 m_lastValue = l + r;
-                return true;
-            }
             else if (bin->token.value == "-")
-            {
                 m_lastValue = l - r;
-                return true;
-            }
             break;
         case MUL_OP:
             if (bin->token.value == "*")
-            {
                 m_lastValue = l * r;
-                return true;
-            }
             else if (bin->token.value == "/")
             {
                 if (r == 0.0)
                     std::cout << std::format("WARN: division by zero detected\n");
 
                 m_lastValue = l / r;
-                return true;
             }
             break;
         default:
             std::cerr << std::format("ERROR: not supported operator '{}'\n", bin->token.value);
+            m_lastValue = std::numeric_limits<double>::quiet_NaN();
+            m_lastExpr  = "";
             return false;
         }
+
+        m_lastExpr = std::format("{} {} {} = {}", l, bin->token.value, r, m_lastValue);
+        return true;
     }
 
     return std::nullopt;

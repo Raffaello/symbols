@@ -95,7 +95,11 @@ void LexScanner::stateStart_(const char c)
     else if (isSpace_(c))
         return;
     else
-        m_state = eState::ERROR;
+    {
+        m_state           = eState::ERROR;
+        m_lastToken.type  = eTOKENS::ERROR;
+        m_lastToken.value = std::format("unknown char '{}' in '{}' at pos: {}'", c, m_curTokenValue.str(), m_pos);
+    }
 
     m_curTokenValue << c;
 }
@@ -191,9 +195,7 @@ bool LexScanner::next()
             [[fallthrough]];
         case ERROR:
         {
-            m_lastToken.type  = eTOKENS::ERROR;
-            m_lastToken.value = std::format("unknown char {} in {}", c, m_curTokenValue.str());
-            std::cerr << m_lastToken.value;
+            std::cerr << std::format("ERROR: {}\n", m_lastToken.value);
             return false;
         }
         case START:
