@@ -32,7 +32,7 @@ target_compile_options(symbols PRIVATE
 )
 
 target_sources(symbols PRIVATE
-
+    REPL.cpp
 )
 
 target_include_directories(symbols PRIVATE
