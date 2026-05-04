@@ -3,14 +3,13 @@
 #include <cassert>
 #include <iostream>
 #include <format>
-#include <algorithm>
 
 std::optional<bool> Interpreter::evalNum_(const INode* node)
 {
     if (auto num = dynamic_cast<const LeafNum*>(node))
     {
         m_lastValue = num->value;
-        m_lastExpr  = std::to_string(num->value);
+        m_lastExpr  = std::format("{}", num->value);
         return true;
     }
 
@@ -24,7 +23,7 @@ std::optional<bool> Interpreter::evalSym_(const INode* node)
         if (m_symbolTable.contains(sym->value))
         {
             m_lastValue = m_symbolTable[sym->value];
-            m_lastExpr  = std::format("{} = {}", sym->value, std::to_string(m_symbolTable[sym->value]));
+            m_lastExpr  = std::format("{} = {}", sym->value, m_symbolTable[sym->value]);
             return true;
         }
         else
@@ -84,7 +83,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
             {
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
-                m_lastExpr                = std::format("{} = {}", sym->value, std::to_string(m_symbolTable[sym->value]));
+                m_lastExpr                = std::format("{} = {}", sym->value, m_symbolTable[sym->value]);
                 return true;
             }
 
