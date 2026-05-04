@@ -154,3 +154,15 @@ bool Interpreter::eval(const AST& ast)
 
     return eval_(n);
 }
+
+bool Interpreter::unsetSymbol(const std::string_view symbol) noexcept
+{
+    if (m_symbolTable.contains(symbol.data()))
+    {
+        m_symbolTable.erase(symbol.data());
+        return true;
+    }
+
+    std::cerr << std::format("ERROR: Symbol {} not found!\n", symbol);
+    return false;
+}

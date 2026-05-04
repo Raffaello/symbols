@@ -6,6 +6,7 @@
 #include <string>
 #include <limits>
 #include <optional>
+#include <string_view>
 
 class Interpreter
 {
@@ -26,9 +27,10 @@ public:
     Interpreter() = default;
 
     bool eval(const AST& ast);
+    bool unsetSymbol(const std::string_view symbol) noexcept;
 
-    inline double lastValue() const noexcept;
-
+    inline void                                           clearSymbols() noexcept;
+    inline double                                         lastValue() const noexcept;
     inline const std::unordered_map<std::string, double>& symbolTable() const noexcept;
 };
 
@@ -40,4 +42,9 @@ inline double Interpreter::lastValue() const noexcept
 inline const std::unordered_map<std::string, double>& Interpreter::symbolTable() const noexcept
 {
     return m_symbolTable;
+}
+
+inline void Interpreter::clearSymbols() noexcept
+{
+    m_symbolTable.clear();
 }

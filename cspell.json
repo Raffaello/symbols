@@ -5,6 +5,7 @@
     "dictionaries": [],
     "words": [
         "ARGN",
+        "EBNF",
         "endforeach",
         "endmacro",
         "gmock",

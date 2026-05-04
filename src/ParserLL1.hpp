@@ -40,8 +40,8 @@ private:
     std::unique_ptr<INode> pred_();
 
 public:
-    // bool parse(const std::list<Token>& tokens);
     ParserLL1(LexScanner& lex_scanner);
+
     bool parse();
 
     inline AST& ast() noexcept;
