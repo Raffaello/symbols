@@ -22,13 +22,13 @@ TEST_P(TestInterpreter, eval)
     parser.ast().print();
     ASSERT_TRUE(interpreter.eval(parser.ast()));
 
-    // TODO: it should have the exact value, so it is needed to use the GNU MP
+    // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
     ASSERT_NEAR(interpreter.lastValue(), expVal, 1e-6);
     // ASSERT_EQ(interpreter.lastValue(), expVal);
 
     if (!sym.empty())
     {
-        // TODO: it should have the exact value, so it is needed to use the GNU MP
+        // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
         ASSERT_NEAR(interpreter.symbolTable().at(sym), expVal, 1e-6);
         // ASSERT_EQ(interpreter.symbolTable().at(sym), expVal);
     }
@@ -69,10 +69,10 @@ INSTANTIATE_TEST_SUITE_P(
     InterpreterTestSuite,
     TestInterpreterError,
     ::testing::Values(
-        "1+x",
+        "1+x",         // TODO: x is not defined (x=1; 1+x) that could be 1 line valid eventually, but not sure if it works as a multiline parser at the moment.
         "1+x = 1+2"    // TODO: equation not supported yet
 
-        ));            // TODO: x is not defined (x=1; 1+x) that could be 1 line valid eventually, but not sure if it works as a multiline parser at the moment.
+        ));
 
 int main(int argc, char** argv)
 {

@@ -61,7 +61,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
 
         const double r = m_lastValue;
 
-        // TODO: specific for the assignemnt:
+        // TODO: specific for the assignment:
         if (bin->token.type == eTOKENS::EQUAL)
         {
             if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
@@ -71,7 +71,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
                 return true;
             }
 
-            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, eqation not supported yet");
+            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, equation not supported yet");
             return false;
         }
 

@@ -5,8 +5,22 @@
 #include <string>
 #include <sstream>
 
-LexScanner::LexScanner(std::unique_ptr<std::istream> pInput) : m_pInput(std::move(pInput))
+LexScanner::LexScanner(std::unique_ptr<std::istream> pInput)
 {
+    setInput(std::move(pInput));
+}
+
+void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
+{
+    m_pInput       = std::move(pInput);
+    m_eof          = false;
+    m_hasLookahead = false;
+    m_lookahead    = 0;
+    m_state        = eState::START;
+    m_lastToken    = Token();
+    m_curTokenValue.clear();
+    m_curTokenValue.str("");
+    m_pos = 0;
 }
 
 char LexScanner::peek_()
@@ -153,6 +167,9 @@ bool LexScanner::stateFinal_(const eTOKENS type)
 
 bool LexScanner::next()
 {
+    if (m_pInput == nullptr)
+        return false;
+
     if (m_eof)
         return false;
 
