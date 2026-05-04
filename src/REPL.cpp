@@ -95,14 +95,17 @@ int REPL::runLoop()
 {
     banner_();
 
-    int res = 0;
-    m_quit  = false;
+    m_quit = false;
     while (!m_quit)
     {
         std::string input;
 
         std::cout << "\n$> ";
-        std::getline(std::cin, input);
+        if (!std::getline(std::cin, input))
+        {
+            std::cin.clear();
+            continue;
+        }
 
         // if (input.empty())
         //     continue;
@@ -124,5 +127,5 @@ int REPL::runLoop()
         printLastValue_();
     }
 
-    return res;
+    return 0;
 }
