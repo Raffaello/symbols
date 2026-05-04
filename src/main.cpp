@@ -22,27 +22,52 @@ bool eval(ParserLL1& parser, Interpreter& interpreter)
 
 int main()
 {
-    LexScanner  lex(std::make_unique<std::stringstream>("a = 1.2 - 1"));    // 0.2
+    {
+        LexScanner  lex(std::make_unique<std::stringstream>("a = 1.2 - 1"));    // 0.2
+        ParserLL1   parser(lex);
+        Interpreter interpreter;
+
+        if (!eval(parser, interpreter))
+            return -1;
+
+        lex.setInput(std::make_unique<std::stringstream>("b = 2 + .1"));    // 2.1
+        if (!eval(parser, interpreter))
+            return -1;
+
+        lex.setInput(std::make_unique<std::stringstream>("X1 = (10 * 1) + 5 - 5 / 1"));    // 10
+        if (!eval(parser, interpreter))
+            return -1;
+
+        lex.setInput(std::make_unique<std::stringstream>("10 + 2 - X1 * 1 / 2 + (a - b)"));    // 12 - 5 - 1.9 = 5.1
+        if (!eval(parser, interpreter))
+            return -1;
+
+        for (const auto& [k, v] : interpreter.symbolTable())
+            std::cout << std::format("--| {} = {} |\n", k, v);
+    }
+
+    // REPL test
+    LexScanner  lex(std::make_unique<std::stringstream>(""));
     ParserLL1   parser(lex);
     Interpreter interpreter;
 
-    if (!eval(parser, interpreter))
-        return -1;
+    std::cout << std::format("Symbols REPL v0.1.0\n");
+    std::cout << std::format("Press Ctrl-D to exit\n\n");
+    while (true)
+    {
+        std::string input;
 
-    lex.setInput(std::make_unique<std::stringstream>("b = 2 + .1"));    // 2.1
-    if (!eval(parser, interpreter))
-        return -1;
+        std::cout << "\n$> ";
+        std::getline(std::cin, input);
+        lex.setInput(std::make_unique<std::stringstream>(input));
+        if (!parser.parse())
+            continue;
 
-    lex.setInput(std::make_unique<std::stringstream>("X1 = (10 * 1) + 5 - 5 / 1"));    // 10
-    if (!eval(parser, interpreter))
-        return -1;
+        if (!interpreter.eval(parser.ast()))
+            continue;
 
-    lex.setInput(std::make_unique<std::stringstream>("10 + 2 - X1 * 1 / 2 + (a - b)"));    // 12 - 5 - 1.9 = 5.1
-    if (!eval(parser, interpreter))
-        return -1;
-
-    for (const auto& [k, v] : interpreter.symbolTable())
-        std::cout << std::format("--| {} = {} |\n", k, v);
+        std::cout << std::format("\n$? := {}\n", interpreter.lastValue());
+    }
 
     return 0;
 }
