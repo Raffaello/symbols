@@ -10,6 +10,10 @@
 /**
  * Alphabet: alphadigits | _ | + | - | * | / | = | ' '
  * whitespaces are just skipped, remaining in the same state
+ *
+ * TODO: add parsing '\n' and EOF as a END token (or also as NEWLINE) also the end of statement';'
+ *       Track the line number while scanning
+ *       modify the parser to deal with "end of statement"
  */
 class LexScanner
 {
@@ -38,7 +42,7 @@ private:
     std::ostringstream            m_curTokenValue;
     char                          m_lookahead    = 0;
     bool                          m_hasLookahead = false;
-    bool                          m_eof          = false;
+    bool                          m_eof          = false;    // TODO: move in as a state
 
     char peek_();
     char get_();
@@ -62,6 +66,7 @@ private:
 public:
     LexScanner(std::unique_ptr<std::istream> pInput);
 
+    void setInput(std::unique_ptr<std::istream> pInput);
     bool next();
 
     inline Token lastToken() const noexcept;
