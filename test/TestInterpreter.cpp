@@ -69,10 +69,10 @@ INSTANTIATE_TEST_SUITE_P(
     InterpreterTestSuite,
     TestInterpreterError,
     ::testing::Values(
-        "1+x",
+        "1+x",         // TODO: x is not defined (x=1; 1+x) that could be 1 line valid eventually, but not sure if it works as a multiline parser at the moment.
         "1+x = 1+2"    // TODO: equation not supported yet
 
-        ));            // TODO: x is not defined (x=1; 1+x) that could be 1 line valid eventually, but not sure if it works as a multiline parser at the moment.
+        ));
 
 int main(int argc, char** argv)
 {
