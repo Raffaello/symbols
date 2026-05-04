@@ -36,5 +36,14 @@ private:
     bool handleReplCmd(const std::string_view replCmd);
 
 public:
+    REPL()  = default;
+    ~REPL() = default;
+
+    REPL(const REPL&) = delete;
+    REPL(REPL&&)      = delete;
+
+    REPL& operator=(const REPL&) = delete;
+    REPL& operator=(REPL&&)      = delete;
+
     int runLoop();
 };
