@@ -54,7 +54,10 @@ std::optional<bool> Interpreter::evalUni_(const INode* node)
         if (uni->token.value == "-")
         {
             m_lastValue = -m_lastValue;
-            m_lastExpr  = std::format("-({})", m_lastExpr);
+            if (m_lastValue < 0.0)
+                m_lastExpr = std::format("-({})", m_lastExpr);
+            else
+                m_lastExpr = std::format("{}", m_lastValue);
         }
 
         return true;
