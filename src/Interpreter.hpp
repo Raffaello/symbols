@@ -24,6 +24,8 @@ private:
 
     bool eval_(const INode* node);
 
+    bool false_() noexcept;
+
 public:
     Interpreter() = default;
 

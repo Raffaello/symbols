@@ -23,15 +23,13 @@ std::optional<bool> Interpreter::evalSym_(const INode* node)
         if (m_symbolTable.contains(sym->value))
         {
             m_lastValue = m_symbolTable[sym->value];
-            m_lastExpr  = std::format("{} = {}", sym->value, m_symbolTable[sym->value]);
+            m_lastExpr  = std::format("{} = {}", sym->value, m_lastValue);
             return true;
         }
         else
         {
             std::cerr << std::format("ERROR: Symbol {} not found!\n", sym->value);
-            m_lastValue = std::numeric_limits<double>::quiet_NaN();
-            m_lastExpr  = "";
-            return false;
+            return false_();
         }
     }
 
@@ -45,11 +43,7 @@ std::optional<bool> Interpreter::evalUni_(const INode* node)
         assert(uni->token.type == eTOKENS::SUM_OP);
 
         if (!eval_(uni->n.get()))
-        {
-            m_lastValue = std::numeric_limits<double>::quiet_NaN();
-            m_lastExpr  = "";
-            return false;
-        }
+            return false_();
 
         if (uni->token.value == "-")
         {
@@ -71,11 +65,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
         if (!eval_(bin->r.get()))
-        {
-            m_lastValue = std::numeric_limits<double>::quiet_NaN();
-            m_lastExpr  = "";
-            return false;
-        }
+            return false_();
 
         const double r = m_lastValue;
 
@@ -86,20 +76,17 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
             {
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
-                m_lastExpr                = std::format("{} = {}", sym->value, m_symbolTable[sym->value]);
+                m_lastExpr                = std::format("{} = {}", sym->value, r);
                 return true;
             }
 
             std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, equation not supported yet");
-            return false;
+            return false_();
         }
 
         if (!eval_(bin->l.get()))
-        {
-            m_lastValue = std::numeric_limits<double>::quiet_NaN();
-            m_lastExpr  = "";
-            return false;
-        }
+            return false_();
+
         const double l = m_lastValue;
         switch (bin->token.type)
         {
@@ -124,9 +111,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
             break;
         default:
             std::cerr << std::format("ERROR: not supported operator '{}'\n", bin->token.value);
-            m_lastValue = std::numeric_limits<double>::quiet_NaN();
-            m_lastExpr  = "";
-            return false;
+            return false_();
         }
 
         m_lastExpr = std::format("{} {} {} = {}", l, bin->token.value, r, m_lastValue);
@@ -155,8 +140,17 @@ bool Interpreter::eval_(const INode* node)
         return *res;
 
     std::cerr << std::format("ERROR: don't know how to interpret the input.\n");
+    return false_();
+}
+
+bool Interpreter::false_() noexcept
+{
+    m_lastValue = std::numeric_limits<double>::quiet_NaN();
+    m_lastExpr  = "";
     return false;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 
 bool Interpreter::eval(const AST& ast)
 {
@@ -164,7 +158,8 @@ bool Interpreter::eval(const AST& ast)
     if (n == nullptr)
     {
         std::cerr << "ERROR: AST is empty, nothing to evaluate.\n";
-        return false;
+
+        return false_();
     }
 
     return eval_(n);
@@ -179,5 +174,5 @@ bool Interpreter::unsetSymbol(const std::string_view symbol) noexcept
     }
 
     std::cerr << std::format("ERROR: Symbol {} not found!\n", symbol);
-    return false;
+    return false_();
 }

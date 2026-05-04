@@ -51,6 +51,9 @@ char LexScanner::get_()
 
 void LexScanner::unget_(const char c)
 {
+    if (m_eof)
+        return;
+
     m_pInput->unget();
     --m_pos;
 }
@@ -80,11 +83,8 @@ void LexScanner::stateStart_(const char c)
     else if (isSpace_(c))
         return;
     else
-    {
-        m_state           = eState::ERROR;
-        m_lastToken.type  = eTOKENS::ERROR;
-        m_lastToken.value = std::format("unknown char '{}' in '{}' at pos: {}'", c, m_curTokenValue.str(), m_pos);
-    }
+        m_state = eState::ERROR;
+
 
     m_curTokenValue << c;
 }
@@ -180,6 +180,8 @@ bool LexScanner::next()
             [[fallthrough]];
         case ERROR:
         {
+            m_lastToken.type  = eTOKENS::ERROR;
+            m_lastToken.value = std::format("invalid char in '{}' at pos: {}'", m_curTokenValue.str(), m_pos);
             std::cerr << std::format("ERROR: {}\n", m_lastToken.value);
             return false;
         }
@@ -225,7 +227,7 @@ bool LexScanner::next()
     while (!m_eof);
 
     m_lastToken.type  = eTOKENS::ERROR;
-    m_lastToken.value = std::format("unable to parse {}", m_curTokenValue.str());
+    m_lastToken.value = std::format("ERROR: unrecognized token {}\n", m_curTokenValue.str());
     std::cerr << m_lastToken.value;
     return false;
 }
