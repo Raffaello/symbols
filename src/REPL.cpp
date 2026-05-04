@@ -27,12 +27,12 @@ void REPL::printSymbolTable_() const noexcept
     const auto& symTable       = m_intr.symbolTable();
     std::size_t key_max_length = 0;
     for (const auto& [k, v] : symTable)
-        key_max_length = std::max(key_max_length, k.size());
+        key_max_length = std::max<size_t>(key_max_length, k.size());
 
-    key_max_length = std::max(key_max_length, 7ULL);
+    key_max_length = std::max<size_t>(key_max_length, 7);
 
     std::cout << std::format("{:<{}} | {}\n", "Symbol", key_max_length, "Value");
-    std::cout << std::string(std::max(key_max_length + 8, 14ULL), '-') << "\n";
+    std::cout << std::string(std::max<size_t>(key_max_length + 8, 14), '-') << "\n";
     for (const auto& [k, v] : symTable)
         std::cout << std::format("{:<{}} | {}\n", k, key_max_length, v);
 }
