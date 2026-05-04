@@ -57,7 +57,7 @@ std::unique_ptr<INode> ParserLL1::stmt_()
     }
 
 
-    // TOOD: replace with END token
+    // TODO: replace with END token
     if (!m_end)
     {
         std::cerr << std::format("\nERROR: unable to parse\n");
