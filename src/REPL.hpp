@@ -24,6 +24,8 @@ private:
     Interpreter m_intr;
     bool        m_quit = false;
 
+    std::string extract_args_(std::string_view s, std::string_view cmd);
+
     void banner_() const noexcept;
     void help_() const noexcept;
     void printSymbolTable_() const noexcept;

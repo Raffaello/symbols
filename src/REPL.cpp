@@ -4,6 +4,22 @@
 #include <format>
 #include <algorithm>
 
+std::string REPL::extract_args_(std::string_view s, std::string_view cmd)
+{
+    if (s.size() < cmd.size())
+        return "";
+
+    s.remove_prefix(cmd.size());
+
+    while (!s.empty() && std::isspace(s.front()))
+        s.remove_prefix(1);
+
+    while (!s.empty() && std::isspace(s.back()))
+        s.remove_suffix(1);
+
+    return std::string(s);
+};
+
 void REPL::banner_() const noexcept
 {
     std::cout << std::format("Symbols REPL v0.1.0\n");
@@ -44,22 +60,7 @@ void REPL::printLastValue_() const noexcept
 
 void REPL::symbol_unset_(const std::string_view replCmd) noexcept
 {
-    auto extract_args = [](std::string_view s, std::string_view cmd) {
-        if (s.size() < cmd.size())
-            return std::string_view("");
-
-        s.remove_prefix(cmd.size());
-
-        while (!s.empty() && std::isspace(s.front()))
-            s.remove_prefix(1);
-
-        while (!s.empty() && std::isspace(s.back()))
-            s.remove_suffix(1);
-
-        return s;
-    };
-
-    auto s = extract_args(replCmd, CMD_SYM_UNSET);
+    auto s = extract_args_(replCmd, CMD_SYM_UNSET);
     if (m_intr.unsetSymbol(s))
         printSymbolTable_();
 }
