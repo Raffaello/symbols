@@ -12,12 +12,12 @@ LexScanner::LexScanner(std::unique_ptr<std::istream> pInput)
 
 void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
 {
-    m_pInput       = std::move(pInput);
-    m_eof          = false;
-    m_hasLookahead = false;
-    m_lookahead    = 0;
-    m_state        = eState::START;
-    m_lastToken    = Token();
+    m_pInput = std::move(pInput);
+    m_eof    = false;
+    // m_hasLookahead = false;
+    // m_lookahead    = 0;
+    m_state     = eState::START;
+    m_lastToken = Token();
     m_curTokenValue.clear();
     m_curTokenValue.str("");
     m_pos = 0;
@@ -25,19 +25,19 @@ void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
 
 char LexScanner::peek_()
 {
-    if (m_hasLookahead)
-        return m_lookahead;
+    // if (m_hasLookahead)
+    //     return m_lookahead;
 
     return m_pInput->peek();
 }
 
 char LexScanner::get_()
 {
-    if (m_hasLookahead)
-    {
-        m_hasLookahead = false;
-        return m_lookahead;
-    }
+    // if (m_hasLookahead)
+    // {
+    //     m_hasLookahead = false;
+    //     return m_lookahead;
+    // }
 
     const char c = m_pInput->get();
 
@@ -62,11 +62,12 @@ char LexScanner::get_()
 
 void LexScanner::unget_(const char c)
 {
-    if (m_hasLookahead)
-        throw std::runtime_error("already unget once...");
+    // if (m_hasLookahead)
+    //     throw std::runtime_error("already unget once...");
 
-    m_lookahead    = c;
-    m_hasLookahead = true;
+    // m_lookahead    = c;
+    // m_hasLookahead = true;
+    m_pInput->unget();
     --m_pos;
 }
 

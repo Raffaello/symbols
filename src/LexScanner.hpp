@@ -40,9 +40,9 @@ private:
     size_t                        m_pos    = 0;
     Token                         m_lastToken;
     std::ostringstream            m_curTokenValue;
-    char                          m_lookahead    = 0;
-    bool                          m_hasLookahead = false;
-    bool                          m_eof          = false;    // TODO: move in as a state
+    // char                          m_lookahead    = 0;
+    // bool                          m_hasLookahead = false;
+    bool m_eof = false;    // TODO: move in as a state
 
     char peek_();
     char get_();
