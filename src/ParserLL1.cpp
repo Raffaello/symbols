@@ -186,7 +186,7 @@ std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
         const Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: after {}\n", m_token.value);
+            std::cerr << std::format("ERROR: after {}\n", t.value);
             return nullptr;
         }
 
