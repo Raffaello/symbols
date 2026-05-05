@@ -32,10 +32,10 @@ uint8_t LexScanner::peek_()
 
 uint8_t LexScanner::get_()
 {
-    const uint8_t c = m_pInput->get();
+    const int c = m_pInput->get();
 
     // nothing more to read
-    if (m_pInput->eof() || c == EOF_)
+    if (m_pInput->eof() || c == std::char_traits<char>::eof())
         return EOF_;
 
     // check for errors
@@ -47,7 +47,7 @@ uint8_t LexScanner::get_()
     }
 
     ++m_pos;
-    return c;
+    return static_cast<uint8_t>(c);
 }
 
 void LexScanner::unget_(const uint8_t c)

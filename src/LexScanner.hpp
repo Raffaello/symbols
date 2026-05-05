@@ -4,7 +4,7 @@
 #include <istream>
 #include <sstream>
 #include <cctype>
-#include <cinttypes>
+#include <cstdint>
 
 #include "Token.hpp"
 
