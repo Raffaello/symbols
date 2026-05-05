@@ -15,12 +15,12 @@
  * S'   ::= E | E = E
  * E    ::= T E'
  * E'   ::= + T E' | - T E' | e
- * T    ::= POW T'
- * T'   ::= * POW T' | / POW T' | e
- * POW  ::= F POW'
- * POW' ::= ^ POW | e
- * F    ::= U P
+ * T    ::= F T'
+ * T'   ::= * F T' | / F T' | e
+ * F    ::= U POW
  * U    ::= + | - | e
+ * POW  ::= P POW'
+ * POW' ::= ^ E | e
  * P    ::= (E) | SYMBOL | NUM
  */
 class ParserLL1
@@ -39,10 +39,10 @@ private:
     std::unique_ptr<INode> exprPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> term_();
     std::unique_ptr<INode> termPrime_(std::unique_ptr<INode> left);
-    std::unique_ptr<INode> pow_();
-    std::unique_ptr<INode> powPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> factor_();
     std::unique_ptr<INode> unary_();
+    std::unique_ptr<INode> pow_();
+    std::unique_ptr<INode> powPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> pred_();
 
 public:

@@ -50,13 +50,12 @@ S    ::= S' END
 S'   ::= E | E = E
 E    ::= T E'
 E'   ::= + T E' | - T E' | e
-T    ::= POW T'
-T'   ::= * POW T' | / POW T' | e
-POW  ::= F POW'
-POW' ::= ^ POW | e
-F    ::= U P
-F'   ::=
+T    ::= F T'
+T'   ::= * F T' | / F T' | e
+F    ::= U POW
 U    ::= + | - | e
+POW  ::= P POW'
+POW' ::= ^ F | e
 P    ::= (E) | SYMBOL | NUM
 ```
 

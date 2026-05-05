@@ -103,7 +103,7 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 
 std::unique_ptr<INode> ParserLL1::term_()
 {
-    auto left = pow_();
+    auto left = factor_();
     if (left == nullptr)
         return nullptr;
 
@@ -123,7 +123,7 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
             return nullptr;
         }
 
-        auto right = pow_();
+        auto right = factor_();
         if (right == nullptr)
             return nullptr;
 
@@ -136,45 +136,10 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
         return left;
 }
 
-std::unique_ptr<INode> ParserLL1::pow_()
-{
-    auto left = factor_();
-    if (left == nullptr)
-        return nullptr;
-
-    return powPrime_(std::move(left));
-}
-
-std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
-{
-    if (m_token.type == eTOKENS::POW_OP)
-    {
-        const Token t = m_token;
-        if (!advance_())
-        {
-            std::cerr << std::format("ERROR: after {}\n", m_token.value);
-            return nullptr;
-        }
-
-        auto r = pow_();
-        if (r == nullptr)
-            return nullptr;
-
-        auto n   = std::make_unique<NodeBin>();
-        n->token = t;
-        n->l     = std::move(left);
-        n->r     = std::move(r);
-
-        return n;
-    }
-
-    return left;
-}
-
 std::unique_ptr<INode> ParserLL1::factor_()
 {
     auto u = unary_();
-    auto p = pred_();
+    auto p = pow_();
     if (p == nullptr)
         return nullptr;
 
@@ -203,6 +168,41 @@ std::unique_ptr<INode> ParserLL1::unary_()
     }
     else
         return nullptr;
+}
+
+std::unique_ptr<INode> ParserLL1::pow_()
+{
+    auto left = pred_();
+    if (left == nullptr)
+        return nullptr;
+
+    return powPrime_(std::move(left));
+}
+
+std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
+{
+    if (m_token.type == eTOKENS::POW_OP)
+    {
+        const Token t = m_token;
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: after {}\n", m_token.value);
+            return nullptr;
+        }
+
+        auto r = expr_();
+        if (r == nullptr)
+            return nullptr;
+
+        auto n   = std::make_unique<NodeBin>();
+        n->token = t;
+        n->l     = std::move(left);
+        n->r     = std::move(r);
+
+        return n;
+    }
+
+    return left;
 }
 
 std::unique_ptr<INode> ParserLL1::pred_()
