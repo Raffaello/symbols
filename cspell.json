@@ -10,6 +10,7 @@
         "endmacro",
         "gmock",
         "MPFR",
+        "Raffaello",
         "STREQ",
         "Wextra"
     ],
