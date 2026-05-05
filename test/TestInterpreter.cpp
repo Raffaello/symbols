@@ -26,7 +26,7 @@ TEST_P(TestInterpreter, eval)
     // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
     ASSERT_NEAR(interpreter.lastValue(), expVal, 1e-6);
     // ASSERT_EQ(interpreter.lastValue(), expVal);
-    ASSERT_STRCASEEQ(interpreter.lastExpr().data(), expr.c_str());
+    ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 
     if (!sym.empty())
     {

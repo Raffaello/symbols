@@ -80,7 +80,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
                 return true;
             }
 
-            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, equation not supported yet");
+            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, equation not supported yet\n");
             return false_();
         }
 

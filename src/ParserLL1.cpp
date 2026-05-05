@@ -9,9 +9,7 @@ bool ParserLL1::advance_()
 {
     if (!m_lexer.next())
     {
-        if (m_token.type == eTOKENS::ERROR)
-            std::cerr << std::format("Error: {}\n", m_token.value);
-        else
+        if (m_lexer.lastToken().type != eTOKENS::ERROR)
         {
             m_end         = true;
             m_token.value = "";
