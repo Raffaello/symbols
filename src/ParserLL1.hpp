@@ -11,15 +11,17 @@
  * Recursive Descent LL1 Parsers
  *
  * Grammar:
- * S  ::= E | E = E
- * S' ::= E | E = E
- * E  ::= T E'
- * E' ::= + T E' | - T E' | e
- * T  ::= F T'
- * T' ::= * F T' | / F T' | e
- * F  ::= U P
- * U  ::= + | - | e
- * P  ::= (E) | SYMBOL | NUM
+ * S    ::= S' END
+ * S'   ::= E | E = E
+ * E    ::= T E'
+ * E'   ::= + T E' | - T E' | e
+ * T    ::= F T'
+ * T'   ::= * F T' | / F T' | e
+ * F    ::= U POW
+ * U    ::= + | - | e
+ * POW  ::= P POW'
+ * POW' ::= ^ F | e
+ * P    ::= (E) | SYMBOL | NUM
  */
 class ParserLL1
 {
@@ -39,6 +41,8 @@ private:
     std::unique_ptr<INode> termPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> factor_();
     std::unique_ptr<INode> unary_();
+    std::unique_ptr<INode> pow_();
+    std::unique_ptr<INode> powPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> pred_();
 
 public:

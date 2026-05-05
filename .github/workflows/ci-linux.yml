@@ -8,15 +8,16 @@
 name: ci-linux
 on:
   release:
-    types: [created]
+    types: [ created ]
   pull_request:
     branches: [ main ]
     paths-ignore:
-      - 'doc/**'
-      - '.gitignore'
-      - '.gitattributes'
-      - 'README.md'
-      - 'LICENSE'
+      - "doc/**"
+      - ".gitignore"
+      - ".gitattributes"
+      - "README.md"
+      - "LICENSE"
+      - "cspell.json"
 
 jobs:
   build:
@@ -53,7 +54,6 @@ jobs:
       - name: CTest
         run: ctest --output-on-failure
         working-directory: build
-
       # - name: Release
       #   uses: softprops/action-gh-release@v3
       #   if: startsWith(github.ref, 'refs/tags/')

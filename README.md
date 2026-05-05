@@ -46,15 +46,17 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S  ::= S' END
-S' ::= E | E = E
-E  ::= T E'
-E' ::= + T E' | - T E' | e
-T  ::= F T'
-T' ::= * F T' | / F T' | e
-F  ::= U P
-U  ::= + | - | e
-P  ::= (E) | SYMBOL | NUM
+S    ::= S' END
+S'   ::= E | E = E
+E    ::= T E'
+E'   ::= + T E' | - T E' | e
+T    ::= F T'
+T'   ::= * F T' | / F T' | e
+F    ::= U POW
+U    ::= + | - | e
+POW  ::= P POW'
+POW' ::= ^ F | e
+P    ::= (E) | SYMBOL | NUM
 ```
 
 # Interpreter
@@ -65,3 +67,15 @@ Basic interpreter evaluating a single `AST` at time for now.
 
 Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
  `x=1`, but not `x+1=2`
+
+# Solver
+
+> TODO
+
+# REPL
+
+The REPL is the program using all other components.
+
+> TODO: Switch among interpreter and solver,
+>       possibly with `:eval` and `:solve` keywords, to switch to one or
+>       another in the REPL shell session.

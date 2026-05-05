@@ -49,7 +49,16 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("-(+(-(+(-1))))", -1.0, "", "-(1)"),
         std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0, "", "7 + 3 = 10"),
         std::make_tuple("x=1", 1.0, "x", "x = 1"),
-        std::make_tuple("x=(1 * 10)   / 2. - 4.1", 0.9, "x", "x = 0.9000000000000004")));
+        std::make_tuple("x=(1 * 10)   / 2. - 4.1", 0.9, "x", "x = 0.9000000000000004"),
+        std::make_tuple("2^2", 4.0, "", "2 ^ 2 = 4"),
+        std::make_tuple("(1+1)^(2*1)", 4.0, "", "2 ^ 2 = 4"),
+        std::make_tuple("1+2*2^2", 9.0, "", "1 + 8 = 9"),
+        std::make_tuple("-2^2", -4.0, "", "-(2 ^ 2 = 4)"),
+        std::make_tuple("2^-2", 0.25, "", "2 ^ -2 = 0.25"),
+        std::make_tuple("2^3^2", 512, "", "2 ^ 9 = 512"),
+        std::make_tuple("2*3^2+1", 19, "", "18 + 1 = 19")
+
+            ));
 
 class TestInterpreterError : public ::testing::TestWithParam<std::string_view>
 {

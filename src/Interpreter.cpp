@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <format>
+#include <cmath>
 
 std::optional<bool> Interpreter::evalNum_(const INode* node)
 {
@@ -109,12 +110,16 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
                 m_lastValue = l / r;
             }
             break;
+        case POW_OP:
+            m_lastValue = std::pow(l, r);
+            break;
         default:
             std::cerr << std::format("ERROR: not supported operator '{}'\n", bin->token.value);
             return false_();
         }
 
         m_lastExpr = std::format("{} {} {} = {}", l, bin->token.value, r, m_lastValue);
+        // std::cout << std::format("|> {}\n", m_lastExpr);
         return true;
     }
 

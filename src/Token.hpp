@@ -8,6 +8,7 @@ enum class eTOKENS
     NUM   = 0,    // it could be expanded into INT and REAL
     SUM_OP,       // +|-
     MUL_OP,       // *|/
+    POW_OP,       // ^
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
     EQUAL,

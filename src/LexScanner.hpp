@@ -26,6 +26,7 @@ private:
         SUM_OP_MINUS,
         MUL_OP_MUL,
         MUL_OP_DIV,
+        POW,
         PARENTHESES_LEFT,
         PARENTHESES_RIGHT,
         EQUAL,
