@@ -25,18 +25,18 @@ void LexScanner::clearCurTokenValue_() noexcept
     m_curTokenValue.str("");
 }
 
-char LexScanner::peek_()
+uint8_t LexScanner::peek_()
 {
     return m_pInput->peek();
 }
 
-char LexScanner::get_()
+uint8_t LexScanner::get_()
 {
-    const char c = m_pInput->get();
+    const uint8_t c = m_pInput->get();
 
     // nothing more to read
-    if (m_pInput->eof() || c == EOF)
-        return -1;    // EOF;
+    if (m_pInput->eof() || c == EOF_)
+        return EOF_;
 
     // check for errors
     if (m_pInput->bad() || m_pInput->fail())
@@ -50,16 +50,16 @@ char LexScanner::get_()
     return c;
 }
 
-void LexScanner::unget_(const char c)
+void LexScanner::unget_(const uint8_t c)
 {
-    if (m_state == eState::END)
+    if (m_state == eState::END || c == EOF_)
         return;
 
     m_pInput->unget();
     --m_pos;
 }
 
-void LexScanner::stateStart_(const char c)
+void LexScanner::stateStart_(const uint8_t c)
 {
     if (c == '.')
         m_state = eState::PRE_REAL;
@@ -83,7 +83,7 @@ void LexScanner::stateStart_(const char c)
         m_state = eState::MUL_OP_DIV;
     else if (isSpace_(c))
         return;
-    else if (c == -1)    // EOF
+    else if (c == EOF_)
         m_state = eState::END;
     else
         m_state = eState::ERROR;
@@ -92,7 +92,7 @@ void LexScanner::stateStart_(const char c)
     m_curTokenValue << c;
 }
 
-bool LexScanner::stateInt_(const char c)
+bool LexScanner::stateInt_(const uint8_t c)
 {
     if (c == '.')
     {
@@ -110,7 +110,7 @@ bool LexScanner::stateInt_(const char c)
     return false;
 }
 
-void LexScanner::statePreReal_(const char c)
+void LexScanner::statePreReal_(const uint8_t c)
 {
     if (isDigit_(c))
         m_state = eState::REAL;
@@ -120,7 +120,7 @@ void LexScanner::statePreReal_(const char c)
     m_curTokenValue << c;
 }
 
-bool LexScanner::stateReal_(const char c)
+bool LexScanner::stateReal_(const uint8_t c)
 {
     if (isDigit_(c))
     {
@@ -138,7 +138,7 @@ bool LexScanner::stateReal_(const char c)
     return false;
 }
 
-bool LexScanner::stateSymbol_(const char c)
+bool LexScanner::stateSymbol_(const uint8_t c)
 {
     if (c == '_' || isAlNum_(c))
     {
@@ -173,7 +173,7 @@ bool LexScanner::next()
 
     do
     {
-        const char c = get_();
+        const uint8_t c = get_();
         switch (m_state)
         {
             using enum eState;

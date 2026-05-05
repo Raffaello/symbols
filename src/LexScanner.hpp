@@ -4,6 +4,7 @@
 #include <istream>
 #include <sstream>
 #include <cctype>
+#include <cinttypes>
 
 #include "Token.hpp"
 
@@ -11,13 +12,13 @@
  * Alphabet: alphadigits | _ | + | - | * | / | = | ' '
  * whitespaces are just skipped, remaining in the same state
  *
- * TODO: add parsing '\n' and EOF as a END token (or also as NEWLINE) also the end of statement';'
+ * TODO: [optional] add parsing '\n' (or also as NEWLINE) also the end of statement';'
  *       Track the line number while scanning
- *       modify the parser to deal with "end of statement"
  */
 class LexScanner
 {
 private:
+    static constexpr uint8_t EOF_ = 0xFF;
     enum class eState
     {
         START = 0,
@@ -44,22 +45,22 @@ private:
 
     void clearCurTokenValue_() noexcept;
 
-    char peek_();
-    char get_();
-    void unget_(const char c);
+    uint8_t peek_();
+    uint8_t get_();
+    void    unget_(const uint8_t c);
 
-    inline bool isDigit_(const char c) const noexcept;
-    inline bool isAlpha_(const char c) const noexcept;
-    inline bool isAlNum_(const char c) const noexcept;
-    inline bool isSpace_(const char c) const noexcept;
+    inline bool isDigit_(const uint8_t c) const noexcept;
+    inline bool isAlpha_(const uint8_t c) const noexcept;
+    inline bool isAlNum_(const uint8_t c) const noexcept;
+    inline bool isSpace_(const uint8_t c) const noexcept;
 
-    void stateStart_(const char c);
-    void statePreReal_(const char c);
+    void stateStart_(const uint8_t c);
+    void statePreReal_(const uint8_t c);
 
     // Final states return true if it isn't over yet
-    bool stateInt_(const char c);
-    bool stateReal_(const char c);
-    bool stateSymbol_(const char c);
+    bool stateInt_(const uint8_t c);
+    bool stateReal_(const uint8_t c);
+    bool stateSymbol_(const uint8_t c);
 
     bool stateFinal_(const eTOKENS type);
 
@@ -77,22 +78,22 @@ inline Token LexScanner::lastToken() const noexcept
     return m_lastToken;
 }
 
-inline bool LexScanner::isDigit_(const char c) const noexcept
+inline bool LexScanner::isDigit_(const uint8_t c) const noexcept
 {
-    return std::isdigit(static_cast<unsigned char>(c));
+    return std::isdigit(static_cast<uint8_t>(c));
 }
 
-inline bool LexScanner::isAlpha_(const char c) const noexcept
+inline bool LexScanner::isAlpha_(const uint8_t c) const noexcept
 {
-    return std::isalpha(static_cast<unsigned char>(c));
+    return std::isalpha(static_cast<uint8_t>(c));
 }
 
-inline bool LexScanner::isAlNum_(const char c) const noexcept
+inline bool LexScanner::isAlNum_(const uint8_t c) const noexcept
 {
-    return std::isalnum(static_cast<unsigned char>(c));
+    return std::isalnum(static_cast<uint8_t>(c));
 }
 
-inline bool LexScanner::isSpace_(const char c) const noexcept
+inline bool LexScanner::isSpace_(const uint8_t c) const noexcept
 {
-    return std::isspace(static_cast<unsigned char>(c));
+    return std::isspace(static_cast<uint8_t>(c));
 }

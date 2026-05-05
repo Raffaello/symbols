@@ -11,7 +11,7 @@ bool ParserLL1::advance_()
         return false;
 
     m_token = m_lexer.lastToken();
-    return m_token.type != eTOKENS::END;
+    return true;
 }
 
 bool ParserLL1::expect_(const eTOKENS type)
@@ -243,7 +243,7 @@ bool ParserLL1::parse()
         return false;
 
     if (m_token.type == eTOKENS::ERROR)
-        throw std::runtime_error("debug");
+        throw std::runtime_error("debug");    // it should never store a token error, as the lexer is reporting the error, here just return nullptr/false instead and it has store the last scanned token
 
     m_ast.setRoot(root);
     return true;

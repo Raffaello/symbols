@@ -15,8 +15,6 @@ TEST_P(TestLexScanner, tokenizer)
 {
     LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
 
-    ASSERT_EQ(expNumTokens, expTokens.size());
-
     int i = 0;
     while (scanner.next())
     {

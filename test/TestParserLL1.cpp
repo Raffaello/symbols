@@ -74,7 +74,7 @@ INSTANTIATE_TEST_SUITE_P(
     TestParserLL1Error,
     ::testing::Values(
         "",
-        "!"    // not valid token
+        "!",    // not valid token
         "(",
         "(1",
         "(x",
