@@ -77,4 +77,5 @@ Not supporting solving equation, but only if those are reduced to what is consid
 The REPL is the program using all other components.
 
 > TODO: Switch among interpreter and solver,
->       possibly with `:eval` and `:solve` keywords, to switch to one or >       another in the REPL shell session.
+>       possibly with `:eval` and `:solve` keywords, to switch to one or
+>       another in the REPL shell session.
