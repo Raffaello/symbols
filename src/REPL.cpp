@@ -124,7 +124,7 @@ int REPL::runLoop()
         if (!m_intr.eval(m_parser.ast()))
             continue;
 
-        printLastValue_();
+        std::cout << std::format("$> {}\n", m_intr.lastExpr());
     }
 
     return 0;

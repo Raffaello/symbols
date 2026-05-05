@@ -9,6 +9,7 @@ std::optional<bool> Interpreter::evalNum_(const INode* node)
     if (auto num = dynamic_cast<const LeafNum*>(node))
     {
         m_lastValue = num->value;
+        m_lastExpr  = std::format("{}", num->value);
         return true;
     }
 
@@ -22,12 +23,13 @@ std::optional<bool> Interpreter::evalSym_(const INode* node)
         if (m_symbolTable.contains(sym->value))
         {
             m_lastValue = m_symbolTable[sym->value];
+            m_lastExpr  = std::format("{} = {}", sym->value, m_lastValue);
             return true;
         }
         else
         {
             std::cerr << std::format("ERROR: Symbol {} not found!\n", sym->value);
-            return false;
+            return false_();
         }
     }
 
@@ -41,10 +43,16 @@ std::optional<bool> Interpreter::evalUni_(const INode* node)
         assert(uni->token.type == eTOKENS::SUM_OP);
 
         if (!eval_(uni->n.get()))
-            return false;
+            return false_();
 
         if (uni->token.value == "-")
+        {
             m_lastValue = -m_lastValue;
+            if (m_lastValue < 0.0)
+                m_lastExpr = std::format("-({})", m_lastExpr);
+            else
+                m_lastExpr = std::format("{}", m_lastValue);
+        }
 
         return true;
     }
@@ -57,7 +65,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
         if (!eval_(bin->r.get()))
-            return false;
+            return false_();
 
         const double r = m_lastValue;
 
@@ -68,54 +76,46 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
             {
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
+                m_lastExpr                = std::format("{} = {}", sym->value, r);
                 return true;
             }
 
-            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, equation not supported yet");
-            return false;
+            std::cerr << std::format("ERROR: Wrong assignment, LHS not a symbol, equation not supported yet\n");
+            return false_();
         }
 
         if (!eval_(bin->l.get()))
-            return false;
+            return false_();
 
         const double l = m_lastValue;
-        m_lastValue    = r;
-
         switch (bin->token.type)
         {
             using enum eTOKENS;
 
         case SUM_OP:
             if (bin->token.value == "+")
-            {
                 m_lastValue = l + r;
-                return true;
-            }
             else if (bin->token.value == "-")
-            {
                 m_lastValue = l - r;
-                return true;
-            }
             break;
         case MUL_OP:
             if (bin->token.value == "*")
-            {
                 m_lastValue = l * r;
-                return true;
-            }
             else if (bin->token.value == "/")
             {
                 if (r == 0.0)
                     std::cout << std::format("WARN: division by zero detected\n");
 
                 m_lastValue = l / r;
-                return true;
             }
             break;
         default:
             std::cerr << std::format("ERROR: not supported operator '{}'\n", bin->token.value);
-            return false;
+            return false_();
         }
+
+        m_lastExpr = std::format("{} {} {} = {}", l, bin->token.value, r, m_lastValue);
+        return true;
     }
 
     return std::nullopt;
@@ -140,8 +140,17 @@ bool Interpreter::eval_(const INode* node)
         return *res;
 
     std::cerr << std::format("ERROR: don't know how to interpret the input.\n");
+    return false_();
+}
+
+bool Interpreter::false_() noexcept
+{
+    m_lastValue = std::numeric_limits<double>::quiet_NaN();
+    m_lastExpr  = "";
     return false;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 
 bool Interpreter::eval(const AST& ast)
 {
@@ -149,7 +158,8 @@ bool Interpreter::eval(const AST& ast)
     if (n == nullptr)
     {
         std::cerr << "ERROR: AST is empty, nothing to evaluate.\n";
-        return false;
+
+        return false_();
     }
 
     return eval_(n);
@@ -164,5 +174,5 @@ bool Interpreter::unsetSymbol(const std::string_view symbol) noexcept
     }
 
     std::cerr << std::format("ERROR: Symbol {} not found!\n", symbol);
-    return false;
+    return false_();
 }

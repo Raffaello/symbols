@@ -9,9 +9,7 @@ bool ParserLL1::advance_()
 {
     if (!m_lexer.next())
     {
-        if (m_token.type == eTOKENS::ERROR)
-            std::cerr << std::format("Error: {}\n", m_token.value);
-        else
+        if (m_lexer.lastToken().type != eTOKENS::ERROR)
         {
             m_end         = true;
             m_token.value = "";
@@ -57,7 +55,7 @@ std::unique_ptr<INode> ParserLL1::stmt_()
     }
 
 
-    // TOOD: replace with END token
+    // TODO: replace with END token
     if (!m_end)
     {
         std::cerr << std::format("\nERROR: unable to parse\n");

@@ -12,12 +12,10 @@ LexScanner::LexScanner(std::unique_ptr<std::istream> pInput)
 
 void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
 {
-    m_pInput       = std::move(pInput);
-    m_eof          = false;
-    m_hasLookahead = false;
-    m_lookahead    = 0;
-    m_state        = eState::START;
-    m_lastToken    = Token();
+    m_pInput    = std::move(pInput);
+    m_eof       = false;
+    m_state     = eState::START;
+    m_lastToken = Token();
     m_curTokenValue.clear();
     m_curTokenValue.str("");
     m_pos = 0;
@@ -25,20 +23,11 @@ void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
 
 char LexScanner::peek_()
 {
-    if (m_hasLookahead)
-        return m_lookahead;
-
     return m_pInput->peek();
 }
 
 char LexScanner::get_()
 {
-    if (m_hasLookahead)
-    {
-        m_hasLookahead = false;
-        return m_lookahead;
-    }
-
     const char c = m_pInput->get();
 
     // nothing more to read
@@ -52,7 +41,7 @@ char LexScanner::get_()
     if (m_pInput->bad() || m_pInput->fail())
     {
         const std::string e = std::format("unable to read at pos: {}", m_pos);
-        std::cerr << e;
+        std::cerr << std::format("ERROR: {}\n", e);
         throw std::runtime_error(e);
     }
 
@@ -62,11 +51,10 @@ char LexScanner::get_()
 
 void LexScanner::unget_(const char c)
 {
-    if (m_hasLookahead)
-        throw std::runtime_error("already unget once...");
+    if (m_eof)
+        return;
 
-    m_lookahead    = c;
-    m_hasLookahead = true;
+    m_pInput->unget();
     --m_pos;
 }
 
@@ -96,6 +84,7 @@ void LexScanner::stateStart_(const char c)
         return;
     else
         m_state = eState::ERROR;
+
 
     m_curTokenValue << c;
 }
@@ -192,8 +181,8 @@ bool LexScanner::next()
         case ERROR:
         {
             m_lastToken.type  = eTOKENS::ERROR;
-            m_lastToken.value = std::format("unknown char {} in {}", c, m_curTokenValue.str());
-            std::cerr << m_lastToken.value;
+            m_lastToken.value = std::format("invalid char in '{}' at pos: {}", m_curTokenValue.str(), m_pos);
+            std::cerr << std::format("ERROR: {}\n", m_lastToken.value);
             return false;
         }
         case START:
@@ -238,7 +227,7 @@ bool LexScanner::next()
     while (!m_eof);
 
     m_lastToken.type  = eTOKENS::ERROR;
-    m_lastToken.value = std::format("unable to parse {}", m_curTokenValue.str());
-    std::cerr << m_lastToken.value;
+    m_lastToken.value = std::format("unrecognized token {}\n", m_curTokenValue.str());
+    std::cerr << std::format("ERROR: {}\n", m_lastToken.value);
     return false;
 }

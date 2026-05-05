@@ -12,7 +12,7 @@ enum class eTOKENS
     RIGHT_PARENTHESES,
     EQUAL,
     SYMBOL,
-    // END, // TODO: this would be better if returned by the lexer as last token after finished tokenizing.
+    // END,    // TODO: this would be better if returned by the lexer as last token after finished tokenizing.
 };
 
 struct Token

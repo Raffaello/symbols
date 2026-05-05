@@ -4,12 +4,13 @@
 #include <ParserLL1.hpp>
 #include <array>
 
-class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string_view, double, std::string>>
+class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string_view, double, std::string, std::string>>
 {
 public:
     const std::string_view line   = std::get<0>(GetParam());
     const double           expVal = std::get<1>(GetParam());
     const std::string      sym    = std::get<2>(GetParam());
+    const std::string      expr   = std::get<3>(GetParam());
 };
 
 TEST_P(TestInterpreter, eval)
@@ -25,6 +26,7 @@ TEST_P(TestInterpreter, eval)
     // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
     ASSERT_NEAR(interpreter.lastValue(), expVal, 1e-6);
     // ASSERT_EQ(interpreter.lastValue(), expVal);
+    ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 
     if (!sym.empty())
     {
@@ -38,16 +40,16 @@ INSTANTIATE_TEST_SUITE_P(
     InterpreterTestSuite,
     TestInterpreter,
     ::testing::Values(
-        std::make_tuple("1", 1.0, ""),
-        std::make_tuple("(1)", 1.0, ""),
-        std::make_tuple("1+1", 2.0, ""),
-        std::make_tuple("1-1", 0.0, ""),
-        std::make_tuple("-1", -1.0, ""),
-        std::make_tuple("+1", 1.0, ""),
-        std::make_tuple("-(+(-(+(-1))))", -1.0, ""),
-        std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0, ""),
-        std::make_tuple("x=1", 1.0, "x"),
-        std::make_tuple("x=(1 * 10)   / 2. - 4.1", 0.9, "x")));
+        std::make_tuple("1", 1.0, "", "1"),
+        std::make_tuple("(1)", 1.0, "", "1"),
+        std::make_tuple("1+1", 2.0, "", "1 + 1 = 2"),
+        std::make_tuple("1-1", 0.0, "", "1 - 1 = 0"),
+        std::make_tuple("-1", -1.0, "", "-(1)"),
+        std::make_tuple("+1", 1.0, "", "1"),
+        std::make_tuple("-(+(-(+(-1))))", -1.0, "", "-(1)"),
+        std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0, "", "7 + 3 = 10"),
+        std::make_tuple("x=1", 1.0, "x", "x = 1"),
+        std::make_tuple("x=(1 * 10)   / 2. - 4.1", 0.9, "x", "x = 0.9000000000000004")));
 
 class TestInterpreterError : public ::testing::TestWithParam<std::string_view>
 {
