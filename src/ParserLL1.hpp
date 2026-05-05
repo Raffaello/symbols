@@ -20,7 +20,7 @@
  * F    ::= U POW
  * U    ::= + | - | e
  * POW  ::= P POW'
- * POW' ::= ^ E | e
+ * POW' ::= ^ F | e
  * P    ::= (E) | SYMBOL | NUM
  */
 class ParserLL1

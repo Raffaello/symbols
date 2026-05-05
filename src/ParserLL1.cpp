@@ -190,7 +190,7 @@ std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
             return nullptr;
         }
 
-        auto r = expr_();
+        auto r = factor_();
         if (r == nullptr)
             return nullptr;
 
