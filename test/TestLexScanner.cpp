@@ -200,7 +200,13 @@ INSTANTIATE_TEST_SUITE_P(
                                                              {.type = eTOKENS::SYMBOL, .value = "b"},
                                                              {.type = eTOKENS::RIGHT_PARENTHESES, .value = ")"},
                                                              {.type = eTOKENS::END, .value = ""},
-                                                         })));
+                                                         }),
+        std::make_tuple("^", std::vector<Token>{
+                                 {.type = eTOKENS::POW_OP, .value = "^"},
+                                 {.type = eTOKENS::END, .value = ""},
+                             })
+
+            ));
 
 class TestLexScannerError : public ::testing::TestWithParam<std::tuple<std::string_view>>
 {

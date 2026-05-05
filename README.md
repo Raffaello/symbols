@@ -46,15 +46,18 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S  ::= S' END
-S' ::= E | E = E
-E  ::= T E'
-E' ::= + T E' | - T E' | e
-T  ::= F T'
-T' ::= * F T' | / F T' | e
-F  ::= U P
-U  ::= + | - | e
-P  ::= (E) | SYMBOL | NUM
+S    ::= S' END
+S'   ::= E | E = E
+E    ::= T E'
+E'   ::= + T E' | - T E' | e
+T    ::= POW T'
+T'   ::= * POW T' | / POW T' | e
+POW  ::= F POW'
+POW' ::= ^ POW | e
+F    ::= U P
+F'   ::=
+U    ::= + | - | e
+P    ::= (E) | SYMBOL | NUM
 ```
 
 # Interpreter

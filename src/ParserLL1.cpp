@@ -45,7 +45,7 @@ std::unique_ptr<INode> ParserLL1::stmtPrime_()
         Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: missing expression after {}\n", t.value);
+            std::cerr << std::format("ERROR: after {}\n", t.value);
             return nullptr;
         }
 
@@ -82,7 +82,7 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: Expected a factor after operator {}\n", node->token.value);
+            std::cerr << std::format("ERROR: after operator {}\n", node->token.value);
             return nullptr;
         }
 
@@ -103,7 +103,7 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 
 std::unique_ptr<INode> ParserLL1::term_()
 {
-    auto left = factor_();
+    auto left = pow_();
     if (left == nullptr)
         return nullptr;
 
@@ -119,11 +119,11 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
 
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: Expected a factor after operator {}\n", node->token.value);
+            std::cerr << std::format("ERROR: after operator {}\n", node->token.value);
             return nullptr;
         }
 
-        auto right = factor_();
+        auto right = pow_();
         if (right == nullptr)
             return nullptr;
 
@@ -134,6 +134,41 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
     }
     else
         return left;
+}
+
+std::unique_ptr<INode> ParserLL1::pow_()
+{
+    auto left = factor_();
+    if (left == nullptr)
+        return nullptr;
+
+    return powPrime_(std::move(left));
+}
+
+std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
+{
+    if (m_token.type == eTOKENS::POW_OP)
+    {
+        const Token t = m_token;
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: after {}\n", m_token.value);
+            return nullptr;
+        }
+
+        auto r = pow_();
+        if (r == nullptr)
+            return nullptr;
+
+        auto n   = std::make_unique<NodeBin>();
+        n->token = t;
+        n->l     = std::move(left);
+        n->r     = std::move(r);
+
+        return n;
+    }
+
+    return left;
 }
 
 std::unique_ptr<INode> ParserLL1::factor_()
@@ -180,7 +215,7 @@ std::unique_ptr<INode> ParserLL1::pred_()
     {
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: expected an expression after: '('\n");
+            std::cerr << std::format("ERROR: after: '{}'\n", m_token.value);
             return nullptr;
         }
 
