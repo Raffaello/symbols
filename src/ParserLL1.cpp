@@ -22,6 +22,8 @@ bool ParserLL1::expect_(const eTOKENS type)
 std::unique_ptr<INode> ParserLL1::stmt_()
 {
     auto s = stmtPrime_();
+    if (s == nullptr)
+        return nullptr;
 
     if (m_token.type != eTOKENS::END)
     {
