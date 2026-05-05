@@ -12,6 +12,7 @@
  *
  * Grammar:
  * S  ::= E | E = E
+ * E  ::= T E'
  * E' ::= + T E' | - T E' | e
  * T  ::= F T'
  * T' ::= * F T' | / F T' | e

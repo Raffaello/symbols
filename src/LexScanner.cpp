@@ -13,12 +13,16 @@ LexScanner::LexScanner(std::unique_ptr<std::istream> pInput)
 void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
 {
     m_pInput    = std::move(pInput);
-    m_eof       = false;
     m_state     = eState::START;
     m_lastToken = Token();
+    clearCurTokenValue_();
+    m_pos = 0;
+}
+
+void LexScanner::clearCurTokenValue_() noexcept
+{
     m_curTokenValue.clear();
     m_curTokenValue.str("");
-    m_pos = 0;
 }
 
 char LexScanner::peek_()
@@ -31,11 +35,8 @@ char LexScanner::get_()
     const char c = m_pInput->get();
 
     // nothing more to read
-    if (m_pInput->eof())
-    {
-        m_eof = true;
+    if (m_pInput->eof() || c == EOF)
         return -1;    // EOF;
-    }
 
     // check for errors
     if (m_pInput->bad() || m_pInput->fail())
@@ -51,7 +52,7 @@ char LexScanner::get_()
 
 void LexScanner::unget_(const char c)
 {
-    if (m_eof)
+    if (m_state == eState::END)
         return;
 
     m_pInput->unget();
@@ -82,6 +83,8 @@ void LexScanner::stateStart_(const char c)
         m_state = eState::MUL_OP_DIV;
     else if (isSpace_(c))
         return;
+    else if (c == -1)    // EOF
+        m_state = eState::END;
     else
         m_state = eState::ERROR;
 
@@ -159,14 +162,13 @@ bool LexScanner::next()
     if (m_pInput == nullptr)
         return false;
 
-    if (m_eof)
+    if (m_state == eState::END)
         return false;
 
     if (m_state == eState::ERROR)
         return false;
 
-    m_curTokenValue.str("");
-    m_curTokenValue.clear();
+    clearCurTokenValue_();
     m_state = eState::START;
 
     do
@@ -224,10 +226,8 @@ bool LexScanner::next()
             break;
         }
     }
-    while (!m_eof);
+    while (m_state != eState::END);
 
-    m_lastToken.type  = eTOKENS::ERROR;
-    m_lastToken.value = std::format("unrecognized token {}\n", m_curTokenValue.str());
-    std::cerr << std::format("ERROR: {}\n", m_lastToken.value);
-    return false;
+    clearCurTokenValue_();
+    return stateFinal_(eTOKENS::END);
 }

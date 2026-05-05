@@ -11,14 +11,22 @@ bool ParserLL1::advance_()
     {
         if (m_lexer.lastToken().type != eTOKENS::ERROR)
         {
+            // This is the only case if calling again for the next token when already returned END
             m_end         = true;
             m_token.value = "";
         }
+
 
         return false;
     }
 
     m_token = m_lexer.lastToken();
+    if (m_token.type == eTOKENS::END)
+    {
+        m_end = true;
+        return false;
+    }
+
     return true;
 }
 

@@ -33,6 +33,7 @@ private:
         REAL,
         SYMBOL,
         ERROR,
+        END,
     };
 
     std::unique_ptr<std::istream> m_pInput = nullptr;
@@ -40,7 +41,8 @@ private:
     size_t                        m_pos    = 0;
     Token                         m_lastToken;
     std::ostringstream            m_curTokenValue;
-    bool                          m_eof = false;    // TODO: move in as a state
+
+    void clearCurTokenValue_() noexcept;
 
     char peek_();
     char get_();

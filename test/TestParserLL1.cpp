@@ -73,6 +73,8 @@ INSTANTIATE_TEST_SUITE_P(
     ParserLL1TestSuite,
     TestParserLL1Error,
     ::testing::Values(
+        "",
+        "!"    // not valid token
         "(",
         "(1",
         "(x",
