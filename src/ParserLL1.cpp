@@ -8,15 +8,7 @@
 bool ParserLL1::advance_()
 {
     if (!m_lexer.next())
-    {
-        if (m_lexer.lastToken().type != eTOKENS::ERROR)
-        {
-            m_end         = true;
-            m_token.value = "";
-        }
-
         return false;
-    }
 
     m_token = m_lexer.lastToken();
     return true;
@@ -28,6 +20,21 @@ bool ParserLL1::expect_(const eTOKENS type)
 }
 
 std::unique_ptr<INode> ParserLL1::stmt_()
+{
+    auto s = stmtPrime_();
+    if (s == nullptr)
+        return nullptr;
+
+    if (m_token.type != eTOKENS::END)
+    {
+        std::cerr << std::format("ERROR: Expected statement end, instead: {}\n", m_token.value);
+        return nullptr;
+    }
+
+    return s;
+}
+
+std::unique_ptr<INode> ParserLL1::stmtPrime_()
 {
     auto l = expr_();
     if (l == nullptr)
@@ -52,14 +59,6 @@ std::unique_ptr<INode> ParserLL1::stmt_()
         n->r     = std::move(r);
 
         return n;
-    }
-
-
-    // TODO: replace with END token
-    if (!m_end)
-    {
-        std::cerr << std::format("\nERROR: unable to parse\n");
-        return nullptr;
     }
 
     return l;
@@ -238,7 +237,6 @@ ParserLL1::ParserLL1(LexScanner& lex_scanner) : m_lexer(lex_scanner)
 
 bool ParserLL1::parse()
 {
-    m_end = false;
     if (!advance_())
         return false;
 
@@ -247,10 +245,7 @@ bool ParserLL1::parse()
         return false;
 
     if (m_token.type == eTOKENS::ERROR)
-        throw std::runtime_error("debug");
-
-    if (!m_end)
-        throw std::runtime_error("debug2");
+        throw std::runtime_error("debug");    // it should never store a token error, as the lexer is reporting the error, here just return nullptr/false instead and it has store the last scanned token
 
     m_ast.setRoot(root);
     return true;

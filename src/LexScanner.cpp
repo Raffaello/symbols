@@ -13,29 +13,30 @@ LexScanner::LexScanner(std::unique_ptr<std::istream> pInput)
 void LexScanner::setInput(std::unique_ptr<std::istream> pInput)
 {
     m_pInput    = std::move(pInput);
-    m_eof       = false;
     m_state     = eState::START;
     m_lastToken = Token();
-    m_curTokenValue.clear();
-    m_curTokenValue.str("");
+    clearCurTokenValue_();
     m_pos = 0;
 }
 
-char LexScanner::peek_()
+void LexScanner::clearCurTokenValue_() noexcept
+{
+    m_curTokenValue.clear();
+    m_curTokenValue.str("");
+}
+
+uint8_t LexScanner::peek_()
 {
     return m_pInput->peek();
 }
 
-char LexScanner::get_()
+uint8_t LexScanner::get_()
 {
-    const char c = m_pInput->get();
+    const int c = m_pInput->get();
 
     // nothing more to read
-    if (m_pInput->eof())
-    {
-        m_eof = true;
-        return -1;    // EOF;
-    }
+    if (m_pInput->eof() || c == std::char_traits<char>::eof())
+        return EOF_;
 
     // check for errors
     if (m_pInput->bad() || m_pInput->fail())
@@ -46,19 +47,19 @@ char LexScanner::get_()
     }
 
     ++m_pos;
-    return c;
+    return static_cast<uint8_t>(c);
 }
 
-void LexScanner::unget_(const char c)
+void LexScanner::unget_(const uint8_t c)
 {
-    if (m_eof)
+    if (m_state == eState::END || c == EOF_)
         return;
 
     m_pInput->unget();
     --m_pos;
 }
 
-void LexScanner::stateStart_(const char c)
+void LexScanner::stateStart_(const uint8_t c)
 {
     if (c == '.')
         m_state = eState::PRE_REAL;
@@ -82,6 +83,8 @@ void LexScanner::stateStart_(const char c)
         m_state = eState::MUL_OP_DIV;
     else if (isSpace_(c))
         return;
+    else if (c == EOF_)
+        m_state = eState::END;
     else
         m_state = eState::ERROR;
 
@@ -89,7 +92,7 @@ void LexScanner::stateStart_(const char c)
     m_curTokenValue << c;
 }
 
-bool LexScanner::stateInt_(const char c)
+bool LexScanner::stateInt_(const uint8_t c)
 {
     if (c == '.')
     {
@@ -107,7 +110,7 @@ bool LexScanner::stateInt_(const char c)
     return false;
 }
 
-void LexScanner::statePreReal_(const char c)
+void LexScanner::statePreReal_(const uint8_t c)
 {
     if (isDigit_(c))
         m_state = eState::REAL;
@@ -117,7 +120,7 @@ void LexScanner::statePreReal_(const char c)
     m_curTokenValue << c;
 }
 
-bool LexScanner::stateReal_(const char c)
+bool LexScanner::stateReal_(const uint8_t c)
 {
     if (isDigit_(c))
     {
@@ -135,7 +138,7 @@ bool LexScanner::stateReal_(const char c)
     return false;
 }
 
-bool LexScanner::stateSymbol_(const char c)
+bool LexScanner::stateSymbol_(const uint8_t c)
 {
     if (c == '_' || isAlNum_(c))
     {
@@ -159,19 +162,18 @@ bool LexScanner::next()
     if (m_pInput == nullptr)
         return false;
 
-    if (m_eof)
+    if (m_state == eState::END)
         return false;
 
     if (m_state == eState::ERROR)
         return false;
 
-    m_curTokenValue.str("");
-    m_curTokenValue.clear();
+    clearCurTokenValue_();
     m_state = eState::START;
 
     do
     {
-        const char c = get_();
+        const uint8_t c = get_();
         switch (m_state)
         {
             using enum eState;
@@ -224,10 +226,8 @@ bool LexScanner::next()
             break;
         }
     }
-    while (!m_eof);
+    while (m_state != eState::END);
 
-    m_lastToken.type  = eTOKENS::ERROR;
-    m_lastToken.value = std::format("unrecognized token {}\n", m_curTokenValue.str());
-    std::cerr << std::format("ERROR: {}\n", m_lastToken.value);
-    return false;
+    clearCurTokenValue_();
+    return stateFinal_(eTOKENS::END);
 }

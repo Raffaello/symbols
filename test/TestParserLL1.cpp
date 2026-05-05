@@ -73,6 +73,8 @@ INSTANTIATE_TEST_SUITE_P(
     ParserLL1TestSuite,
     TestParserLL1Error,
     ::testing::Values(
+        "",
+        "!",    // not valid token
         "(",
         "(1",
         "(x",
@@ -92,7 +94,10 @@ INSTANTIATE_TEST_SUITE_P(
         "x==1",
         // "1=a",
         // "a+b = x+1",
-        "x="));
+        "x=",
+        "1+1 (1-1)"
+
+        ));
 
 int main(int argc, char** argv)
 {

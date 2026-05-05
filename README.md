@@ -22,7 +22,7 @@ The Grammar for the arithmetical expression is the following, it doesn't allow +
 EBNF:
 
 ```ebnf
-stmt      ::= expr | equation
+stmt      ::= expr END | equation END
 
 equation ::= expr = expr
 
@@ -46,7 +46,8 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S  ::= E | E = E
+S  ::= S' END
+S' ::= E | E = E
 E  ::= T E'
 E' ::= + T E' | - T E' | e
 T  ::= F T'

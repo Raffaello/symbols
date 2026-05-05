@@ -12,6 +12,8 @@
  *
  * Grammar:
  * S  ::= E | E = E
+ * S' ::= E | E = E
+ * E  ::= T E'
  * E' ::= + T E' | - T E' | e
  * T  ::= F T'
  * T' ::= * F T' | / F T' | e
@@ -25,12 +27,12 @@ private:
     LexScanner& m_lexer;
     AST         m_ast;
     Token       m_token;
-    bool        m_end = false;
 
     bool advance_();
     bool expect_(const eTOKENS type);
 
     std::unique_ptr<INode> stmt_();
+    std::unique_ptr<INode> stmtPrime_();
     std::unique_ptr<INode> expr_();
     std::unique_ptr<INode> exprPrime_(std::unique_ptr<INode> left);
     std::unique_ptr<INode> term_();
