@@ -8,26 +8,10 @@
 bool ParserLL1::advance_()
 {
     if (!m_lexer.next())
-    {
-        if (m_lexer.lastToken().type != eTOKENS::ERROR)
-        {
-            // This is the only case if calling again for the next token when already returned END
-            m_end         = true;
-            m_token.value = "";
-        }
-
-
         return false;
-    }
 
     m_token = m_lexer.lastToken();
-    if (m_token.type == eTOKENS::END)
-    {
-        m_end = true;
-        return false;
-    }
-
-    return true;
+    return m_token.type != eTOKENS::END;
 }
 
 bool ParserLL1::expect_(const eTOKENS type)
@@ -36,6 +20,19 @@ bool ParserLL1::expect_(const eTOKENS type)
 }
 
 std::unique_ptr<INode> ParserLL1::stmt_()
+{
+    auto s = stmtPrime_();
+
+    if (m_token.type != eTOKENS::END)
+    {
+        std::cerr << std::format("ERROR: Expected statement end, instead: {}\n", m_token.value);
+        return nullptr;
+    }
+
+    return s;
+}
+
+std::unique_ptr<INode> ParserLL1::stmtPrime_()
 {
     auto l = expr_();
     if (l == nullptr)
@@ -60,14 +57,6 @@ std::unique_ptr<INode> ParserLL1::stmt_()
         n->r     = std::move(r);
 
         return n;
-    }
-
-
-    // TODO: replace with END token
-    if (!m_end)
-    {
-        std::cerr << std::format("\nERROR: unable to parse\n");
-        return nullptr;
     }
 
     return l;
@@ -246,7 +235,6 @@ ParserLL1::ParserLL1(LexScanner& lex_scanner) : m_lexer(lex_scanner)
 
 bool ParserLL1::parse()
 {
-    m_end = false;
     if (!advance_())
         return false;
 
@@ -256,9 +244,6 @@ bool ParserLL1::parse()
 
     if (m_token.type == eTOKENS::ERROR)
         throw std::runtime_error("debug");
-
-    if (!m_end)
-        throw std::runtime_error("debug2");
 
     m_ast.setRoot(root);
     return true;
