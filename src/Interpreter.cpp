@@ -119,6 +119,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
         }
 
         m_lastExpr = std::format("{} {} {} = {}", l, bin->token.value, r, m_lastValue);
+        // std::cout << std::format("|> {}\n", m_lastExpr);
         return true;
     }
 

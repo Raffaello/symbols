@@ -55,7 +55,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("1+2*2^2", 9.0, "", "1 + 8 = 9"),
         std::make_tuple("-2^2", -4.0, "", "-(2 ^ 2 = 4)"),
         std::make_tuple("2^-2", 0.25, "", "2 ^ -2 = 0.25"),
-        std::make_tuple("2^3^2", 512, "", "2 ^ 9 = 512")
+        std::make_tuple("2^3^2", 512, "", "2 ^ 9 = 512"),
+        std::make_tuple("2*3^2+1", 19, "", "18 + 1 = 19")
 
             ));
 
