@@ -24,6 +24,14 @@ target_sources(interpreter PRIVATE
 target_include_directories(interpreter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(interpreter PUBLIC parser)
 
+add_library(solver)
+add_dependencies(solver parser)
+target_sources(solver PRIVATE
+    Solver.cpp
+  )
+target_include_directories(solver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
+target_link_libraries(solver PUBLIC parser)
+
 add_executable(symbols main.cpp)
 target_compile_definitions(symbols PUBLIC
 )
@@ -40,4 +48,5 @@ target_include_directories(symbols PRIVATE
 )
 target_link_libraries(symbols PRIVATE
     interpreter
+    solver
 )

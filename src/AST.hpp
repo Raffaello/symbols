@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <list>
+#include <sstream>
 
 struct INode
 {
@@ -40,15 +41,18 @@ private:
     std::unique_ptr<INode> m_pRoot    = nullptr;
     INode*                 m_pCurrent = nullptr;
 
+    void to_string_(const INode* node, std::stringstream& ss) const noexcept;
     void print_(const INode* node, const int indent);
 
 public:
     AST()  = default;
     ~AST() = default;
 
-    void setRoot(std::unique_ptr<INode>& root);
 
+    void                setRoot(std::unique_ptr<INode>& root);
     inline const INode* getRoot() const noexcept;
+
+    std::string to_string() const noexcept;
 
     /**
      * TODO: remove / use for debug only
