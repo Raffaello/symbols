@@ -41,7 +41,7 @@ private:
     std::unique_ptr<INode> m_pRoot    = nullptr;
     INode*                 m_pCurrent = nullptr;
 
-    void to_string_(const INode* node, std::stringstream& ss) const noexcept;
+    void to_string_(const INode* node, std::stringstream& ss, const int level) const;
     void print_(const INode* node, const int indent);
 
 public:
@@ -52,7 +52,7 @@ public:
     void                setRoot(std::unique_ptr<INode>& root);
     inline const INode* getRoot() const noexcept;
 
-    std::string to_string() const noexcept;
+    std::string to_string() const;
 
     /**
      * TODO: remove / use for debug only
