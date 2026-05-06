@@ -30,7 +30,7 @@ std::unique_ptr<INode> ParserLL1::stmt_()
         const Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: expected a stmt after operator {}", m_token.value);
+            std::cerr << std::format("ERROR: expected a stmt after operator {}\n", m_token.value);
             return nullptr;
         }
 

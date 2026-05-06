@@ -46,7 +46,8 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S    ::= S' END | S' , S
+S    ::= S' S2
+S2   ::= END | , S
 S'   ::= E | E = E
 E    ::= T E'
 E'   ::= + T E' | - T E' | e

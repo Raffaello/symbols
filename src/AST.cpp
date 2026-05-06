@@ -116,6 +116,9 @@ void AST::setRoot(std::unique_ptr<INode>& root)
 
 std::string AST::to_string() const
 {
+    if (m_pRoot == nullptr)
+        return "";
+
     std::stringstream ss;
 
     to_string_(m_pRoot.get(), ss, 0);

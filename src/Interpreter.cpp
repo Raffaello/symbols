@@ -68,12 +68,13 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
         // TODO: specific for the assignment:
         if (bin->token.type == eTOKENS::EQUAL)
         {
-            if (!eval_(bin->r.get()))
-                return false_();
-
-            const double r = m_lastValue;
             if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
             {
+                if (!eval_(bin->r.get()))
+                    return false_();
+
+                const double r = m_lastValue;
+
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
                 m_lastExpr                = std::format("{} = {}", sym->value, r);
