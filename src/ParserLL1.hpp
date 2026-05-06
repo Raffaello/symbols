@@ -10,8 +10,7 @@
  * Recursive Descent LL1 Parsers
  *
  * Grammar:
- * S    ::= S' S2
- * S2   ::= END | , S
+ * S    ::= S' END
  * S'   ::= E | E = E
  * E    ::= T E'
  * E'   ::= + T E' | - T E' | e

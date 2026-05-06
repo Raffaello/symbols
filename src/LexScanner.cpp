@@ -82,9 +82,7 @@ void LexScanner::stateStart_(const uint8_t c)
     else if (c == '/')
         m_state = eState::MUL_OP_DIV;
     else if (c == '^')
-        m_state = eState::POW_OP;
-    else if (c == ',')
-        m_state = eState::COMMA_OP;
+        m_state = eState::POW;
     else if (isSpace_(c))
         return;
     else if (c == EOF_)
@@ -204,12 +202,9 @@ bool LexScanner::next()
         case MUL_OP_DIV:
             unget_(c);
             return stateFinal_(eTOKENS::MUL_OP);
-        case POW_OP:
+        case POW:
             unget_(c);
             return stateFinal_(eTOKENS::POW_OP);
-        case COMMA_OP:
-            unget_(c);
-            return stateFinal_(eTOKENS::COMMA_OP);
         case PARENTHESES_LEFT:
             unget_(c);
             return stateFinal_(eTOKENS::LEFT_PARENTHESES);
