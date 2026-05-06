@@ -9,7 +9,7 @@
  * TODO: This is to be rewritten as it is wrong.
  *       Most Likely have a better AST specific for the solver
  *       need to work out how to manipulate the whole AST, for e.g. dividing by 2 all the equation, like to solve the case 2*x=1
- *       Also need to have a better grammar about to condense symbols: 2*x => 2x, x+x => 2x etc..
+ *       Also need to have a better grammar about to condense symbols: 2*x or x*2 => 2x, x+x => 2x etc..
  *       at the moment the syntax 2x is not neither supported and it should instead
  *
  * @brief Solver for 1 variable e.g. -x = x+2 => -2x=2 => x = -1
