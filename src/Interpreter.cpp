@@ -65,16 +65,16 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
 {
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
+        if (!eval_(bin->r.get()))
+            return false_();
+
+        const double r = m_lastValue;
+
         // TODO: specific for the assignment:
         if (bin->token.type == eTOKENS::EQUAL)
         {
             if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
             {
-                if (!eval_(bin->r.get()))
-                    return false_();
-
-                const double r = m_lastValue;
-
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
                 m_lastExpr                = std::format("{} = {}", sym->value, r);
@@ -88,21 +88,11 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
         if (!eval_(bin->l.get()))
             return false_();
 
-        const double      l      = m_lastValue;
-        const std::string l_expr = m_lastExpr;
-        if (!eval_(bin->r.get()))
-            return false_();
-
-        const double r = m_lastValue;
-
+        const double l = m_lastValue;
         switch (bin->token.type)
         {
             using enum eTOKENS;
 
-        case COMMA_OP:
-            m_lastValue = r;
-            m_lastExpr  = std::format("{}{} {}", l_expr, bin->token.value, m_lastExpr);
-            return true;
         case SUM_OP:
             if (bin->token.value == "+")
                 m_lastValue = l + r;
