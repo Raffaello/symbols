@@ -4,13 +4,12 @@
 #include <ParserLL1.hpp>
 #include <array>
 
-class TestSolver : public ::testing::TestWithParam<std::tuple<std::string_view, double, std::string, std::string>>
+class TestSolver : public ::testing::TestWithParam<std::tuple<std::string_view, std::string, std::string>>
 {
 public:
     const std::string_view line   = std::get<0>(GetParam());
-    const double           expVal = std::get<1>(GetParam());
-    const std::string      sym    = std::get<2>(GetParam());
-    const std::string      expr   = std::get<3>(GetParam());
+    const std::string      sym    = std::get<1>(GetParam());
+    const std::string      expAST = std::get<2>(GetParam());
 };
 
 TEST_P(TestSolver, eval)
@@ -20,31 +19,27 @@ TEST_P(TestSolver, eval)
     Solver     solver;
 
     ASSERT_TRUE(parser.parse());
-    parser.ast().print();
 
-    FAIL();
+    AST& ast = parser.ast();
 
-    // ASSERT_TRUE(solver.eval(parser.ast()));
-
-    // // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
-    // ASSERT_NEAR(solver.lastValue(), expVal, 1e-6);
-    // // ASSERT_EQ(solver.lastValue(), expVal);
-    // ASSERT_STREQ(solver.lastExpr().data(), expr.c_str());
-
-    // if (!sym.empty())
-    // {
-    //     // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
-    //     ASSERT_NEAR(solver.symbolTable().at(sym), expVal, 1e-6);
-    //     // ASSERT_EQ(solver.symbolTable().at(sym), expVal);
-    // }
+    ASSERT_TRUE(solver.solve(ast, sym));
+    EXPECT_STREQ(ast.to_string().c_str(), expAST.data());
 }
 
 INSTANTIATE_TEST_SUITE_P(
     SolverTestSuite,
     TestSolver,
     ::testing::Values(
+        std::make_tuple("x=1", "x", "x = 1"),
+        std::make_tuple("1=x", "x", "x = 1"),
+        std::make_tuple("1+0=x", "x", "x = 1"),
+        std::make_tuple("1*1=x", "x", "x = 1"),
+        std::make_tuple("a=x", "x", "x = a"),
+        std::make_tuple("a+1+0=x", "x", "x = a + 1"),
+        std::make_tuple("a+1*1=x", "x", "x = a + 1"),
+        std::make_tuple("2*x=1", "x", "x = -0.5")
 
-        ));
+            ));
 
 class TestSolverError : public ::testing::TestWithParam<std::string_view>
 {

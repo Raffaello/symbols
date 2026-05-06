@@ -73,6 +73,119 @@ bool Solver::is_num_(const INode* node) const noexcept
     return false;
 }
 
+std::unique_ptr<INode> Solver::simplify_(std::unique_ptr<INode>& node)
+{
+    if (is_num_(node.get()) || is_symbol_(node.get()))
+        return std::move(node);
+
+    // if(is_expr_(node.get()))
+    if (auto bin = dynamic_cast<NodeBin*>(node.get()))
+    {
+        auto l = simplify_(bin->l);
+        auto r = simplify_(bin->r);
+
+        return simplifyExpr_(l, r, bin->token);
+    }
+    else if (auto uni = dynamic_cast<NodeUnary*>(node.get()))
+    {
+        if (uni->token.value[0] == '+')
+            return std::move(uni->n);
+    }
+    else
+        throw std::runtime_error("?");
+}
+
+std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::unique_ptr<INode>& right, Token& t)
+{
+    switch (t.type)
+    {
+    default:
+        nullptr;
+
+    case eTOKENS::SUM_OP:
+    case eTOKENS::MUL_OP:
+    case eTOKENS::POW_OP:
+    {
+        if (is_num_(left.get()) && is_num_(right.get()))
+        {
+            auto l = dynamic_cast<LeafNum*>(left.get())->value;
+            auto r = dynamic_cast<LeafNum*>(right.get())->value;
+            auto n = std::make_unique<LeafNum>();
+            switch (t.value[0])
+            {
+            default:
+                throw std::runtime_error("t.value[0]");
+                break;
+            case '+':
+                n->value = l + r;
+                break;
+            case '-':
+                n->value = l - r;
+                break;
+            case '*':
+                n->value = l * r;
+                break;
+            case '/':
+                n->value = l / r;
+                break;
+            case '^':
+                n->value = std::pow(l, r);
+                break;
+            }
+
+            return std::move(n);
+        }
+
+        if (t.type == eTOKENS::SUM_OP)
+        {
+            if (auto l = dynamic_cast<LeafNum*>(left.get()))
+            {
+                if (l->value == 0.0)
+                    return std::move(right);
+            }
+            else if (auto r = dynamic_cast<LeafNum*>(right.get()))
+            {
+                if (r->value == 0.0)
+                    return std::move(left);
+            }
+        }
+        else if (t.type == eTOKENS::MUL_OP)
+        {
+            if (auto l = dynamic_cast<LeafNum*>(left.get()))
+            {
+                if (l->value == 1.0)
+                    return std::move(right);
+            }
+            else if (auto r = dynamic_cast<LeafNum*>(right.get()))
+            {
+                if (r->value == 1.0)
+                    return std::move(left);
+            }
+        }
+        else if (t.type == eTOKENS::POW_OP)
+        {
+            if (auto l = dynamic_cast<LeafNum*>(left.get()))    // 1^x
+            {
+                if (l->value == 1.0)
+                    return std::move(left);                           // returning 1.0
+            }
+            else if (auto r = dynamic_cast<LeafNum*>(right.get()))    // x^1
+            {
+                if (r->value == 1.0)
+                    return std::move(left);    // returning x
+            }
+        }
+    }
+    break;
+    }
+
+    auto n   = std::make_unique<NodeBin>();
+    n->token = t;
+    n->l     = std::move(left);
+    n->r     = std::move(right);
+    return std::move(n);
+}
+
 bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
 {
     if (auto node_eq = dynamic_cast<NodeBin*>(node))
@@ -101,6 +214,9 @@ bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
 
         if (l != nullptr && r != nullptr)
         {
+            node_eq->r = simplify_(node_eq->r);
+            r          = node_eq->r.get();
+
             // x = 1 or x = a or x = [expr]
             if (is_num_(r))
             {
@@ -130,8 +246,27 @@ bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
         }
         else
         {
-            // RHS - LHS = 0
-            // TODO
+            // RHS - LHS=0
+            auto zero      = std::make_unique<LeafNum>();
+            zero->value    = 0.0;
+            auto n         = std::make_unique<NodeBin>();
+            n->token.type  = eTOKENS::SUM_OP;
+            n->token.value = "-";
+            n->l           = std::move(node_eq->r);
+            n->r           = std::move(node_eq->l);
+            node_eq->l     = std::move(n);
+            node_eq->r     = std::move(zero);
+
+            node_eq->l = simplify_(node_eq->l);
+            auto res   = solve_expr_(node_eq->l, for_symbol);
+
+            if (!res.has_value())
+                return true;
+
+            if (res.value())
+                return solve_equation_(node, for_symbol);    // redo it
+            else
+                return false;
         }
     }
 
@@ -224,6 +359,7 @@ std::optional<bool> Solver::solve_expr_(std::unique_ptr<INode>& node, const std:
             // can be unary or symbols or mixed with number
             // -1 + a  ==> should be rewritten as a - 1
             // or 1 + a ==> can do nothing, this form is final
+            // or 2 * x ==> need to check if it is asymbol here
             // return true;
 
             return std::nullopt;
