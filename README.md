@@ -22,7 +22,8 @@ The Grammar for the arithmetical expression is the following, it doesn't allow +
 EBNF:
 
 ```ebnf
-stmt      ::= expr END | equation END
+stmt      ::= stmt' END | stmt' , stmt
+stmt'      ::= expr END | equation END
 
 equation ::= expr = expr
 
