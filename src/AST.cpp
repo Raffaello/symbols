@@ -47,6 +47,10 @@ void AST::to_string_(const INode* node, std::stringstream& ss, const int level) 
             to_string_(bin->l.get(), ss, l);
             ss << std::format(" {} ", bin->token.value);
             break;
+        case COMMA_OP:
+            to_string_(bin->l.get(), ss, l);
+            ss << std::format("{} ", bin->token.value);
+            break;
         }
 
         to_string_(bin->r.get(), ss, l);
@@ -112,6 +116,9 @@ void AST::setRoot(std::unique_ptr<INode>& root)
 
 std::string AST::to_string() const
 {
+    if (m_pRoot == nullptr)
+        return "";
+
     std::stringstream ss;
 
     to_string_(m_pRoot.get(), ss, 0);

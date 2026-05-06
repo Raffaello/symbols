@@ -2,6 +2,10 @@
 
 #include <string>
 
+/**
+ * @brief TODO: all the operator could be reduced with 1 token: OPERATOR
+ *
+ */
 enum class eTOKENS
 {
     ERROR = -1,
@@ -9,6 +13,7 @@ enum class eTOKENS
     SUM_OP,       // +|-
     MUL_OP,       // *|/
     POW_OP,       // ^
+    COMMA_OP,     // ,
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
     EQUAL,

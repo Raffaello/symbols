@@ -50,7 +50,6 @@ public:
     AST()  = default;
     ~AST() = default;
 
-
     void                setRoot(std::unique_ptr<INode>& root);
     inline const INode* getRoot() const noexcept;
 
