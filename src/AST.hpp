@@ -9,6 +9,8 @@
 struct INode
 {
     virtual ~INode() = default;
+
+    // virtual double eval() = 0; // TODO: need to find a way to pass the symbol table or to be aware of te symbol table
 };
 
 struct LeafNum : public INode

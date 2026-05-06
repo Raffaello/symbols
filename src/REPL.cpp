@@ -153,8 +153,10 @@ int REPL::runLoop()
             std::cout << std::format("{}\n", m_intr.lastExpr());
             break;
         case eType::SOLVER:
-            m_solver.solve(m_parser.ast(), "x");    // TODO: how to pass to solve for x? using the comma token? like 'x+a+b-c=0, x=?'
-            std::cerr << "ERROR: NOT implemented yet\n";
+            // TODO: how to pass to solve for x? using the comma token? like 'x+a+b-c=0, x=?'
+            if (m_solver.solve(m_parser.ast(), "x"))
+                std::cout << std::format("|> {}\n", m_parser.ast().to_string());
+
             break;
         default:
             throw std::runtime_error("unknown m_type");
