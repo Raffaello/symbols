@@ -3,7 +3,7 @@
 #include <string>
 
 /**
- * @brief TOD: all the operator could be reduced to 1 token: OPERATOR
+ * @brief TODO: all the operator could be reduced with 1 token: OPERATOR
  *
  */
 enum class eTOKENS
