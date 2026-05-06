@@ -87,7 +87,8 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
         if (!eval_(bin->l.get()))
             return false_();
 
-        const double l = m_lastValue;
+        const double      l      = m_lastValue;
+        const std::string l_expr = m_lastExpr;
         if (!eval_(bin->r.get()))
             return false_();
 
@@ -99,7 +100,8 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
 
         case COMMA_OP:
             m_lastValue = r;
-            break;
+            m_lastExpr  = std::format("{}{} {}", l_expr, bin->token.value, m_lastExpr);
+            return true;
         case SUM_OP:
             if (bin->token.value == "+")
                 m_lastValue = l + r;

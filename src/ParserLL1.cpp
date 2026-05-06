@@ -27,13 +27,22 @@ std::unique_ptr<INode> ParserLL1::stmt_()
 
     if (m_token.type == eTOKENS::COMMA_OP)
     {
+        const Token t = m_token;
         if (!advance_())
         {
             std::cerr << std::format("ERROR: expected a stmt after operator {}", m_token.value);
             return nullptr;
         }
 
-        return stmt_();
+        auto s2 = stmt_();
+        if (s2 == nullptr)
+            return nullptr;
+
+        auto n   = std::make_unique<NodeBin>();
+        n->token = t;
+        n->l     = std::move(s);
+        n->r     = std::move(s2);
+        return n;
     }
     else if (m_token.type == eTOKENS::END)
         return s;
