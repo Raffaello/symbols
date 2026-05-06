@@ -22,7 +22,8 @@ The Grammar for the arithmetical expression is the following, it doesn't allow +
 EBNF:
 
 ```ebnf
-stmt      ::= expr END | equation END
+stmt      ::= stmt' END | stmt' , stmt
+stmt'      ::= expr END | equation END
 
 equation ::= expr = expr
 
@@ -76,6 +77,4 @@ Not supporting solving equation, but only if those are reduced to what is consid
 
 The REPL is the program using all other components.
 
-> TODO: Switch among interpreter and solver,
->       possibly with `:eval` and `:solve` keywords, to switch to one or
->       another in the REPL shell session.
+Switch among interpreter and solver, with `:eval` and `:solve` keywords.

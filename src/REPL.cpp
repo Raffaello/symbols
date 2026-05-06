@@ -3,6 +3,7 @@
 #include <iostream>
 #include <format>
 #include <algorithm>
+#include <stdexcept>
 
 std::string REPL::extract_args_(std::string_view s, std::string_view cmd)
 {
@@ -30,6 +31,8 @@ void REPL::help_() const noexcept
 {
     std::cout << std::format(":{}\t\t => show this screen.\n", CMD_HELP);
     std::cout << std::format(":{}\t\t => exit the program.\n", CMD_QUIT);
+    std::cout << std::format(":{}\t\t => switch to eval mode (Interpreter).\n", CMD_EVAL);
+    std::cout << std::format(":{}\t\t => switch to solver mode (Solver).\n", CMD_SOLVER);
     std::cout << std::format(":{}\t => print the symbol table.\n", CMD_SYM_TABLE);
     std::cout << std::format(":{}\t\t => print the last computed value.\n", CMD_LAST_VALUE);
     std::cout << std::format(":{} [symbol]\t => unset a symbol requires a name after.\n", CMD_SYM_UNSET);
@@ -71,12 +74,31 @@ void REPL::symbols_clear_() noexcept
     printSymbolTable_();
 }
 
+void REPL::printShellLine_() const
+{
+    switch (m_type)
+    {
+    case eType::EVAL:
+        std::cout << "\n$eval> ";
+        break;
+    case eType::SOLVER:
+        std::cout << "\n$solver> ";
+        break;
+    default:
+        throw std::invalid_argument("m_type invalid");
+    }
+}
+
 bool REPL::handleReplCmd(const std::string_view replCmd)
 {
     if (replCmd == CMD_HELP)
         help_();
     else if (replCmd == CMD_QUIT)
         m_quit = true;
+    else if (replCmd == CMD_EVAL)
+        m_type = eType::EVAL;
+    else if (replCmd == CMD_SOLVER)
+        m_type = eType::SOLVER;
     else if (replCmd == CMD_SYM_TABLE)
         printSymbolTable_();
     else if (replCmd == CMD_LAST_VALUE)
@@ -100,7 +122,7 @@ int REPL::runLoop()
     {
         std::string input;
 
-        std::cout << "\n$> ";
+        printShellLine_();
         if (!std::getline(std::cin, input))
         {
             std::cin.clear();
@@ -121,10 +143,24 @@ int REPL::runLoop()
         if (!m_parser.parse())
             continue;
 
-        if (!m_intr.eval(m_parser.ast()))
-            continue;
+        switch (m_type)
+        {
+        case eType::EVAL:
+            if (!m_intr.eval(m_parser.ast()))
+                continue;
 
-        std::cout << std::format("$> {}\n", m_intr.lastExpr());
+            printShellLine_();
+            std::cout << std::format("{}\n", m_intr.lastExpr());
+            break;
+        case eType::SOLVER:
+            // TODO: how to pass to solve for x? using the comma token? like 'x+a+b-c=0, x=?'
+            if (m_solver.solve(m_parser.ast(), "x"))
+                std::cout << std::format("|> {}\n", m_parser.ast().to_string());
+
+            break;
+        default:
+            throw std::runtime_error("unknown m_type");
+        }
     }
 
     return 0;
