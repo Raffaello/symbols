@@ -4,13 +4,10 @@
 
 #include <memory>
 #include <list>
-#include <sstream>
 
 struct INode
 {
     virtual ~INode() = default;
-
-    // virtual double eval() = 0; // TODO: need to find a way to pass the symbol table or to be aware of te symbol table
 };
 
 struct LeafNum : public INode
@@ -43,17 +40,15 @@ private:
     std::unique_ptr<INode> m_pRoot    = nullptr;
     INode*                 m_pCurrent = nullptr;
 
-    void to_string_(const INode* node, std::stringstream& ss, const int level) const;
     void print_(const INode* node, const int indent);
 
 public:
     AST()  = default;
     ~AST() = default;
 
-    void                setRoot(std::unique_ptr<INode>& root);
-    inline const INode* getRoot() const noexcept;
+    void setRoot(std::unique_ptr<INode>& root);
 
-    std::string to_string() const;
+    inline const INode* getRoot() const noexcept;
 
     /**
      * TODO: remove / use for debug only

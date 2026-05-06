@@ -3,63 +3,6 @@
 #include <cassert>
 #include <iostream>
 #include <format>
-#include <sstream>
-
-void AST::to_string_(const INode* node, std::stringstream& ss, const int level) const
-{
-    if (auto num = dynamic_cast<const LeafNum*>(node))
-        ss << num->value;
-    else if (auto sym = dynamic_cast<const LeafSymbol*>(node))
-        ss << sym->value;
-    else if (auto uni = dynamic_cast<const NodeUnary*>(node))
-    {
-        if (level > 0)
-            ss << "(";
-
-        ss << uni->token.value;
-        to_string_(uni->n.get(), ss, level + 1);
-
-        if (level > 0)
-            ss << ")";
-    }
-    else if (auto bin = dynamic_cast<const NodeBin*>(node))
-    {
-        auto l = level;
-
-        if (level > 0)
-            ss << "(";
-
-        switch (bin->token.type)
-        {
-            using enum eTOKENS;
-
-        default:
-            l++;
-            to_string_(bin->l.get(), ss, l);
-            ss << std::format(" {} ", bin->token.value);
-            break;
-        case POW_OP:
-            l++;
-            to_string_(bin->l.get(), ss, l);
-            ss << std::format("{}", bin->token.value);
-            break;
-        case EQUAL:
-            to_string_(bin->l.get(), ss, l);
-            ss << std::format(" {} ", bin->token.value);
-            break;
-        case COMMA_OP:
-            to_string_(bin->l.get(), ss, l);
-            ss << std::format("{} ", bin->token.value);
-            break;
-        }
-
-        to_string_(bin->r.get(), ss, l);
-        if (level > 0)
-            ss << ")";
-    }
-    else
-        throw std::runtime_error("invalid AST");
-}
 
 void AST::print_(const INode* node, const int indent)
 {
@@ -112,17 +55,6 @@ void AST::print_(const INode* node, const int indent)
 void AST::setRoot(std::unique_ptr<INode>& root)
 {
     m_pRoot = std::move(root);
-}
-
-std::string AST::to_string() const
-{
-    if (m_pRoot == nullptr)
-        return "";
-
-    std::stringstream ss;
-
-    to_string_(m_pRoot.get(), ss, 0);
-    return ss.str();
 }
 
 void AST::print()
