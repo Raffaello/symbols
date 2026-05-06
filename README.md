@@ -46,7 +46,7 @@ predicate ::= digit
 LL(1) compatible grammar:
 
 ```ebnf
-S    ::= S' END
+S    ::= S' END | S' , S
 S'   ::= E | E = E
 E    ::= T E'
 E'   ::= + T E' | - T E' | e
@@ -71,6 +71,8 @@ Not supporting solving equation, but only if those are reduced to what is consid
 # Solver
 
 > TODO
+
+most likely i should create 2 grammars: 1 for the interpreter 1 for the solver, even though are quite similar.
 
 # REPL
 

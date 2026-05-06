@@ -25,13 +25,21 @@ std::unique_ptr<INode> ParserLL1::stmt_()
     if (s == nullptr)
         return nullptr;
 
-    if (m_token.type != eTOKENS::END)
+    if (m_token.type == eTOKENS::COMMA_OP)
     {
-        std::cerr << std::format("ERROR: Expected statement end, instead: {}\n", m_token.value);
-        return nullptr;
-    }
+        if (!advance_())
+        {
+            std::cerr << std::format("ERROR: expected a stmt after operator {}", m_token.value);
+            return nullptr;
+        }
 
-    return s;
+        return stmt_();
+    }
+    else if (m_token.type == eTOKENS::END)
+        return s;
+
+    std::cerr << std::format("ERROR: Expected statement end, instead: {}\n", m_token.value);
+    return nullptr;
 }
 
 std::unique_ptr<INode> ParserLL1::stmtPrime_()

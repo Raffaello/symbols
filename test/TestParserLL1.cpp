@@ -55,7 +55,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("1^1"),
         std::make_tuple("1^(1+1)"),
         std::make_tuple("(1+1)^(1+1)"),
-        std::make_tuple("(1)^1^1^(1)")
+        std::make_tuple("(1)^1^1^(1)"),
+        std::make_tuple("1+1,x=1")
 
             ));
 
@@ -102,6 +103,7 @@ INSTANTIATE_TEST_SUITE_P(
         // "a+b = x+1",
         "x=",
         "1+1 (1-1)"
+        "1,"
 
         ));
 

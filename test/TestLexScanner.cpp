@@ -210,6 +210,16 @@ INSTANTIATE_TEST_SUITE_P(
                                    {.type = eTOKENS::POW_OP, .value = "^"},
                                    {.type = eTOKENS::SYMBOL, .value = "b"},
                                    {.type = eTOKENS::END, .value = ""},
+                               }),
+        std::make_tuple(",", std::vector<Token>{
+                                 {.type = eTOKENS::COMMA_OP, .value = ","},
+                                 {.type = eTOKENS::END, .value = ""},
+                             }),
+        std::make_tuple("1,a", std::vector<Token>{
+                                   {.type = eTOKENS::NUM, .value = "1"},
+                                   {.type = eTOKENS::COMMA_OP, .value = ","},
+                                   {.type = eTOKENS::SYMBOL, .value = "a"},
+                                   {.type = eTOKENS::END, .value = ""},
                                })
 
             ));
