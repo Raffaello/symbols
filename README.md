@@ -80,6 +80,4 @@ most likely i should create 2 grammars: 1 for the interpreter 1 for the solver, 
 
 The REPL is the program using all other components.
 
-> TODO: Switch among interpreter and solver,
->       possibly with `:eval` and `:solve` keywords, to switch to one or
->       another in the REPL shell session.
+Switch among interpreter and solver, with `:eval` and `:solve` keywords.
