@@ -36,7 +36,7 @@ std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
     return std::nullopt;
 }
 
-std::optional<bool> Interpreter::evalUni_(const AST::INode* node)
+std::optional<bool> Interpreter::evalUny_(const AST::INode* node)
 {
     if (auto uni = dynamic_cast<const AST::NodeUnary*>(node))
     {
@@ -135,7 +135,7 @@ bool Interpreter::eval_(const AST::INode* node)
     if (res.has_value())
         return *res;
 
-    res = evalUni_(node);
+    res = evalUny_(node);
     if (res.has_value())
         return *res;
 

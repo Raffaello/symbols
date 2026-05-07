@@ -20,7 +20,7 @@ private:
 
     std::optional<bool> evalNum_(const AST::INode* node);
     std::optional<bool> evalSym_(const AST::INode* node);
-    std::optional<bool> evalUni_(const AST::INode* node);
+    std::optional<bool> evalUny_(const AST::INode* node);
     std::optional<bool> evalBin_(const AST::INode* node);
 
     bool eval_(const AST::INode* node);
