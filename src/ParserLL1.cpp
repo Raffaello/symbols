@@ -53,12 +53,7 @@ std::unique_ptr<INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        auto n   = std::make_unique<NodeBin>();
-        n->token = t;
-        n->l     = std::move(l);
-        n->r     = std::move(r);
-
-        return n;
+        return NodeBin::make(t, l, r);
     }
 
     return l;
@@ -77,12 +72,10 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
-        auto node   = std::make_unique<NodeBin>();
-        node->token = m_token;
-
+        const Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: after operator {}\n", node->token.value);
+            std::cerr << std::format("ERROR: after operator {}\n", t.value);
             return nullptr;
         }
 
@@ -90,15 +83,10 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
         if (right == nullptr)
             return nullptr;
 
-        node->l = std::move(left);
-        node->r = std::move(right);
-
-        return exprPrime_(std::move(node));
+        return exprPrime_(NodeBin::make(t, left, right));
     }
     else
-    {
         return left;
-    }
 }
 
 std::unique_ptr<INode> ParserLL1::term_()
@@ -114,12 +102,10 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
 {
     if (m_token.type == eTOKENS::MUL_OP)
     {
-        auto node   = std::make_unique<NodeBin>();
-        node->token = m_token;
-
+        const Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: after operator {}\n", node->token.value);
+            std::cerr << std::format("ERROR: after operator {}\n", t.value);
             return nullptr;
         }
 
@@ -127,10 +113,7 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
         if (right == nullptr)
             return nullptr;
 
-        node->l = std::move(left);
-        node->r = std::move(right);
-
-        return termPrime_(std::move(node));
+        return termPrime_(NodeBin::make(t, left, right));
     }
     else
         return left;
@@ -161,10 +144,8 @@ std::unique_ptr<INode> ParserLL1::unary_()
             return nullptr;
         }
 
-        auto n   = std::make_unique<NodeUnary>();
-        n->token = t;
-        n->n     = nullptr;
-        return n;
+        // n->n     = nullptr;
+        return NodeUnary::make(t);
     }
     else
         return nullptr;
@@ -194,12 +175,7 @@ std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
         if (r == nullptr)
             return nullptr;
 
-        auto n   = std::make_unique<NodeBin>();
-        n->token = t;
-        n->l     = std::move(left);
-        n->r     = std::move(r);
-
-        return n;
+        return NodeBin::make(t, left, r);
     }
 
     return left;
@@ -235,8 +211,7 @@ std::unique_ptr<INode> ParserLL1::pred_()
     break;
     case SYMBOL:
     {
-        auto node   = std::make_unique<LeafSymbol>();
-        node->value = m_token.value;
+        auto node = LeafSymbol::make(m_token.value);
         advance_();
         return node;
     }
@@ -251,11 +226,8 @@ std::unique_ptr<INode> ParserLL1::pred_()
             return nullptr;
         }
 
-        auto node   = std::make_unique<LeafNum>();
-        node->value = num;
-
         advance_();
-        return node;
+        return LeafNum::make(num);
     }
     break;
     default:
