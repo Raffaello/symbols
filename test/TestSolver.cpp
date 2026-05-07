@@ -41,10 +41,11 @@ INSTANTIATE_TEST_SUITE_P(
 
             ));
 
-class TestSolverError : public ::testing::TestWithParam<std::string_view>
+class TestSolverError : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
 {
 public:
-    const std::string_view line = GetParam();
+    const std::string line = std::get<0>(GetParam());
+    const std::string sym  = std::get<1>(GetParam());
 };
 
 TEST_P(TestSolverError, eval_error)
@@ -55,17 +56,18 @@ TEST_P(TestSolverError, eval_error)
 
     ASSERT_TRUE(parser.parse());
 
-    FAIL();
+    AST& ast = parser.ast();
 
-    // ASSERT_FALSE(solver.eval(parser.ast()));
+    ASSERT_FALSE(solver.solve(ast, sym));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     SolverTestSuite,
     TestSolverError,
     ::testing::Values(
+        std::make_tuple("x=1", "y")
 
-        ));
+            ));
 
 int main(int argc, char** argv)
 {

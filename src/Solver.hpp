@@ -23,23 +23,23 @@ class Solver
 private:
     // std::stringstream m_solution;
 
-    bool has_symbol_(const INode* node, const std::string_view symbol) const noexcept;
+    bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
 
-    bool is_equation_(const INode* node) const noexcept;
-    bool is_expr_(const INode* node) const noexcept;
-    bool is_unary_(const INode* node) const noexcept;
-    bool is_symbol_(const INode* node) const noexcept;
-    bool is_symbol_(const INode* node, const std::string_view symbol) const noexcept;
-    bool is_num_(const INode* node) const noexcept;
-
-
-    std::unique_ptr<INode> simplify_(std::unique_ptr<INode>& node);
-    std::unique_ptr<INode> simplifyExpr_(std::unique_ptr<INode>& left, std::unique_ptr<INode>& right, Token& t);
+    bool is_equation_(const AST::INode* node) const noexcept;
+    bool is_expr_(const AST::INode* node) const noexcept;
+    bool is_unary_(const AST::INode* node) const noexcept;
+    bool is_symbol_(const AST::INode* node) const noexcept;
+    bool is_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
+    bool is_num_(const AST::INode* node) const noexcept;
 
 
-    bool                solve_equation_(INode* node, const std::string_view for_symbol);
-    std::optional<bool> solve_expr_(std::unique_ptr<INode>& node, const std::string_view for_symbol);
-    bool                solve_unary_(std::unique_ptr<INode>& node, const std::string_view for_symbol);
+    std::unique_ptr<AST::INode> simplify_(std::unique_ptr<AST::INode>& node);
+    std::unique_ptr<AST::INode> simplifyExpr_(std::unique_ptr<AST::INode>& left, std::unique_ptr<AST::INode>& right, Token& t);
+
+
+    bool                solve_equation_(AST::INode* node, const std::string_view for_symbol);
+    std::optional<bool> solve_expr_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol);
+    bool                solve_unary_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol);
 
 public:
     bool solve(AST& ast, const std::string_view for_symbol);

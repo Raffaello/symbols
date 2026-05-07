@@ -4,11 +4,11 @@
 #include <format>
 #include <cmath>
 
-bool Solver::has_symbol_(const INode* node, const std::string_view symbol) const noexcept
+bool Solver::has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept
 {
     if (is_symbol_(node, symbol))
         return true;
-    else if (auto bin = dynamic_cast<const NodeBin*>(node))
+    else if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
     {
         bool l = has_symbol_(bin->l.get(), symbol);
         if (l)
@@ -20,17 +20,17 @@ bool Solver::has_symbol_(const INode* node, const std::string_view symbol) const
     return false;
 }
 
-bool Solver::is_equation_(const INode* node) const noexcept
+bool Solver::is_equation_(const AST::INode* node) const noexcept
 {
-    if (auto bin = dynamic_cast<const NodeBin*>(node))
+    if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
         return bin->token.type == eTOKENS::EQUAL;
 
     return false;
 }
 
-bool Solver::is_expr_(const INode* node) const noexcept
+bool Solver::is_expr_(const AST::INode* node) const noexcept
 {
-    if (auto bin = dynamic_cast<const NodeBin*>(node))
+    if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
         return bin->token.type == eTOKENS::SUM_OP ||
                bin->token.type == eTOKENS::MUL_OP ||
                bin->token.type == eTOKENS::POW_OP;
@@ -38,25 +38,25 @@ bool Solver::is_expr_(const INode* node) const noexcept
     return false;
 }
 
-bool Solver::is_unary_(const INode* node) const noexcept
+bool Solver::is_unary_(const AST::INode* node) const noexcept
 {
-    if (auto uni = dynamic_cast<const NodeUnary*>(node))
+    if (auto uni = dynamic_cast<const AST::NodeUnary*>(node))
         return true;
     else
         return false;
 }
 
-bool Solver::is_symbol_(const INode* node) const noexcept
+bool Solver::is_symbol_(const AST::INode* node) const noexcept
 {
-    if (auto sym = dynamic_cast<const LeafSymbol*>(node))
+    if (auto sym = dynamic_cast<const AST::LeafSymbol*>(node))
         return true;
 
     return false;
 }
 
-bool Solver::is_symbol_(const INode* node, const std::string_view symbol) const noexcept
+bool Solver::is_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept
 {
-    if (auto sym = dynamic_cast<const LeafSymbol*>(node))
+    if (auto sym = dynamic_cast<const AST::LeafSymbol*>(node))
     {
         if (sym->value == symbol)
             return true;
@@ -65,37 +65,38 @@ bool Solver::is_symbol_(const INode* node, const std::string_view symbol) const 
     return false;
 }
 
-bool Solver::is_num_(const INode* node) const noexcept
+bool Solver::is_num_(const AST::INode* node) const noexcept
 {
-    if (auto num = dynamic_cast<const LeafNum*>(node))
+    if (auto num = dynamic_cast<const AST::LeafNum*>(node))
         return true;
 
     return false;
 }
 
-std::unique_ptr<INode> Solver::simplify_(std::unique_ptr<INode>& node)
+std::unique_ptr<AST::INode> Solver::simplify_(std::unique_ptr<AST::INode>& node)
 {
     if (is_num_(node.get()) || is_symbol_(node.get()))
         return std::move(node);
 
     // if(is_expr_(node.get()))
-    if (auto bin = dynamic_cast<NodeBin*>(node.get()))
+    if (auto bin = dynamic_cast<AST::NodeBin*>(node.get()))
     {
         auto l = simplify_(bin->l);
         auto r = simplify_(bin->r);
 
         return simplifyExpr_(l, r, bin->token);
     }
-    else if (auto uni = dynamic_cast<NodeUnary*>(node.get()))
+    else if (auto uni = dynamic_cast<AST::NodeUnary*>(node.get()))
     {
         if (uni->token.value[0] == '+')
             return std::move(uni->n);
     }
-    else
-        throw std::runtime_error("?");
+
+
+    throw std::runtime_error("?");
 }
 
-std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::unique_ptr<INode>& right, Token& t)
+std::unique_ptr<AST::INode> Solver::simplifyExpr_(std::unique_ptr<AST::INode>& left, std::unique_ptr<AST::INode>& right, Token& t)
 {
     switch (t.type)
     {
@@ -108,9 +109,9 @@ std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::
     {
         if (is_num_(left.get()) && is_num_(right.get()))
         {
-            auto l = dynamic_cast<LeafNum*>(left.get())->value;
-            auto r = dynamic_cast<LeafNum*>(right.get())->value;
-            auto n = std::make_unique<LeafNum>();
+            auto l = dynamic_cast<AST::LeafNum*>(left.get())->value;
+            auto r = dynamic_cast<AST::LeafNum*>(right.get())->value;
+            auto n = std::make_unique<AST::LeafNum>();
             switch (t.value[0])
             {
             default:
@@ -138,12 +139,12 @@ std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::
 
         if (t.type == eTOKENS::SUM_OP)
         {
-            if (auto l = dynamic_cast<LeafNum*>(left.get()))
+            if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
             {
                 if (l->value == 0.0)
                     return std::move(right);
             }
-            else if (auto r = dynamic_cast<LeafNum*>(right.get()))
+            else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
             {
                 if (r->value == 0.0)
                     return std::move(left);
@@ -151,12 +152,12 @@ std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::
         }
         else if (t.type == eTOKENS::MUL_OP)
         {
-            if (auto l = dynamic_cast<LeafNum*>(left.get()))
+            if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
             {
                 if (l->value == 1.0)
                     return std::move(right);
             }
-            else if (auto r = dynamic_cast<LeafNum*>(right.get()))
+            else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
             {
                 if (r->value == 1.0)
                     return std::move(left);
@@ -164,12 +165,12 @@ std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::
         }
         else if (t.type == eTOKENS::POW_OP)
         {
-            if (auto l = dynamic_cast<LeafNum*>(left.get()))    // 1^x
+            if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))    // 1^x
             {
                 if (l->value == 1.0)
-                    return std::move(left);                           // returning 1.0
+                    return std::move(left);                                // returning 1.0
             }
-            else if (auto r = dynamic_cast<LeafNum*>(right.get()))    // x^1
+            else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))    // x^1
             {
                 if (r->value == 1.0)
                     return std::move(left);    // returning x
@@ -179,22 +180,22 @@ std::unique_ptr<INode> Solver::simplifyExpr_(std::unique_ptr<INode>& left, std::
     break;
     }
 
-    auto n   = std::make_unique<NodeBin>();
+    auto n   = std::make_unique<AST::NodeBin>();
     n->token = t;
     n->l     = std::move(left);
     n->r     = std::move(right);
     return std::move(n);
 }
 
-bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
+bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol)
 {
-    if (auto node_eq = dynamic_cast<NodeBin*>(node))
+    if (auto node_eq = dynamic_cast<AST::NodeBin*>(node))
     {
         if (node_eq->token.type != eTOKENS::EQUAL)
             return false;
 
-        const INode* l = nullptr;
-        const INode* r = nullptr;
+        const AST::INode* l = nullptr;
+        const AST::INode* r = nullptr;
 
         if (is_symbol_(node_eq->l.get(), for_symbol))
         {
@@ -204,9 +205,9 @@ bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
         else if (is_symbol_(node_eq->r.get(), for_symbol))
         {
             // swap l,r
-            auto tmp                         = std::move(const_cast<NodeBin*>(node_eq)->l);
-            const_cast<NodeBin*>(node_eq)->l = std::move(const_cast<NodeBin*>(node_eq)->r);
-            const_cast<NodeBin*>(node_eq)->r = std::move(tmp);
+            auto tmp                              = std::move(const_cast<AST::NodeBin*>(node_eq)->l);
+            const_cast<AST::NodeBin*>(node_eq)->l = std::move(const_cast<AST::NodeBin*>(node_eq)->r);
+            const_cast<AST::NodeBin*>(node_eq)->r = std::move(tmp);
 
             l = node_eq->l.get();
             r = node_eq->r.get();
@@ -247,9 +248,9 @@ bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
         else
         {
             // RHS - LHS=0
-            auto zero      = std::make_unique<LeafNum>();
+            auto zero      = std::make_unique<AST::LeafNum>();
             zero->value    = 0.0;
-            auto n         = std::make_unique<NodeBin>();
+            auto n         = std::make_unique<AST::NodeBin>();
             n->token.type  = eTOKENS::SUM_OP;
             n->token.value = "-";
             n->l           = std::move(node_eq->r);
@@ -273,9 +274,9 @@ bool Solver::solve_equation_(INode* node, const std::string_view for_symbol)
     return false;
 }
 
-std::optional<bool> Solver::solve_expr_(std::unique_ptr<INode>& node, const std::string_view for_symbol)
+std::optional<bool> Solver::solve_expr_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol)
 {
-    if (auto bin = dynamic_cast<NodeBin*>(node.get()))
+    if (auto bin = dynamic_cast<AST::NodeBin*>(node.get()))
     {
         if (bin->token.type == eTOKENS::EQUAL)
             return false;
@@ -316,36 +317,36 @@ std::optional<bool> Solver::solve_expr_(std::unique_ptr<INode>& node, const std:
 
             case '+':
             {
-                auto n   = std::make_unique<LeafNum>();
-                n->value = dynamic_cast<const LeafNum*>(bin->l.get())->value + dynamic_cast<const LeafNum*>(bin->r.get())->value;
+                auto n   = std::make_unique<AST::LeafNum>();
+                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value + dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
                 node     = std::move(n);
             }
             break;
             case '-':
             {
-                auto n   = std::make_unique<LeafNum>();
-                n->value = dynamic_cast<const LeafNum*>(bin->l.get())->value - dynamic_cast<const LeafNum*>(bin->r.get())->value;
+                auto n   = std::make_unique<AST::LeafNum>();
+                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value - dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
                 node     = std::move(n);
             }
             break;
             case '*':
             {
-                auto n   = std::make_unique<LeafNum>();
-                n->value = dynamic_cast<const LeafNum*>(bin->l.get())->value * dynamic_cast<const LeafNum*>(bin->r.get())->value;
+                auto n   = std::make_unique<AST::LeafNum>();
+                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value * dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
                 node     = std::move(n);
             }
             break;
             case '/':
             {
-                auto n   = std::make_unique<LeafNum>();
-                n->value = dynamic_cast<const LeafNum*>(bin->l.get())->value / dynamic_cast<const LeafNum*>(bin->r.get())->value;
+                auto n   = std::make_unique<AST::LeafNum>();
+                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value / dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
                 node     = std::move(n);
             }
             break;
             case '^':
             {
-                auto n   = std::make_unique<LeafNum>();
-                n->value = std::pow(dynamic_cast<const LeafNum*>(bin->l.get())->value, dynamic_cast<const LeafNum*>(bin->r.get())->value);
+                auto n   = std::make_unique<AST::LeafNum>();
+                n->value = std::pow(dynamic_cast<const AST::LeafNum*>(bin->l.get())->value, dynamic_cast<const AST::LeafNum*>(bin->r.get())->value);
                 node     = std::move(n);
             }
             break;
@@ -372,9 +373,9 @@ std::optional<bool> Solver::solve_expr_(std::unique_ptr<INode>& node, const std:
     return false;
 }
 
-bool Solver::solve_unary_(std::unique_ptr<INode>& node, const std::string_view for_symbol)
+bool Solver::solve_unary_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol)
 {
-    if (auto uni = dynamic_cast<NodeUnary*>(node.get()))
+    if (auto uni = dynamic_cast<AST::NodeUnary*>(node.get()))
     {
         if (uni->token.value.size() == 1)
         {
@@ -387,8 +388,8 @@ bool Solver::solve_unary_(std::unique_ptr<INode>& node, const std::string_view f
             {
                 if (is_num_(uni->n.get()))
                 {
-                    auto n   = std::make_unique<LeafNum>();
-                    n->value = -dynamic_cast<LeafNum*>(uni->n.get())->value;
+                    auto n   = std::make_unique<AST::LeafNum>();
+                    n->value = -dynamic_cast<AST::LeafNum*>(uni->n.get())->value;
                     node     = std::move(n);
 
                     return true;
@@ -423,7 +424,7 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
         return false;
     }
 
-    if (!solve_equation_(const_cast<INode*>(ast.getRoot()), for_symbol))
+    if (!solve_equation_(const_cast<AST::INode*>(ast.getRoot()), for_symbol))
     {
         std::cerr << std::format("ERROR: unable to solve equation [{}, {}]\n", ast.to_string(), for_symbol);
         return false;
