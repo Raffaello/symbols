@@ -21,10 +21,9 @@ std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
     const char* v = AST::LeafSymbol::getValue(node);
     if (v != nullptr)
     {
-        if (m_symbolTable.contains(v))
+        if (m_symbolTable.getSymbol(v, m_lastValue))
         {
-            m_lastValue = m_symbolTable[v];
-            m_lastExpr  = std::format("{} = {}", v, m_lastValue);
+            m_lastExpr = std::format("{} = {}", v, m_lastValue);
             return true;
         }
         else
@@ -170,11 +169,11 @@ bool Interpreter::eval(const AST& ast)
     return eval_(n);
 }
 
-bool Interpreter::unsetSymbol(const std::string_view symbol) noexcept
+bool Interpreter::unsetSymbol(const std::string& symbol) noexcept
 {
-    if (m_symbolTable.contains(symbol.data()))
+    if (m_symbolTable.contains(symbol))
     {
-        m_symbolTable.erase(symbol.data());
+        m_symbolTable.erase(symbol);
         return true;
     }
 

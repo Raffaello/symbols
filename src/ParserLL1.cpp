@@ -53,7 +53,7 @@ std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        return AST::NodeBin::make(t, l, r);
+        return AST::NodeBin::make(t, std::move(l), std::move(r));
     }
 
     return l;
@@ -83,7 +83,7 @@ std::unique_ptr<AST::INode> ParserLL1::exprPrime_(std::unique_ptr<AST::INode> le
         if (right == nullptr)
             return nullptr;
 
-        return exprPrime_(AST::NodeBin::make(t, left, right));
+        return exprPrime_(AST::NodeBin::make(t, std::move(left), std::move(right)));
     }
     else
         return left;
@@ -113,7 +113,7 @@ std::unique_ptr<AST::INode> ParserLL1::termPrime_(std::unique_ptr<AST::INode> le
         if (right == nullptr)
             return nullptr;
 
-        return termPrime_(AST::NodeBin::make(t, left, right));
+        return termPrime_(AST::NodeBin::make(t, std::move(left), std::move(right)));
     }
     else
         return left;
@@ -174,7 +174,7 @@ std::unique_ptr<AST::INode> ParserLL1::powPrime_(std::unique_ptr<AST::INode> lef
         if (r == nullptr)
             return nullptr;
 
-        return AST::NodeBin::make(t, left, r);
+        return AST::NodeBin::make(t, std::move(left), std::move(r));
     }
 
     return left;
@@ -217,9 +217,15 @@ std::unique_ptr<AST::INode> ParserLL1::pred_()
     break;
     case NUM:
     {
-        size_t       pos = 0;
-        const double num = std::stod(m_token.value, &pos);
-        if (pos != m_token.value.size())
+        size_t pos = 0;
+        double num = 0.0;
+        try
+        {
+            num = std::stod(m_token.value, &pos);
+            if (pos != m_token.value.size())
+                throw std::runtime_error("");
+        }
+        catch (const std::exception&)
         {
             std::cerr << std::format("ERROR: unable to parse number: {}, parsed into: {}\n", m_token.value, num);
             return nullptr;

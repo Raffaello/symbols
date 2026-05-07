@@ -77,7 +77,7 @@ public:
         std::unique_ptr<INode> l = nullptr;
         std::unique_ptr<INode> r = nullptr;
 
-        static std::unique_ptr<NodeBin> make(const Token& token, std::unique_ptr<INode>& l, std::unique_ptr<INode>& r)
+        static std::unique_ptr<NodeBin> make(const Token& token, std::unique_ptr<INode> l, std::unique_ptr<INode> r)
         {
             auto n   = std::make_unique<NodeBin>();
             n->token = token;

@@ -31,7 +31,7 @@ public:
     Interpreter() = default;
 
     bool eval(const AST& ast);
-    bool unsetSymbol(const std::string_view symbol) noexcept;
+    bool unsetSymbol(const std::string& symbol) noexcept;
 
     inline void               clearSymbols() noexcept;
     inline double             lastValue() const noexcept;
