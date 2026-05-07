@@ -10,6 +10,20 @@
 class SymbolTable
 {
 private:
+    // TODO: for the Solver the Symbol table should store a simplified AST, INode, its own mini AST for each symbol,
+    //       this will allow substitutions for e.g
+    //
+    //     a = b + c,
+    //     b = d,
+    //     c = 1,
+    //     d = 2
+    //     => a = 2 + 1
+    //        b = 2
+    //        c = 1
+    //        d = 2
+    //
+    // or just keep a symbol defined as a = b + c, where b and c are other 2 symbols (undefined)
+    // so this can allow substituion in an equation as well.
     std::unordered_map<std::string, double> m_table;
 
 public:
@@ -21,6 +35,7 @@ public:
     inline size_t  erase(const std::string& name);
 
     size_t key_max_length() const noexcept;
+
     /**
      * @brief Set the Symbol object if @p pNode is a LeafSymbol node
      *
