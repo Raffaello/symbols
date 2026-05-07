@@ -19,7 +19,7 @@ bool ParserLL1::expect_(const eTOKENS type)
     return m_token.type == type;
 }
 
-std::unique_ptr<INode> ParserLL1::stmt_()
+std::unique_ptr<AST::INode> ParserLL1::stmt_()
 {
     auto s = stmtPrime_();
     if (s == nullptr)
@@ -34,7 +34,7 @@ std::unique_ptr<INode> ParserLL1::stmt_()
     return s;
 }
 
-std::unique_ptr<INode> ParserLL1::stmtPrime_()
+std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
 {
     auto l = expr_();
     if (l == nullptr)
@@ -53,18 +53,13 @@ std::unique_ptr<INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        auto n   = std::make_unique<NodeBin>();
-        n->token = t;
-        n->l     = std::move(l);
-        n->r     = std::move(r);
-
-        return n;
+        return AST::NodeBin::make(t, std::move(l), std::move(r));
     }
 
     return l;
 }
 
-std::unique_ptr<INode> ParserLL1::expr_()
+std::unique_ptr<AST::INode> ParserLL1::expr_()
 {
     auto left = term_();
     if (left == nullptr)
@@ -73,16 +68,14 @@ std::unique_ptr<INode> ParserLL1::expr_()
     return exprPrime_(std::move(left));
 }
 
-std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
+std::unique_ptr<AST::INode> ParserLL1::exprPrime_(std::unique_ptr<AST::INode> left)
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
-        auto node   = std::make_unique<NodeBin>();
-        node->token = m_token;
-
+        const Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: after operator {}\n", node->token.value);
+            std::cerr << std::format("ERROR: after operator {}\n", t.value);
             return nullptr;
         }
 
@@ -90,18 +83,13 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
         if (right == nullptr)
             return nullptr;
 
-        node->l = std::move(left);
-        node->r = std::move(right);
-
-        return exprPrime_(std::move(node));
+        return exprPrime_(AST::NodeBin::make(t, std::move(left), std::move(right)));
     }
     else
-    {
         return left;
-    }
 }
 
-std::unique_ptr<INode> ParserLL1::term_()
+std::unique_ptr<AST::INode> ParserLL1::term_()
 {
     auto left = factor_();
     if (left == nullptr)
@@ -110,16 +98,14 @@ std::unique_ptr<INode> ParserLL1::term_()
     return termPrime_(std::move(left));
 }
 
-std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
+std::unique_ptr<AST::INode> ParserLL1::termPrime_(std::unique_ptr<AST::INode> left)
 {
     if (m_token.type == eTOKENS::MUL_OP)
     {
-        auto node   = std::make_unique<NodeBin>();
-        node->token = m_token;
-
+        const Token t = m_token;
         if (!advance_())
         {
-            std::cerr << std::format("ERROR: after operator {}\n", node->token.value);
+            std::cerr << std::format("ERROR: after operator {}\n", t.value);
             return nullptr;
         }
 
@@ -127,16 +113,13 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
         if (right == nullptr)
             return nullptr;
 
-        node->l = std::move(left);
-        node->r = std::move(right);
-
-        return termPrime_(std::move(node));
+        return termPrime_(AST::NodeBin::make(t, std::move(left), std::move(right)));
     }
     else
         return left;
 }
 
-std::unique_ptr<INode> ParserLL1::factor_()
+std::unique_ptr<AST::INode> ParserLL1::factor_()
 {
     auto u = unary_();
     auto p = pow_();
@@ -146,11 +129,11 @@ std::unique_ptr<INode> ParserLL1::factor_()
     if (u == nullptr)
         return p;
 
-    dynamic_cast<NodeUnary*>(u.get())->n = std::move(p);
+    dynamic_cast<AST::NodeUnary*>(u.get())->n = std::move(p);
     return u;
 }
 
-std::unique_ptr<INode> ParserLL1::unary_()
+std::unique_ptr<AST::INode> ParserLL1::unary_()
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
@@ -161,16 +144,13 @@ std::unique_ptr<INode> ParserLL1::unary_()
             return nullptr;
         }
 
-        auto n   = std::make_unique<NodeUnary>();
-        n->token = t;
-        n->n     = nullptr;
-        return n;
+        return AST::NodeUnary::make(t);    // n->n     = nullptr;
     }
     else
         return nullptr;
 }
 
-std::unique_ptr<INode> ParserLL1::pow_()
+std::unique_ptr<AST::INode> ParserLL1::pow_()
 {
     auto left = pred_();
     if (left == nullptr)
@@ -179,7 +159,7 @@ std::unique_ptr<INode> ParserLL1::pow_()
     return powPrime_(std::move(left));
 }
 
-std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
+std::unique_ptr<AST::INode> ParserLL1::powPrime_(std::unique_ptr<AST::INode> left)
 {
     if (m_token.type == eTOKENS::POW_OP)
     {
@@ -194,18 +174,13 @@ std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
         if (r == nullptr)
             return nullptr;
 
-        auto n   = std::make_unique<NodeBin>();
-        n->token = t;
-        n->l     = std::move(left);
-        n->r     = std::move(r);
-
-        return n;
+        return AST::NodeBin::make(t, std::move(left), std::move(r));
     }
 
     return left;
 }
 
-std::unique_ptr<INode> ParserLL1::pred_()
+std::unique_ptr<AST::INode> ParserLL1::pred_()
 {
     switch (m_token.type)
     {
@@ -235,27 +210,29 @@ std::unique_ptr<INode> ParserLL1::pred_()
     break;
     case SYMBOL:
     {
-        auto node   = std::make_unique<LeafSymbol>();
-        node->value = m_token.value;
+        auto node = AST::LeafSymbol::make(m_token.value);
         advance_();
         return node;
     }
     break;
     case NUM:
     {
-        size_t       pos = 0;
-        const double num = std::stod(m_token.value, &pos);
-        if (pos != m_token.value.size())
+        size_t pos = 0;
+        double num = 0.0;
+        try
+        {
+            num = std::stod(m_token.value, &pos);
+            if (pos != m_token.value.size())
+                throw std::runtime_error("");
+        }
+        catch (const std::exception&)
         {
             std::cerr << std::format("ERROR: unable to parse number: {}, parsed into: {}\n", m_token.value, num);
             return nullptr;
         }
 
-        auto node   = std::make_unique<LeafNum>();
-        node->value = num;
-
         advance_();
-        return node;
+        return AST::LeafNum::make(num);
     }
     break;
     default:
