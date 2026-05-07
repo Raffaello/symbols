@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <list>
+#include <sstream>
 
 class AST
 {
@@ -90,6 +91,7 @@ public:
 private:
     std::unique_ptr<INode> m_pRoot = nullptr;
 
+    void to_string_(const INode* node, std::stringstream& ss, const int level) const;
     void print_(const INode* node, const int indent);
 
 public:
@@ -100,7 +102,8 @@ public:
 
     inline const INode* getRoot() const noexcept;
 
-    void print();
+    std::string to_string() const;
+    void        print();
 };
 
 inline const AST::INode* AST::getRoot() const noexcept
