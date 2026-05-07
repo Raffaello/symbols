@@ -88,8 +88,7 @@ public:
     };
 
 private:
-    std::unique_ptr<INode> m_pRoot    = nullptr;
-    INode*                 m_pCurrent = nullptr;
+    std::unique_ptr<INode> m_pRoot = nullptr;
 
     void print_(const INode* node, const int indent);
 
@@ -101,12 +100,7 @@ public:
 
     inline const INode* getRoot() const noexcept;
 
-    /**
-     * TODO: remove / use for debug only
-     */
     void print();
-
-    // TODO: still missing how to navigate the AST...
 };
 
 inline const AST::INode* AST::getRoot() const noexcept
