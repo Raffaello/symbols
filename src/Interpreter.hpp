@@ -33,10 +33,10 @@ public:
     bool eval(const AST& ast);
     bool unsetSymbol(const std::string_view symbol) noexcept;
 
-    inline void                                           clearSymbols() noexcept;
-    inline double                                         lastValue() const noexcept;
-    inline std::string_view                               lastExpr() const noexcept;
-    inline const std::unordered_map<std::string, double>& symbolTable() const noexcept;
+    inline void               clearSymbols() noexcept;
+    inline double             lastValue() const noexcept;
+    inline std::string_view   lastExpr() const noexcept;
+    inline const SymbolTable& symbolTable() const noexcept;
 };
 
 inline double Interpreter::lastValue() const noexcept
@@ -49,9 +49,9 @@ inline std::string_view Interpreter::lastExpr() const noexcept
     return m_lastExpr;
 }
 
-inline const std::unordered_map<std::string, double>& Interpreter::symbolTable() const noexcept
+inline const SymbolTable& Interpreter::symbolTable() const noexcept
 {
-    return m_symbolTable.table();
+    return m_symbolTable;
 }
 
 inline void Interpreter::clearSymbols() noexcept
