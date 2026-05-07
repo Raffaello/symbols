@@ -4,13 +4,13 @@
 #include <ParserLL1.hpp>
 #include <array>
 
-class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string_view, double, std::string, std::string>>
+class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string, double, std::string, std::string>>
 {
 public:
-    const std::string_view line   = std::get<0>(GetParam());
-    const double           expVal = std::get<1>(GetParam());
-    const std::string      sym    = std::get<2>(GetParam());
-    const std::string      expr   = std::get<3>(GetParam());
+    const std::string line   = std::get<0>(GetParam());
+    const double      expVal = std::get<1>(GetParam());
+    const std::string sym    = std::get<2>(GetParam());
+    const std::string expr   = std::get<3>(GetParam());
 };
 
 TEST_P(TestInterpreter, eval)
