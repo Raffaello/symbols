@@ -10,8 +10,7 @@ bool Solver::has_symbol_(const AST::INode* node, const std::string_view symbol) 
         return true;
     else if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
     {
-        bool l = has_symbol_(bin->l.get(), symbol);
-        if (l)
+        if (has_symbol_(bin->l.get(), symbol))
             return true;
 
         return has_symbol_(bin->r.get(), symbol);
@@ -424,9 +423,22 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
         return false;
     }
 
-    if (!solve_equation_(const_cast<AST::INode*>(ast.getRoot()), for_symbol))
+    auto pRoot = const_cast<AST::INode*>(ast.getRoot());
+    if (auto bin = dynamic_cast<AST::NodeBin*>(pRoot))
     {
-        std::cerr << std::format("ERROR: unable to solve equation [{}, {}]\n", ast.to_string(), for_symbol);
+        // the operator here is = as it is an equation
+        bin->l = std::move(simplify_(bin->l));
+        bin->r = std::move(simplify_(bin->r));
+
+        if (!solve_equation_(const_cast<AST::INode*>(ast.getRoot()), for_symbol))
+        {
+            std::cerr << std::format("ERROR: unable to solve equation [{}, {}]\n", ast.to_string(), for_symbol);
+            return false;
+        }
+    }
+    else
+    {
+        std::cerr << std::format("ERROR: unable to navigate equation\n");
         return false;
     }
 
