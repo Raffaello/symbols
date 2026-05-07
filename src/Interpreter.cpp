@@ -18,21 +18,6 @@ std::optional<bool> Interpreter::evalNum_(const AST::INode* node)
 
 std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
 {
-    if (auto sym = dynamic_cast<const AST::LeafSymbol*>(node))
-    {
-        if (m_symbolTable.contains(sym->value))
-        {
-            m_lastValue = m_symbolTable[sym->value];
-            m_lastExpr  = std::format("{} = {}", sym->value, m_lastValue);
-            return true;
-        }
-        else
-        {
-            std::cerr << std::format("ERROR: Symbol {} not found!\n", sym->value);
-            return false_();
-        }
-    }
-
     const char* v = AST::LeafSymbol::getValue(node);
     if (v != nullptr)
     {
@@ -88,11 +73,11 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         // TODO: specific for the assignment:
         if (bin->token.type == eTOKENS::EQUAL)
         {
-            if (auto sym = dynamic_cast<const AST::LeafSymbol*>(bin->l.get()))
+            const char* sym = m_symbolTable.setSymbol(bin->l.get(), r);
+            if (sym != nullptr)
             {
-                m_symbolTable[sym->value] = r;
-                m_lastValue               = r;
-                m_lastExpr                = std::format("{} = {}", sym->value, r);
+                m_lastValue = r;
+                m_lastExpr  = std::format("{} = {}", sym, r);
                 return true;
             }
 

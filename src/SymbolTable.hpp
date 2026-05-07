@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AST.hpp"
+
 #include <unordered_map>
 #include <string>
 #include <cmath>
@@ -18,7 +20,15 @@ public:
     inline double& operator[](const std::string& name);
     inline size_t  erase(const std::string& name);
 
-    inline size_t key_max_length() const noexcept;
+    size_t key_max_length() const noexcept;
+    /**
+     * @brief Set the Symbol object if @p pNode is a LeafSymbol node
+     *
+     * @param pNode
+     * @param val
+     * @return const char* @c nullptr if it didn't set, symbol value (name) otherwise
+     */
+    const char* setSymbol(const AST::INode* pNode, const double val);
 };
 
 inline void SymbolTable::clear() noexcept
@@ -44,13 +54,4 @@ inline double& SymbolTable::operator[](const std::string& name)
 inline size_t SymbolTable::erase(const std::string& name)
 {
     return m_table.erase(name);
-}
-
-inline size_t SymbolTable::key_max_length() const noexcept
-{
-    std::size_t key_max_length = 0;
-    for (const auto& [k, v] : m_table)
-        key_max_length = std::max<size_t>(key_max_length, k.size());
-
-    return key_max_length;
 }
