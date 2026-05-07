@@ -18,7 +18,6 @@ TEST_P(TestParserLL1, parser)
     ASSERT_TRUE(parser.parse());
 
     auto& ast = parser.ast();
-    // TODO: check the AST
     ast.print();
     EXPECT_STREQ(ast.to_string().c_str(), expAST.data());
 }
