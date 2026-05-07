@@ -3,7 +3,6 @@
 #include <cassert>
 #include <iostream>
 #include <format>
-#include <sstream>
 
 void AST::to_string_(const INode* node, std::stringstream& ss, const int level) const
 {

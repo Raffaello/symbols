@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <list>
+#include <sstream>
 
 class AST
 {

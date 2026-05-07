@@ -3,10 +3,10 @@
 #include <LexScanner.hpp>
 #include <array>
 
-class TestLexScanner : public ::testing::TestWithParam<std::tuple<std::string_view, std::vector<Token>>>
+class TestLexScanner : public ::testing::TestWithParam<std::tuple<std::string, std::vector<Token>>>
 {
 public:
-    const std::string_view   line         = std::get<0>(GetParam());
+    const std::string        line         = std::get<0>(GetParam());
     const std::vector<Token> expTokens    = std::get<1>(GetParam());
     const int                expNumTokens = expTokens.size();
 };

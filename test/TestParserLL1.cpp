@@ -3,11 +3,11 @@
 #include <ParserLL1.hpp>
 #include <array>
 
-class TestParserLL1 : public ::testing::TestWithParam<std::tuple<std::string_view, std::string_view>>
+class TestParserLL1 : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
 {
 public:
-    const std::string_view line   = std::get<0>(GetParam());
-    const std::string_view expAST = std::get<1>(GetParam());
+    const std::string line   = std::get<0>(GetParam());
+    const std::string expAST = std::get<1>(GetParam());
 };
 
 TEST_P(TestParserLL1, parser)
