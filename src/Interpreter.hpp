@@ -1,8 +1,9 @@
 #pragma once
 
 #include "AST.hpp"
+#include "SymbolTable.hpp"
 
-#include <unordered_map>
+
 #include <string>
 #include <limits>
 #include <optional>
@@ -11,18 +12,18 @@
 class Interpreter
 {
 private:
-    std::unordered_map<std::string, double> m_symbolTable;
+    SymbolTable m_symbolTable;
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
     double      m_lastValue = std::numeric_limits<double>::quiet_NaN();
     std::string m_lastExpr  = "";    // the result of the last resolved expression
 
-    std::optional<bool> evalNum_(const INode* node);
-    std::optional<bool> evalSym_(const INode* node);
-    std::optional<bool> evalUni_(const INode* node);
-    std::optional<bool> evalBin_(const INode* node);
+    std::optional<bool> evalNum_(const AST::INode* node);
+    std::optional<bool> evalSym_(const AST::INode* node);
+    std::optional<bool> evalUni_(const AST::INode* node);
+    std::optional<bool> evalBin_(const AST::INode* node);
 
-    bool eval_(const INode* node);
+    bool eval_(const AST::INode* node);
 
     bool false_() noexcept;
 
@@ -50,7 +51,7 @@ inline std::string_view Interpreter::lastExpr() const noexcept
 
 inline const std::unordered_map<std::string, double>& Interpreter::symbolTable() const noexcept
 {
-    return m_symbolTable;
+    return m_symbolTable.table();
 }
 
 inline void Interpreter::clearSymbols() noexcept

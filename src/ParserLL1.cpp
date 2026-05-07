@@ -19,7 +19,7 @@ bool ParserLL1::expect_(const eTOKENS type)
     return m_token.type == type;
 }
 
-std::unique_ptr<INode> ParserLL1::stmt_()
+std::unique_ptr<AST::INode> ParserLL1::stmt_()
 {
     auto s = stmtPrime_();
     if (s == nullptr)
@@ -34,7 +34,7 @@ std::unique_ptr<INode> ParserLL1::stmt_()
     return s;
 }
 
-std::unique_ptr<INode> ParserLL1::stmtPrime_()
+std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
 {
     auto l = expr_();
     if (l == nullptr)
@@ -53,13 +53,13 @@ std::unique_ptr<INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        return NodeBin::make(t, l, r);
+        return AST::NodeBin::make(t, l, r);
     }
 
     return l;
 }
 
-std::unique_ptr<INode> ParserLL1::expr_()
+std::unique_ptr<AST::INode> ParserLL1::expr_()
 {
     auto left = term_();
     if (left == nullptr)
@@ -68,7 +68,7 @@ std::unique_ptr<INode> ParserLL1::expr_()
     return exprPrime_(std::move(left));
 }
 
-std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
+std::unique_ptr<AST::INode> ParserLL1::exprPrime_(std::unique_ptr<AST::INode> left)
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
@@ -83,13 +83,13 @@ std::unique_ptr<INode> ParserLL1::exprPrime_(std::unique_ptr<INode> left)
         if (right == nullptr)
             return nullptr;
 
-        return exprPrime_(NodeBin::make(t, left, right));
+        return exprPrime_(AST::NodeBin::make(t, left, right));
     }
     else
         return left;
 }
 
-std::unique_ptr<INode> ParserLL1::term_()
+std::unique_ptr<AST::INode> ParserLL1::term_()
 {
     auto left = factor_();
     if (left == nullptr)
@@ -98,7 +98,7 @@ std::unique_ptr<INode> ParserLL1::term_()
     return termPrime_(std::move(left));
 }
 
-std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
+std::unique_ptr<AST::INode> ParserLL1::termPrime_(std::unique_ptr<AST::INode> left)
 {
     if (m_token.type == eTOKENS::MUL_OP)
     {
@@ -113,13 +113,13 @@ std::unique_ptr<INode> ParserLL1::termPrime_(std::unique_ptr<INode> left)
         if (right == nullptr)
             return nullptr;
 
-        return termPrime_(NodeBin::make(t, left, right));
+        return termPrime_(AST::NodeBin::make(t, left, right));
     }
     else
         return left;
 }
 
-std::unique_ptr<INode> ParserLL1::factor_()
+std::unique_ptr<AST::INode> ParserLL1::factor_()
 {
     auto u = unary_();
     auto p = pow_();
@@ -129,11 +129,11 @@ std::unique_ptr<INode> ParserLL1::factor_()
     if (u == nullptr)
         return p;
 
-    dynamic_cast<NodeUnary*>(u.get())->n = std::move(p);
+    dynamic_cast<AST::NodeUnary*>(u.get())->n = std::move(p);
     return u;
 }
 
-std::unique_ptr<INode> ParserLL1::unary_()
+std::unique_ptr<AST::INode> ParserLL1::unary_()
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
@@ -144,14 +144,13 @@ std::unique_ptr<INode> ParserLL1::unary_()
             return nullptr;
         }
 
-        // n->n     = nullptr;
-        return NodeUnary::make(t);
+        return AST::NodeUnary::make(t);    // n->n     = nullptr;
     }
     else
         return nullptr;
 }
 
-std::unique_ptr<INode> ParserLL1::pow_()
+std::unique_ptr<AST::INode> ParserLL1::pow_()
 {
     auto left = pred_();
     if (left == nullptr)
@@ -160,7 +159,7 @@ std::unique_ptr<INode> ParserLL1::pow_()
     return powPrime_(std::move(left));
 }
 
-std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
+std::unique_ptr<AST::INode> ParserLL1::powPrime_(std::unique_ptr<AST::INode> left)
 {
     if (m_token.type == eTOKENS::POW_OP)
     {
@@ -175,13 +174,13 @@ std::unique_ptr<INode> ParserLL1::powPrime_(std::unique_ptr<INode> left)
         if (r == nullptr)
             return nullptr;
 
-        return NodeBin::make(t, left, r);
+        return AST::NodeBin::make(t, left, r);
     }
 
     return left;
 }
 
-std::unique_ptr<INode> ParserLL1::pred_()
+std::unique_ptr<AST::INode> ParserLL1::pred_()
 {
     switch (m_token.type)
     {
@@ -211,7 +210,7 @@ std::unique_ptr<INode> ParserLL1::pred_()
     break;
     case SYMBOL:
     {
-        auto node = LeafSymbol::make(m_token.value);
+        auto node = AST::LeafSymbol::make(m_token.value);
         advance_();
         return node;
     }
@@ -227,7 +226,7 @@ std::unique_ptr<INode> ParserLL1::pred_()
         }
 
         advance_();
-        return LeafNum::make(num);
+        return AST::LeafNum::make(num);
     }
     break;
     default:

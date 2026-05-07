@@ -5,21 +5,20 @@
 #include <format>
 #include <cmath>
 
-std::optional<bool> Interpreter::evalNum_(const INode* node)
+std::optional<bool> Interpreter::evalNum_(const AST::INode* node)
 {
-    if (auto num = dynamic_cast<const LeafNum*>(node))
+    if (AST::LeafNum::getValue(node, m_lastValue))
     {
-        m_lastValue = num->value;
-        m_lastExpr  = std::format("{}", num->value);
+        m_lastExpr = std::format("{}", m_lastValue);
         return true;
     }
 
     return std::nullopt;
 }
 
-std::optional<bool> Interpreter::evalSym_(const INode* node)
+std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
 {
-    if (auto sym = dynamic_cast<const LeafSymbol*>(node))
+    if (auto sym = dynamic_cast<const AST::LeafSymbol*>(node))
     {
         if (m_symbolTable.contains(sym->value))
         {
@@ -34,12 +33,28 @@ std::optional<bool> Interpreter::evalSym_(const INode* node)
         }
     }
 
+    const char* v = AST::LeafSymbol::getValue(node);
+    if (v != nullptr)
+    {
+        if (m_symbolTable.contains(v))
+        {
+            m_lastValue = m_symbolTable[v];
+            m_lastExpr  = std::format("{} = {}", v, m_lastValue);
+            return true;
+        }
+        else
+        {
+            std::cerr << std::format("ERROR: Symbol {} not found!\n", v);
+            return false_();
+        }
+    }
+
     return std::nullopt;
 }
 
-std::optional<bool> Interpreter::evalUni_(const INode* node)
+std::optional<bool> Interpreter::evalUni_(const AST::INode* node)
 {
-    if (auto uni = dynamic_cast<const NodeUnary*>(node))
+    if (auto uni = dynamic_cast<const AST::NodeUnary*>(node))
     {
         assert(uni->token.type == eTOKENS::SUM_OP);
 
@@ -61,9 +76,9 @@ std::optional<bool> Interpreter::evalUni_(const INode* node)
     return std::nullopt;
 }
 
-std::optional<bool> Interpreter::evalBin_(const INode* node)
+std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
 {
-    if (auto bin = dynamic_cast<const NodeBin*>(node))
+    if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
     {
         if (!eval_(bin->r.get()))
             return false_();
@@ -73,7 +88,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
         // TODO: specific for the assignment:
         if (bin->token.type == eTOKENS::EQUAL)
         {
-            if (auto sym = dynamic_cast<const LeafSymbol*>(bin->l.get()))
+            if (auto sym = dynamic_cast<const AST::LeafSymbol*>(bin->l.get()))
             {
                 m_symbolTable[sym->value] = r;
                 m_lastValue               = r;
@@ -126,7 +141,7 @@ std::optional<bool> Interpreter::evalBin_(const INode* node)
     return std::nullopt;
 }
 
-bool Interpreter::eval_(const INode* node)
+bool Interpreter::eval_(const AST::INode* node)
 {
     auto res = evalNum_(node);
     if (res.has_value())

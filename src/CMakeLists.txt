@@ -19,6 +19,7 @@ target_link_libraries(parser PUBLIC lex_scanner)
 add_library(interpreter)
 add_dependencies(interpreter parser)
 target_sources(interpreter PRIVATE
+    SymbolTable.cpp
     Interpreter.cpp
   )
 target_include_directories(interpreter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
