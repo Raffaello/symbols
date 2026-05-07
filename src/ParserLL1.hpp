@@ -32,17 +32,17 @@ private:
     bool advance_();
     bool expect_(const eTOKENS type);
 
-    std::unique_ptr<INode> stmt_();
-    std::unique_ptr<INode> stmtPrime_();
-    std::unique_ptr<INode> expr_();
-    std::unique_ptr<INode> exprPrime_(std::unique_ptr<INode> left);
-    std::unique_ptr<INode> term_();
-    std::unique_ptr<INode> termPrime_(std::unique_ptr<INode> left);
-    std::unique_ptr<INode> factor_();
-    std::unique_ptr<INode> unary_();
-    std::unique_ptr<INode> pow_();
-    std::unique_ptr<INode> powPrime_(std::unique_ptr<INode> left);
-    std::unique_ptr<INode> pred_();
+    std::unique_ptr<AST::INode> stmt_();
+    std::unique_ptr<AST::INode> stmtPrime_();
+    std::unique_ptr<AST::INode> expr_();
+    std::unique_ptr<AST::INode> exprPrime_(std::unique_ptr<AST::INode> left);
+    std::unique_ptr<AST::INode> term_();
+    std::unique_ptr<AST::INode> termPrime_(std::unique_ptr<AST::INode> left);
+    std::unique_ptr<AST::INode> factor_();
+    std::unique_ptr<AST::INode> unary_();
+    std::unique_ptr<AST::INode> pow_();
+    std::unique_ptr<AST::INode> powPrime_(std::unique_ptr<AST::INode> left);
+    std::unique_ptr<AST::INode> pred_();
 
 public:
     ParserLL1(LexScanner& lex_scanner);

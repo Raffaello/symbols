@@ -31,7 +31,7 @@ TEST_P(TestInterpreter, eval)
     if (!sym.empty())
     {
         // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
-        ASSERT_NEAR(interpreter.symbolTable().at(sym), expVal, 1e-6);
+        ASSERT_NEAR(interpreter.symbolTable().table().at(sym), expVal, 1e-6);
         // ASSERT_EQ(interpreter.symbolTable().at(sym), expVal);
     }
 }
