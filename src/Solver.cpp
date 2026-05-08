@@ -30,8 +30,10 @@ bool Solver::is_equation_(const AST::INode* node) const noexcept
 bool Solver::is_expr_(const AST::INode* node) const noexcept
 {
     if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
-        return bin->op == AST::eOperators::SUM ||
+        return bin->op == AST::eOperators::ADD ||
+               bin->op == AST::eOperators::SUB ||
                bin->op == AST::eOperators::MUL ||
+               bin->op == AST::eOperators::DIV ||
                bin->op == AST::eOperators::POW;
 
     return false;
@@ -192,9 +194,13 @@ std::unique_ptr<AST::INode> Solver::simplifyExpr_(std::unique_ptr<AST::INode>& n
     {
         using enum AST::eOperators;
 
-    case SUM:
+    case ADD:
+        [[fallthrough]];
+    case SUB:
         [[fallthrough]];
     case MUL:
+        [[fallthrough]];
+    case DIV:
         [[fallthrough]];
     case POW:
         return std::move(simplifyExprSumOrMulOrPow_(node));
@@ -226,10 +232,10 @@ std::unique_ptr<AST::INode> Solver::simplifyExprSumOrMulOrPow_(std::unique_ptr<A
         {
             using enum AST::eOperators;
 
-        case SUM:
+        case ADD:
             n->value = l + r;
             break;
-        case DIF:
+        case SUB:
             n->value = l - r;
             break;
         case MUL:
@@ -276,12 +282,12 @@ std::unique_ptr<AST::INode> Solver::simplifyExprSumOrMulOrPow_(std::unique_ptr<A
         {
             using enum AST::eOperators;
 
-        case SUM:
+        case ADD:
             n->value = 2;
             bin->op  = AST::eOperators::MUL;
             bin->l   = std::move(n);
             return std::move(node);
-        case DIF:
+        case SUB:
             n->value = 0;
             return std::move(n);
             break;
@@ -399,7 +405,7 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
 
     // LHS - RHS = 0
     // expr: LHS - RHS
-    std::unique_ptr<AST::INode> n   = AST::NodeBin::make(AST::eOperators::DIF, std::move(bin->l), std::move(bin->r));
+    std::unique_ptr<AST::INode> n   = AST::NodeBin::make(AST::eOperators::SUB, std::move(bin->l), std::move(bin->r));
     auto                        res = solve_expr_(n, for_symbol);
 
 
@@ -450,14 +456,14 @@ std::optional<bool> Solver::solve_expr_(std::unique_ptr<AST::INode>& node, const
             case NONE:
                 return false;
 
-            case SUM:
+            case ADD:
             {
                 auto n   = std::make_unique<AST::LeafNum>();
                 n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value + dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
                 node     = std::move(n);
             }
             break;
-            case DIF:
+            case SUB:
             {
                 auto n   = std::make_unique<AST::LeafNum>();
                 n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value - dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
