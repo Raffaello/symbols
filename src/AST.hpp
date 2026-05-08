@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Token.hpp"
-
 #include <memory>
 #include <list>
 #include <sstream>
@@ -11,11 +9,13 @@ class AST
 public:
     enum class eOperators
     {
+        NONE,    // as a placeholder if not init, this is basically an error if it is encountered
         SUM,
         DIF,
         MUL,
         DIV,
         POW,
+        EQUAL,
     };
 
     struct INode
@@ -84,17 +84,17 @@ public:
 
     struct NodeBin : public INode
     {
-        Token token;
+        eOperators op = eOperators::NONE;
 
         std::unique_ptr<INode> l = nullptr;
         std::unique_ptr<INode> r = nullptr;
 
-        static std::unique_ptr<NodeBin> make(const Token& token, std::unique_ptr<INode> l, std::unique_ptr<INode> r)
+        static std::unique_ptr<NodeBin> make(const eOperators op, std::unique_ptr<INode> l, std::unique_ptr<INode> r)
         {
-            auto n   = std::make_unique<NodeBin>();
-            n->token = token;
-            n->l     = std::move(l);
-            n->r     = std::move(r);
+            auto n = std::make_unique<NodeBin>();
+            n->op  = op;
+            n->l   = std::move(l);
+            n->r   = std::move(r);
             return std::move(n);
         }
     };
@@ -109,12 +109,13 @@ public:
     AST()  = default;
     ~AST() = default;
 
-    void setRoot(std::unique_ptr<INode>& root);
-
     inline const INode* getRoot() const noexcept;
+    void                setRoot(std::unique_ptr<INode>& root);
 
     std::string to_string() const;
     void        print();
+
+    static char operator_to_string(const eOperators op);
 };
 
 inline const AST::INode* AST::getRoot() const noexcept
