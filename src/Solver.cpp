@@ -77,13 +77,12 @@ std::unique_ptr<AST::INode> Solver::simplify_(std::unique_ptr<AST::INode>& node)
     if (is_num_(node.get()) || is_symbol_(node.get()))
         return std::move(node);
 
-    // if(is_expr_(node.get()))
     if (auto bin = dynamic_cast<AST::NodeBin*>(node.get()))
     {
         auto l = simplify_(bin->l);
         auto r = simplify_(bin->r);
 
-        return simplifyExpr_(l, r, bin->token);
+        return simplifyExpr_(node);
     }
     else if (auto uni = dynamic_cast<AST::NodeUnary*>(node.get()))
     {
@@ -95,186 +94,324 @@ std::unique_ptr<AST::INode> Solver::simplify_(std::unique_ptr<AST::INode>& node)
     throw std::runtime_error("?");
 }
 
-std::unique_ptr<AST::INode> Solver::simplifyExpr_(std::unique_ptr<AST::INode>& left, std::unique_ptr<AST::INode>& right, Token& t)
+std::unique_ptr<AST::INode> Solver::simplifyExpr_(std::unique_ptr<AST::INode>& node)
 {
-    switch (t.type)
-    {
-    default:
-        nullptr;
+    // switch (t.type)
+    // {
+    // default:
+    //     nullptr;
 
-    case eTOKENS::SUM_OP:
-    case eTOKENS::MUL_OP:
-    case eTOKENS::POW_OP:
+    // case eTOKENS::SUM_OP:
+    // case eTOKENS::MUL_OP:
+    // case eTOKENS::POW_OP:
+    // {
+    //     if (is_num_(left.get()) && is_num_(right.get()))
+    //     {
+    //         auto l = dynamic_cast<AST::LeafNum*>(left.get())->value;
+    //         auto r = dynamic_cast<AST::LeafNum*>(right.get())->value;
+    //         auto n = std::make_unique<AST::LeafNum>();
+    //         switch (t.value[0])
+    //         {
+    //         default:
+    //             throw std::runtime_error("t.value[0]");
+    //             break;
+    //         case '+':
+    //             n->value = l + r;
+    //             break;
+    //         case '-':
+    //             n->value = l - r;
+    //             break;
+    //         case '*':
+    //             n->value = l * r;
+    //             break;
+    //         case '/':
+    //             n->value = l / r;
+    //             break;
+    //         case '^':
+    //             n->value = std::pow(l, r);
+    //             break;
+    //         }
+
+    // return std::move(n);
+    // }
+
+    // if (t.type == eTOKENS::SUM_OP)
+    // {
+    //     if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
+    //     {
+    //         if (l->value == 0.0)
+    //             return std::move(right);
+    //     }
+    //     else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
+    //     {
+    //         if (r->value == 0.0)
+    //             return std::move(left);
+    //     }
+    // }
+    // else if (t.type == eTOKENS::MUL_OP)
+    // {
+    //     if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
+    //     {
+    //         if (l->value == 1.0)
+    //             return std::move(right);
+    //     }
+    //     else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
+    //     {
+    //         if (r->value == 1.0)
+    //             return std::move(left);
+    //     }
+    // }
+    // else if (t.type == eTOKENS::POW_OP)
+    // {
+    //     if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))    // 1^x
+    //     {
+    //         if (l->value == 1.0)
+    //             return std::move(left);                                // returning 1.0
+    //     }
+    //     else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))    // x^1
+    //     {
+    //         if (r->value == 1.0)
+    //             return std::move(left);    // returning x
+    //     }
+    // }
+    // }
+    // break;
+    // }
+
+    // auto n   = std::make_unique<AST::NodeBin>();
+    // n->token = t;
+    // n->l     = std::move(left);
+    // n->r     = std::move(right);
+    // return std::move(n);
+
+    auto bin = dynamic_cast<AST::NodeBin*>(node.get());
+    if (bin == nullptr)
+        throw std::invalid_argument("simplifyExpr_ called without a NodeBin");
+
+    switch (bin->token.type)
     {
-        if (is_num_(left.get()) && is_num_(right.get()))
+        using enum eTOKENS;
+
+    case SUM_OP:
+        [[fallthrough]];
+    case MUL_OP:
+        [[fallthrough]];
+    case POW_OP:
+        return std::move(simplifyExprSumOrMulOrPow_(node));
+    }
+
+    std::cerr << std::format("ERROR: unable to simplify expr with token [type:{}, value: {}]\n", static_cast<int>(bin->token.type), bin->token.value);
+    return nullptr;
+}
+
+std::unique_ptr<AST::INode> Solver::simplifyExprSumOrMulOrPow_(std::unique_ptr<AST::INode>& node)
+{
+    auto bin = dynamic_cast<AST::NodeBin*>(node.get());
+    if (bin == nullptr)
+        throw std::invalid_argument("simplifyExprSumOrMulOrPow_: node is not binary");
+
+    // both are numbers
+    if (is_num_(bin->l.get()) && is_num_(bin->r.get()))
+    {
+        double l;
+        double r;
+        if (!AST::LeafNum::getValue(bin->l.get(), l) || AST::LeafNum::getValue(bin->r.get(), r))
         {
-            auto l = dynamic_cast<AST::LeafNum*>(left.get())->value;
-            auto r = dynamic_cast<AST::LeafNum*>(right.get())->value;
-            auto n = std::make_unique<AST::LeafNum>();
-            switch (t.value[0])
-            {
-            default:
-                throw std::runtime_error("t.value[0]");
-                break;
-            case '+':
-                n->value = l + r;
-                break;
-            case '-':
-                n->value = l - r;
-                break;
-            case '*':
-                n->value = l * r;
-                break;
-            case '/':
-                n->value = l / r;
-                break;
-            case '^':
-                n->value = std::pow(l, r);
-                break;
-            }
+            std::cerr << std::format("ERROR: unable to extract number\n");
+            return nullptr;
+        }
 
+        auto n = AST::LeafNum::make(0);
+        switch (bin->token.value[0])
+        {
+        case '+':
+            n->value = l + r;
+            break;
+        case '-':
+            n->value = l - r;
+            break;
+        case '*':
+            n->value = l * r;
+            break;
+        case '/':
+            n->value = l / r;
+            break;
+        case '^':
+            n->value = std::pow(l, r);
+            break;
+
+        default:
+            std::cerr << std::format("ERROR: unable to simplify expression {} {} {}", l, bin->token.value, r);
+            return nullptr;
+        }
+
+        return std::move(n);
+    }
+
+    // both are the same symbol
+    if (is_symbol_(bin->l.get()) && is_symbol_(bin->r.get()))
+    {
+        const char* l = AST::LeafSymbol::getValue(bin->l.get());
+        const char* r = AST::LeafSymbol::getValue(bin->r.get());
+        if (l == nullptr || r == nullptr)
+        {
+            std::cerr << std::format("ERROR: unable to extract symbol\n");
+            return nullptr;
+        }
+
+        // if are not the same just return
+        if (std::string(l) != std::string(r))
+            return std::move(node);
+
+        // same symbol for e.g:
+        // x+x => 2*x
+        // x-x => 0
+        // x*x => x^2
+        // x/x => 1
+        // x^x =>
+        auto n = AST::LeafNum::make(0);
+        switch (bin->token.value[0])
+        {
+            using enum eTOKENS;
+
+        case '+':
+            n->value         = 2;
+            bin->token.type  = eTOKENS::MUL_OP;
+            bin->token.value = '*';
+            bin->l           = std::move(n);
+            return std::move(node);
+        case '-':
+            n->value = 0;
             return std::move(n);
-        }
+            break;
+        case '*':
+            n->value         = 2;
+            bin->token.type  = eTOKENS::POW_OP;
+            bin->token.value = '^';
+            bin->r           = std::move(n);
+            return std::move(node);
+        case '/':
+            n->value = 1;
+            return std::move(n);
+        case '^':
+            return std::move(node);
 
-        if (t.type == eTOKENS::SUM_OP)
-        {
-            if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
-            {
-                if (l->value == 0.0)
-                    return std::move(right);
-            }
-            else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
-            {
-                if (r->value == 0.0)
-                    return std::move(left);
-            }
-        }
-        else if (t.type == eTOKENS::MUL_OP)
-        {
-            if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
-            {
-                if (l->value == 1.0)
-                    return std::move(right);
-            }
-            else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
-            {
-                if (r->value == 1.0)
-                    return std::move(left);
-            }
-        }
-        else if (t.type == eTOKENS::POW_OP)
-        {
-            if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))    // 1^x
-            {
-                if (l->value == 1.0)
-                    return std::move(left);                                // returning 1.0
-            }
-            else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))    // x^1
-            {
-                if (r->value == 1.0)
-                    return std::move(left);    // returning x
-            }
+        default:
+            std::cerr << std::format("ERROR: unable to simplify expression {} {} {}", l, bin->token.value, r);
+            return nullptr;
         }
     }
-    break;
-    }
 
-    auto n   = std::make_unique<AST::NodeBin>();
-    n->token = t;
-    n->l     = std::move(left);
-    n->r     = std::move(right);
-    return std::move(n);
+    // otherwise is one symbol and one number e.g : x+1
+    return std::move(node);
 }
 
 bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol)
 {
-    if (auto node_eq = dynamic_cast<AST::NodeBin*>(node))
-    {
-        if (node_eq->token.type != eTOKENS::EQUAL)
-            return false;
+    // if (auto node_eq = dynamic_cast<AST::NodeBin*>(node))
+    // {
+    //     if (node_eq->token.type != eTOKENS::EQUAL)
+    //         return false;
 
-        const AST::INode* l = nullptr;
-        const AST::INode* r = nullptr;
+    // const AST::INode* l = nullptr;
+    // const AST::INode* r = nullptr;
 
-        if (is_symbol_(node_eq->l.get(), for_symbol))
-        {
-            l = node_eq->l.get();
-            r = node_eq->r.get();
-        }
-        else if (is_symbol_(node_eq->r.get(), for_symbol))
-        {
-            // swap l,r
-            auto tmp                              = std::move(const_cast<AST::NodeBin*>(node_eq)->l);
-            const_cast<AST::NodeBin*>(node_eq)->l = std::move(const_cast<AST::NodeBin*>(node_eq)->r);
-            const_cast<AST::NodeBin*>(node_eq)->r = std::move(tmp);
+    // if (is_symbol_(node_eq->l.get(), for_symbol))
+    // {
+    //     l = node_eq->l.get();
+    //     r = node_eq->r.get();
+    // }
+    // else if (is_symbol_(node_eq->r.get(), for_symbol))
+    // {
+    //     // swap l,r
+    //     auto tmp                              = std::move(const_cast<AST::NodeBin*>(node_eq)->l);
+    //     const_cast<AST::NodeBin*>(node_eq)->l = std::move(const_cast<AST::NodeBin*>(node_eq)->r);
+    //     const_cast<AST::NodeBin*>(node_eq)->r = std::move(tmp);
 
-            l = node_eq->l.get();
-            r = node_eq->r.get();
-        }
+    // l = node_eq->l.get();
+    // r = node_eq->r.get();
+    // }
 
-        if (l != nullptr && r != nullptr)
-        {
-            node_eq->r = simplify_(node_eq->r);
-            r          = node_eq->r.get();
+    // if (l != nullptr && r != nullptr)
+    // {
+    //     node_eq->r = simplify_(node_eq->r);
+    //     r          = node_eq->r.get();
 
-            // x = 1 or x = a or x = [expr]
-            if (is_num_(r))
-            {
-                // m_solution << std::format("{} = {}\n", for_symbol, dynamic_cast<const LeafNum*>(r)->value);
-                return true;
-            }
-            else if (is_symbol_(r))
-            {
-                // m_solution << std::format("{} = {}\n", for_symbol, dynamic_cast<const LeafSymbol*>(r)->value);
-                return true;
-            }
-            else if (is_expr_(r))
-            {
-                // x = (1+a)
-                auto res = solve_expr_(node_eq->r, for_symbol);
-                if (!res.has_value())
-                {
-                    // m_solution << std::format("{} = {}", for_symbol)
-                    return true;
-                }
+    // // x = 1 or x = a or x = [expr]
+    // if (is_num_(r))
+    // {
+    //     // m_solution << std::format("{} = {}\n", for_symbol, dynamic_cast<const LeafNum*>(r)->value);
+    //     return true;
+    // }
+    // else if (is_symbol_(r))
+    // {
+    //     // m_solution << std::format("{} = {}\n", for_symbol, dynamic_cast<const LeafSymbol*>(r)->value);
+    //     return true;
+    // }
+    // else if (is_expr_(r))
+    // {
+    //     // x = (1+a)
+    //     auto res = solve_expr_(node_eq->r, for_symbol);
+    //     if (!res.has_value())
+    //     {
+    //         // m_solution << std::format("{} = {}", for_symbol)
+    //         return true;
+    //     }
 
-                if (res.value())
-                    return solve_equation_(node, for_symbol);    // redo it
-                else
-                    return false;
-            }
-        }
-        else
-        {
-            // RHS - LHS=0
-            auto zero      = std::make_unique<AST::LeafNum>();
-            zero->value    = 0.0;
-            auto n         = std::make_unique<AST::NodeBin>();
-            n->token.type  = eTOKENS::SUM_OP;
-            n->token.value = "-";
-            n->l           = std::move(node_eq->r);
-            n->r           = std::move(node_eq->l);
-            node_eq->l     = std::move(n);
-            node_eq->r     = std::move(zero);
+    // if (res.value())
+    //     return solve_equation_(node, for_symbol);    // redo it
+    // else
+    //     return false;
+    // }
+    // }
+    // else
+    // {
+    // // RHS - LHS=0
+    // auto zero      = std::make_unique<AST::LeafNum>();
+    // zero->value    = 0.0;
+    // auto n         = std::make_unique<AST::NodeBin>();
+    // n->token.type  = eTOKENS::SUM_OP;
+    // n->token.value = "-";
+    // n->l           = std::move(node_eq->r);
+    // n->r           = std::move(node_eq->l);
+    // node_eq->l     = std::move(n);
+    // node_eq->r     = std::move(zero);
 
-            node_eq->l = simplify_(node_eq->l);
-            auto res   = solve_expr_(node_eq->l, for_symbol);
+    // node_eq->l = simplify_(node_eq->l);
+    // auto res   = solve_expr_(node_eq->l, for_symbol);
 
-            if (!res.has_value())
-                return true;
+    // if (!res.has_value())
+    //     return true;
 
-            if (res.value())
-                return solve_equation_(node, for_symbol);    // redo it
-            else
-                return false;
-        }
-    }
+    // if (res.value())
+    //     return solve_equation_(node, for_symbol);    // redo it
+    // else
+    //     return false;
+    // }
+    // }
 
-    return false;
+
+    // -------------------------
+
+    auto bin = dynamic_cast<AST::NodeBin*>(node);
+    if (bin->token.type != eTOKENS::EQUAL)
+        return false;
+
+    // LHS - RHS = 0
+    // expr: LHS - RHS
+    bin->token.type                 = eTOKENS::SUM_OP;
+    bin->token.value                = '-';
+    std::unique_ptr<AST::INode> n   = AST::NodeBin::make(bin->token, std::move(bin->l), std::move(bin->r));
+    auto                        res = solve_expr_(n, for_symbol);
+
+
+    return res.has_value() && res.value();
 }
 
 std::optional<bool> Solver::solve_expr_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol)
 {
+    node = simplify_(node);
+
     if (auto bin = dynamic_cast<AST::NodeBin*>(node.get()))
     {
         if (bin->token.type == eTOKENS::EQUAL)
@@ -362,7 +499,17 @@ std::optional<bool> Solver::solve_expr_(std::unique_ptr<AST::INode>& node, const
             // or 2 * x ==> need to check if it is asymbol here
             // return true;
 
-            return std::nullopt;
+            if (is_symbol_(bin->l.get(), for_symbol))
+            {
+                // e.g: x + 1
+                // (x * (x + 1)) ==> how to resolve this?
+            }
+            else if (is_symbol_(bin->r.get(), for_symbol))
+            {
+                // e.g 1 + x
+            }
+            else
+                return std::nullopt;
 
             // TODO: simplify symbols and so on...
             // return false;
@@ -427,10 +574,14 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
     if (auto bin = dynamic_cast<AST::NodeBin*>(pRoot))
     {
         // the operator here is = as it is an equation
-        bin->l = std::move(simplify_(bin->l));
-        bin->r = std::move(simplify_(bin->r));
+        // // LHS - RHS = 0
+        // // expr: LHS - RHS
+        // bin->token.type  = eTOKENS::SUM_OP;
+        // bin->token.value = '-';
 
-        if (!solve_equation_(const_cast<AST::INode*>(ast.getRoot()), for_symbol))
+        // solve_equation_(bin, for_symbol);
+
+        if (!solve_equation_(bin, for_symbol))
         {
             std::cerr << std::format("ERROR: unable to solve equation [{}, {}]\n", ast.to_string(), for_symbol);
             return false;
@@ -438,7 +589,7 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
     }
     else
     {
-        std::cerr << std::format("ERROR: unable to navigate equation\n");
+        std::cerr << std::format("ERROR: unable to navigate the equation.\n");
         return false;
     }
 
