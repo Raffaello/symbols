@@ -135,17 +135,11 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
             {
                 const AST::INode* l;
                 const AST::INode* r;
-                if (is_num_(expr->l.get()))
-                {
-                    l = expr->l.get();
-                    r = expr->r.get();
-                }
-                else if (is_num_(expr->r.get()))
-                {
-                    l = expr->r.get();
-                    r = expr->l.get();
-                }
-                else if (is_expr_(expr->l.get()) && is_expr_(expr->r.get()))
+
+                if (is_expr_(expr->l.get()) ||
+                    is_expr_(expr->r.get()) ||
+                    is_unary_(expr->l.get()) ||
+                    is_unary_(expr->r.get()))
                 {
                     std::vector<double> c1;
                     std::vector<double> c2;
@@ -166,8 +160,17 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
                             coeffs[j + i] += c1[i] * c2[j];
                     }
 
-
                     return true;
+                }
+                else if (is_num_(expr->l.get()))
+                {
+                    l = expr->l.get();
+                    r = expr->r.get();
+                }
+                else if (is_num_(expr->r.get()))
+                {
+                    l = expr->r.get();
+                    r = expr->l.get();
                 }
                 else
                     return false;
@@ -224,6 +227,12 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
                 if (is_expr_(r))
                     if (!collect_poly_(r, coeffs, symbol))
                         return false;
+
+                auto r1 = is_num_(r);
+                auto r2 = is_symbol_(r);
+                auto r3 = is_unary_(r);
+                auto r4 = is_expr_(r);
+                int  i  = 0;
             }
             break;
             case DIV:
