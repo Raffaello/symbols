@@ -36,7 +36,6 @@ private:
     std::unique_ptr<AST::INode> simplify_(std::unique_ptr<AST::INode>& node);
     std::unique_ptr<AST::INode> simplifyExpr_(std::unique_ptr<AST::INode>& node);
     std::unique_ptr<AST::INode> simplifyExprSumOrMulOrPow_(std::unique_ptr<AST::INode>& node);
-    std::unique_ptr<AST::INode> simplifyExprPow_(std::unique_ptr<AST::INode>& left, std::unique_ptr<AST::INode>& right, Token& t);
 
 
     bool                solve_equation_(AST::INode* node, const std::string_view for_symbol);
