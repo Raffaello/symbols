@@ -85,9 +85,9 @@ std::unique_ptr<AST::INode> ParserLL1::exprPrime_(std::unique_ptr<AST::INode> le
 
         AST::eOperators op = AST::eOperators::NONE;
         if (t.value == TOKEN_VALUE_PLUS)
-            op = AST::eOperators::SUM;
+            op = AST::eOperators::ADD;
         else if (t.value == TOKEN_VALUE_MINUS)
-            op = AST::eOperators::DIF;
+            op = AST::eOperators::SUB;
         else
         {
             std::cerr << std::format("ERROR: invalid sum operator {}", t.value);
