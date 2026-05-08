@@ -39,9 +39,10 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("a+1+0=x", "x", "x = a + 1"),
         std::make_tuple("a+1*1=x", "x", "x = a + 1"),
         std::make_tuple("2*x=1", "x", "x = 0.5"),
-        std::make_tuple("2*x/2=1", "x", "x = 1")
-
-            ));
+        std::make_tuple("2*x/2=1", "x", "x = 1"),
+        std::make_tuple("(2+x)*(3-2)+x=0", "x", "x = -1")
+        // (2+x)
+        ));
 
 class TestSolverError : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
 {

@@ -145,6 +145,30 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
                     l = expr->r.get();
                     r = expr->l.get();
                 }
+                else if (is_expr_(expr->l.get()) && is_expr_(expr->r.get()))
+                {
+                    std::vector<double> c1;
+                    std::vector<double> c2;
+                    if (!collect_poly_(expr->l.get(), c1, symbol))
+                        return false;
+                    if (!collect_poly_(expr->r.get(), c2, symbol))
+                        return false;
+
+                    int          deg1  = c1.size() - 1;
+                    int          deg2  = c2.size() - 1;
+                    const size_t max_c = deg1 + deg2 + 1;
+                    if (coeffs.size() < max_c)
+                        coeffs.resize(max_c);
+
+                    for (size_t i = 0; i < c1.size(); ++i)
+                    {
+                        for (size_t j = 0; j < c2.size(); ++j)
+                            coeffs[j + i] += c1[i] * c2[j];
+                    }
+
+
+                    return true;
+                }
                 else
                     return false;
 
