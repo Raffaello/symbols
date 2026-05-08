@@ -53,7 +53,7 @@ std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        return AST::NodeBin::make(t, std::move(l), std::move(r));
+        return AST::NodeBin::make(AST::eOperators::EQUAL, std::move(l), std::move(r));
     }
 
     return l;
@@ -83,7 +83,18 @@ std::unique_ptr<AST::INode> ParserLL1::exprPrime_(std::unique_ptr<AST::INode> le
         if (right == nullptr)
             return nullptr;
 
-        return exprPrime_(AST::NodeBin::make(t, std::move(left), std::move(right)));
+        AST::eOperators op = AST::eOperators::NONE;
+        if (t.value == TOKEN_VALUE_PLUS)
+            op = AST::eOperators::SUM;
+        else if (t.value == TOKEN_VALUE_MINUS)
+            op = AST::eOperators::DIF;
+        else
+        {
+            std::cerr << std::format("ERROR: invalid sum operator {}", t.value);
+            return nullptr;
+        }
+
+        return exprPrime_(AST::NodeBin::make(op, std::move(left), std::move(right)));
     }
     else
         return left;
@@ -113,7 +124,18 @@ std::unique_ptr<AST::INode> ParserLL1::termPrime_(std::unique_ptr<AST::INode> le
         if (right == nullptr)
             return nullptr;
 
-        return termPrime_(AST::NodeBin::make(t, std::move(left), std::move(right)));
+        AST::eOperators op = AST::eOperators::NONE;
+        if (t.value == TOKEN_VALUE_MUL)
+            op = AST::eOperators::MUL;
+        else if (t.value == TOKEN_VALUE_DIV)
+            op = AST::eOperators::DIV;
+        else
+        {
+            std::cerr << std::format("ERROR: invalid mul operator {}", t.value);
+            return nullptr;
+        }
+
+        return termPrime_(AST::NodeBin::make(op, std::move(left), std::move(right)));
     }
     else
         return left;
@@ -144,7 +166,7 @@ std::unique_ptr<AST::INode> ParserLL1::unary_()
             return nullptr;
         }
 
-        return AST::NodeUnary::make(t);    // n->n     = nullptr;
+        return AST::NodeUnary::make(t.value == TOKEN_VALUE_MINUS);    // n->n     = nullptr;
     }
     else
         return nullptr;
@@ -174,7 +196,7 @@ std::unique_ptr<AST::INode> ParserLL1::powPrime_(std::unique_ptr<AST::INode> lef
         if (r == nullptr)
             return nullptr;
 
-        return AST::NodeBin::make(t, std::move(left), std::move(r));
+        return AST::NodeBin::make(AST::eOperators::POW, std::move(left), std::move(r));
     }
 
     return left;

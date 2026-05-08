@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Token.hpp"
-
 #include <memory>
 #include <list>
 #include <sstream>
@@ -9,6 +7,17 @@
 class AST
 {
 public:
+    enum class eOperators
+    {
+        NONE,    // as a placeholder if not init, this is basically an error if it is encountered
+        SUM,
+        DIF,
+        MUL,
+        DIV,
+        POW,
+        EQUAL,
+    };
+
     struct INode
     {
         virtual ~INode() = default;
@@ -59,31 +68,33 @@ public:
 
     struct NodeUnary : public INode
     {
-        Token                  token;
-        std::unique_ptr<INode> n = nullptr;
+        bool                   negate = false;
+        std::unique_ptr<INode> n      = nullptr;
 
-        static std::unique_ptr<NodeUnary> make(const Token& token)
+        inline const char value() const noexcept { return negate ? '-' : '+'; }
+
+        static std::unique_ptr<NodeUnary> make(const bool negate)
         {
-            auto n   = std::make_unique<NodeUnary>();
-            n->token = token;
-            n->n     = nullptr;
+            auto n    = std::make_unique<NodeUnary>();
+            n->negate = negate;
+            n->n      = nullptr;
             return std::move(n);
         }
     };
 
     struct NodeBin : public INode
     {
-        Token token;
+        eOperators op = eOperators::NONE;
 
         std::unique_ptr<INode> l = nullptr;
         std::unique_ptr<INode> r = nullptr;
 
-        static std::unique_ptr<NodeBin> make(const Token& token, std::unique_ptr<INode> l, std::unique_ptr<INode> r)
+        static std::unique_ptr<NodeBin> make(const eOperators op, std::unique_ptr<INode> l, std::unique_ptr<INode> r)
         {
-            auto n   = std::make_unique<NodeBin>();
-            n->token = token;
-            n->l     = std::move(l);
-            n->r     = std::move(r);
+            auto n = std::make_unique<NodeBin>();
+            n->op  = op;
+            n->l   = std::move(l);
+            n->r   = std::move(r);
             return std::move(n);
         }
     };
@@ -98,12 +109,13 @@ public:
     AST()  = default;
     ~AST() = default;
 
-    void setRoot(std::unique_ptr<INode>& root);
-
     inline const INode* getRoot() const noexcept;
+    void                setRoot(std::unique_ptr<INode>& root);
 
     std::string to_string() const;
     void        print();
+
+    static char operator_to_string(const eOperators op);
 };
 
 inline const AST::INode* AST::getRoot() const noexcept

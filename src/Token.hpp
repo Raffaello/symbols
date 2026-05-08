@@ -16,6 +16,12 @@ enum class eTOKENS
     END,
 };
 
+constexpr auto TOKEN_VALUE_PLUS  = "+";
+constexpr auto TOKEN_VALUE_MINUS = "-";
+constexpr auto TOKEN_VALUE_MUL   = "*";
+constexpr auto TOKEN_VALUE_DIV   = "/";
+constexpr auto TOKEN_VALUE_POW   = "^";
+
 struct Token
 {
     eTOKENS     type = eTOKENS::ERROR;

@@ -15,7 +15,7 @@ void AST::to_string_(const INode* node, std::stringstream& ss, const int level) 
         if (level > 0)
             ss << "(";
 
-        ss << uni->token.value;
+        ss << uni->value();
         to_string_(uni->n.get(), ss, level + 1);
 
         if (level > 0)
@@ -28,23 +28,23 @@ void AST::to_string_(const INode* node, std::stringstream& ss, const int level) 
         if (level > 0)
             ss << "(";
 
-        switch (bin->token.type)
+        switch (bin->op)
         {
-            using enum eTOKENS;
+            using enum eOperators;
 
         default:
             l++;
             to_string_(bin->l.get(), ss, l);
-            ss << std::format(" {} ", bin->token.value);
+            ss << std::format(" {} ", AST::operator_to_string(bin->op));
             break;
-        case POW_OP:
+        case POW:
             l++;
             to_string_(bin->l.get(), ss, l);
-            ss << std::format("{}", bin->token.value);
+            ss << std::format("{}", AST::operator_to_string(bin->op));
             break;
         case EQUAL:
             to_string_(bin->l.get(), ss, l);
-            ss << std::format(" {} ", bin->token.value);
+            ss << std::format(" {} ", AST::operator_to_string(bin->op));
             break;
         }
 
@@ -80,7 +80,7 @@ void AST::print_(const INode* node, const int indent)
     if (auto uni = dynamic_cast<const NodeUnary*>(node))
     {
         pad(indent);
-        std::cout << std::format("Unary({})\n", uni->token.value);
+        std::cout << std::format("Unary({})\n", uni->value());
         print_(uni->n.get(), indent + 1);
         return;
     }
@@ -88,7 +88,7 @@ void AST::print_(const INode* node, const int indent)
     if (auto bin = dynamic_cast<const NodeBin*>(node))
     {
         pad(indent);
-        std::cout << std::format("Binary({})\n", bin->token.value);
+        std::cout << std::format("Binary({})\n", AST::operator_to_string(bin->op));
 
         pad(indent);
         std::cout << "Left:\n";
@@ -120,4 +120,31 @@ std::string AST::to_string() const
 void AST::print()
 {
     print_(m_pRoot.get(), 0);
+}
+
+char AST::operator_to_string(const eOperators op)
+{
+    switch (op)
+    {
+        using enum eOperators;
+
+    default:
+        [[fallthrough]];
+    case NONE:
+        std::cerr << "ERROR: unknown operator\n";
+        return 0;
+
+    case SUM:
+        return '+';
+    case DIF:
+        return '-';
+    case MUL:
+        return '*';
+    case DIV:
+        return '/';
+    case POW:
+        return '^';
+    case EQUAL:
+        return '=';
+    }
 }

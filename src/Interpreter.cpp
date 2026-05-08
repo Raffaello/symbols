@@ -40,12 +40,10 @@ std::optional<bool> Interpreter::evalUny_(const AST::INode* node)
 {
     if (auto uni = dynamic_cast<const AST::NodeUnary*>(node))
     {
-        assert(uni->token.type == eTOKENS::SUM_OP);
-
         if (!eval_(uni->n.get()))
             return false_();
 
-        if (uni->token.value == "-")
+        if (uni->negate)
         {
             m_lastValue = -m_lastValue;
             if (m_lastValue < 0.0)
@@ -70,7 +68,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         const double r = m_lastValue;
 
         // TODO: specific for the assignment:
-        if (bin->token.type == eTOKENS::EQUAL)
+        if (bin->op == AST::eOperators::EQUAL)
         {
             const char* sym = m_symbolTable.setSymbol(bin->l.get(), r);
             if (sym != nullptr)
@@ -88,36 +86,34 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
             return false_();
 
         const double l = m_lastValue;
-        switch (bin->token.type)
+        switch (bin->op)
         {
-            using enum eTOKENS;
+            using enum AST::eOperators;
 
-        case SUM_OP:
-            if (bin->token.value == "+")
-                m_lastValue = l + r;
-            else if (bin->token.value == "-")
-                m_lastValue = l - r;
+        case SUM:
+            m_lastValue = l + r;
             break;
-        case MUL_OP:
-            if (bin->token.value == "*")
-                m_lastValue = l * r;
-            else if (bin->token.value == "/")
-            {
-                if (r == 0.0)
-                    std::cout << std::format("WARN: division by zero detected\n");
+        case DIF:
+            m_lastValue = l - r;
+            break;
+        case MUL:
+            m_lastValue = l * r;
+            break;
+        case DIV:
+            if (r == 0.0)
+                std::cout << std::format("WARN: division by zero detected\n");
 
-                m_lastValue = l / r;
-            }
+            m_lastValue = l / r;
             break;
-        case POW_OP:
+        case POW:
             m_lastValue = std::pow(l, r);
             break;
         default:
-            std::cerr << std::format("ERROR: not supported operator '{}'\n", bin->token.value);
+            std::cerr << std::format("ERROR: not supported operator '{}'\n", static_cast<int>(bin->op));
             return false_();
         }
 
-        m_lastExpr = std::format("{} {} {} = {}", l, bin->token.value, r, m_lastValue);
+        m_lastExpr = std::format("{} {} {} = {}", l, AST::operator_to_string(bin->op), r, m_lastValue);
         // std::cout << std::format("|> {}\n", m_lastExpr);
         return true;
     }
