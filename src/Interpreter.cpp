@@ -40,12 +40,10 @@ std::optional<bool> Interpreter::evalUny_(const AST::INode* node)
 {
     if (auto uni = dynamic_cast<const AST::NodeUnary*>(node))
     {
-        assert(uni->token.type == eTOKENS::SUM_OP);
-
         if (!eval_(uni->n.get()))
             return false_();
 
-        if (uni->token.value == "-")
+        if (uni->negate)
         {
             m_lastValue = -m_lastValue;
             if (m_lastValue < 0.0)

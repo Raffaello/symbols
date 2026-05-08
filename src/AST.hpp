@@ -9,6 +9,15 @@
 class AST
 {
 public:
+    enum class eOperators
+    {
+        SUM,
+        DIF,
+        MUL,
+        DIV,
+        POW,
+    };
+
     struct INode
     {
         virtual ~INode() = default;
@@ -59,14 +68,16 @@ public:
 
     struct NodeUnary : public INode
     {
-        Token                  token;
+        bool                   negate;
         std::unique_ptr<INode> n = nullptr;
 
-        static std::unique_ptr<NodeUnary> make(const Token& token)
+        inline const char value() const noexcept { return negate ? '-' : '+'; }
+
+        static std::unique_ptr<NodeUnary> make(const bool negate)
         {
-            auto n   = std::make_unique<NodeUnary>();
-            n->token = token;
-            n->n     = nullptr;
+            auto n    = std::make_unique<NodeUnary>();
+            n->negate = negate;
+            n->n      = nullptr;
             return std::move(n);
         }
     };

@@ -144,7 +144,7 @@ std::unique_ptr<AST::INode> ParserLL1::unary_()
             return nullptr;
         }
 
-        return AST::NodeUnary::make(t);    // n->n     = nullptr;
+        return AST::NodeUnary::make(t.value == TOKEN_VALUE_MINUS);    // n->n     = nullptr;
     }
     else
         return nullptr;

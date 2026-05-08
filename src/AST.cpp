@@ -15,7 +15,7 @@ void AST::to_string_(const INode* node, std::stringstream& ss, const int level) 
         if (level > 0)
             ss << "(";
 
-        ss << uni->token.value;
+        ss << uni->value();
         to_string_(uni->n.get(), ss, level + 1);
 
         if (level > 0)
@@ -80,7 +80,7 @@ void AST::print_(const INode* node, const int indent)
     if (auto uni = dynamic_cast<const NodeUnary*>(node))
     {
         pad(indent);
-        std::cout << std::format("Unary({})\n", uni->token.value);
+        std::cout << std::format("Unary({})\n", uni->value());
         print_(uni->n.get(), indent + 1);
         return;
     }
