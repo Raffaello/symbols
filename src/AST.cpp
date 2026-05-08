@@ -134,9 +134,9 @@ char AST::operator_to_string(const eOperators op)
         std::cerr << "ERROR: unknown operator\n";
         return 0;
 
-    case SUM:
+    case ADD:
         return '+';
-    case DIF:
+    case SUB:
         return '-';
     case MUL:
         return '*';

@@ -10,8 +10,8 @@ public:
     enum class eOperators
     {
         NONE,    // as a placeholder if not init, this is basically an error if it is encountered
-        SUM,
-        DIF,
+        ADD,
+        SUB,
         MUL,
         DIV,
         POW,

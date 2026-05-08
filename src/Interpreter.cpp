@@ -90,10 +90,10 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         {
             using enum AST::eOperators;
 
-        case SUM:
+        case ADD:
             m_lastValue = l + r;
             break;
-        case DIF:
+        case SUB:
             m_lastValue = l - r;
             break;
         case MUL:
