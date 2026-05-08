@@ -68,8 +68,8 @@ public:
 
     struct NodeUnary : public INode
     {
-        bool                   negate;
-        std::unique_ptr<INode> n = nullptr;
+        bool                   negate = false;
+        std::unique_ptr<INode> n      = nullptr;
 
         inline const char value() const noexcept { return negate ? '-' : '+'; }
 

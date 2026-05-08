@@ -131,6 +131,7 @@ char AST::operator_to_string(const eOperators op)
     default:
         [[fallthrough]];
     case NONE:
+        std::cerr << std::format("ERROR: unknow operator\n");
         return 0;
 
     case SUM:
