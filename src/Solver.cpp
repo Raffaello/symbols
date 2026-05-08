@@ -102,37 +102,35 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
                 using enum AST::eOperators;
 
             case ADD:
-                [[fallthrough]];
-            case SUB:
             {
-                // std::vector<double> coeffs2;
+                std::vector<double> coeffs2;
                 if (!collect_poly_(expr->l.get(), coeffs, symbol))
                     return false;
-                if (!collect_poly_(expr->r.get(), coeffs, symbol))
+                if (!collect_poly_(expr->r.get(), coeffs2, symbol))
                     return false;
 
-                // if (coeffs2.size() > coeffs.size())
-                //     coeffs.resize(coeffs2.size());
-                // for (size_t i = 0; i < coeffs2.size(); ++i)
-                //     coeffs[i] += coeffs2[i];
+                if (coeffs2.size() > coeffs.size())
+                    coeffs.resize(coeffs2.size());
+                for (size_t i = 0; i < coeffs2.size(); ++i)
+                    coeffs[i] += coeffs2[i];
                 return true;
             }
 
-            // case SUB:
-            // {
-            //     // std::vector<double> coeffs2;
-            //     if (!collect_poly_(expr->l.get(), coeffs, symbol))
-            //         return false;
-            //     if (!collect_poly_(expr->r.get(), coeffs, symbol))
-            //         return false;
+            case SUB:
+            {
+                std::vector<double> coeffs2;
+                if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                    return false;
+                if (!collect_poly_(expr->r.get(), coeffs2, symbol))
+                    return false;
 
-            // // if (coeffs2.size() > coeffs.size())
-            //     // coeffs.resize(coeffs2.size());
-            // // for (size_t i = 0; i < coeffs2.size(); ++i)
-            //     // coeffs[i] -= coeffs2[i];
+                if (coeffs2.size() > coeffs.size())
+                    coeffs.resize(coeffs2.size());
+                for (size_t i = 0; i < coeffs2.size(); ++i)
+                    coeffs[i] -= coeffs2[i];
 
-            // return true;
-            // }
+                return true;
+            }
             case MUL:
             {
                 const AST::INode* l;
