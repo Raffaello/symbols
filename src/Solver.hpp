@@ -1,9 +1,12 @@
 #pragma once
 
 #include "AST.hpp"
+#include "SymbolTable.hpp"
 
 #include <sstream>
 #include <string>
+#include <vector>
+#include <memory>
 
 /**
  * TODO: This is to be rewritten as it is wrong.
@@ -20,17 +23,28 @@
  */
 class Solver
 {
+public:
+    struct PolynomialForm
+    {
+        int                 degree;
+        std::vector<double> coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
+    };
+
 private:
-    // std::stringstream m_solution;
+    std::shared_ptr<SymbolTable> m_pSymbolTable;
+    std::string                  m_solution;
+
+    PolynomialForm analyze_poly_(const AST::INode* node, std::string_view symbol) const noexcept;
+    static bool    collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
 
     bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
 
-    bool is_equation_(const AST::INode* node) const noexcept;
-    bool is_expr_(const AST::INode* node) const noexcept;
-    bool is_unary_(const AST::INode* node) const noexcept;
-    bool is_symbol_(const AST::INode* node) const noexcept;
-    bool is_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
-    bool is_num_(const AST::INode* node) const noexcept;
+    static bool is_equation_(const AST::INode* node);
+    static bool is_expr_(const AST::INode* node);
+    static bool is_unary_(const AST::INode* node);
+    static bool is_symbol_(const AST::INode* node);
+    static bool is_symbol_(const AST::INode* node, const std::string_view symbol);
+    static bool is_num_(const AST::INode* node);
 
 
     std::unique_ptr<AST::INode> simplify_(std::unique_ptr<AST::INode>& node);
@@ -43,12 +57,14 @@ private:
     bool                solve_unary_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol);
 
 public:
+    Solver(const std::shared_ptr<SymbolTable>& pSymbolTable);
+
     bool solve(AST& ast, const std::string_view for_symbol);
 
-    // inline std::string solution() const noexcept;
+    inline std::string solution() const noexcept;
 };
 
-// inline std::string Solver::solution() const noexcept
-// {
-//     return m_solution.str();
-// }
+inline std::string Solver::solution() const noexcept
+{
+    return m_solution;
+}

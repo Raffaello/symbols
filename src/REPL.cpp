@@ -151,8 +151,10 @@ int REPL::runLoop()
         case eType::SOLVER:
             // TODO: how to pass to solve for x? using the comma token? like 'x+a+b-c=0, x=?'
             //       do it in the REPL separated by a ',' following is the symbol
+            // if (m_solver.solve(m_parser.ast(), "x"))
+            //     std::cout << std::format("|> {}\n", m_parser.ast().to_string());
             if (m_solver.solve(m_parser.ast(), "x"))
-                std::cout << std::format("|> {}\n", m_parser.ast().to_string());
+                std::cout << std::format("|> {}\n", m_solver.solution());
 
             break;
         default:

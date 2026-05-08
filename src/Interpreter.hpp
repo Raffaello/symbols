@@ -8,11 +8,12 @@
 #include <limits>
 #include <optional>
 #include <string_view>
+#include <memory>
 
 class Interpreter
 {
 private:
-    SymbolTable m_symbolTable;
+    std::shared_ptr<SymbolTable> m_pSymbolTable = nullptr;
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
     double      m_lastValue = std::numeric_limits<double>::quiet_NaN();
@@ -28,7 +29,7 @@ private:
     bool false_() noexcept;
 
 public:
-    Interpreter() = default;
+    Interpreter(const std::shared_ptr<SymbolTable>& pSymbolTable);
 
     bool eval(const AST& ast);
     bool unsetSymbol(const std::string& symbol) noexcept;
@@ -51,10 +52,10 @@ inline std::string_view Interpreter::lastExpr() const noexcept
 
 inline const SymbolTable& Interpreter::symbolTable() const noexcept
 {
-    return m_symbolTable;
+    return *m_pSymbolTable;
 }
 
 inline void Interpreter::clearSymbols() noexcept
 {
-    m_symbolTable.clear();
+    m_pSymbolTable->clear();
 }

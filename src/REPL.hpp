@@ -2,6 +2,7 @@
 
 #include "LexScanner.hpp"
 #include "ParserLL1.hpp"
+#include "SymbolTable.hpp"
 #include "Interpreter.hpp"
 #include "Solver.hpp"
 
@@ -27,10 +28,11 @@ private:
         SOLVER,
     };
 
-    LexScanner  m_lex    = LexScanner(std::make_unique<std::stringstream>(""));
-    ParserLL1   m_parser = ParserLL1(m_lex);
-    Interpreter m_intr;
-    Solver      m_solver;
+    LexScanner                   m_lex          = LexScanner(std::make_unique<std::stringstream>(""));
+    ParserLL1                    m_parser       = ParserLL1(m_lex);
+    std::shared_ptr<SymbolTable> m_pSymbolTable = std::make_shared<SymbolTable>();
+    Interpreter                  m_intr         = Interpreter(m_pSymbolTable);
+    Solver                       m_solver       = Solver(m_pSymbolTable);
 
     eType m_type = eType::EVAL;
     bool  m_quit = false;

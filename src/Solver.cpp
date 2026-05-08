@@ -3,6 +3,282 @@
 #include <iostream>
 #include <format>
 #include <cmath>
+#include <stdexcept>
+
+Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTable(pSymbolTable)
+{
+    if (m_pSymbolTable == nullptr)
+        throw std::invalid_argument("symbol table is null");
+}
+
+Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string_view symbol) const noexcept
+{
+    // coeffs are stored in reverse order
+    PolynomialForm pf{
+        .degree = 0,
+        .coeffs = {},
+    };
+
+    if (!collect_poly_(node, pf.coeffs, symbol))
+    {
+        pf.degree = 0;
+        pf.coeffs.clear();
+        return pf;
+    }
+
+    pf.degree = static_cast<int>(pf.coeffs.size()) - 1;
+    return pf;
+}
+
+bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol)
+{
+    if (is_num_(node))
+    {
+        double d = 0.0;
+        if (!AST::LeafNum::getValue(node, d))
+        {
+            std::cerr << "ERROR: unable to get num\n";
+            return false;
+        }
+
+        if (coeffs.size() < 1)
+            coeffs.push_back(d);
+        else
+            coeffs[0] += d;
+
+        return true;
+    }
+    else if (is_symbol_(node))
+    {
+        // if (std::string(symbol) == AST::LeafSymbol::getValue(node))
+        // {
+        //     // coeffs_x
+        // }
+
+        switch (coeffs.size())
+        {
+        case 0:
+            coeffs.push_back(0);
+            [[fallthrough]];
+        case 1:
+            coeffs.push_back(1);
+            break;
+
+        case 2:
+            [[fallthrough]];
+        default:
+            coeffs[1] += 1;
+            break;
+        }
+
+        return true;
+    }
+    else if (is_unary_(node))
+    {
+        if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
+        {
+            if (uny->negate)
+            {
+                std::vector<double> coeffs2;
+                if (!collect_poly_(uny->n.get(), coeffs2, symbol))
+                    return false;
+
+                if (coeffs2.size() > coeffs.size())
+                    coeffs.resize(coeffs2.size());
+
+                for (size_t i = 0; i < coeffs2.size(); ++i)
+                    coeffs[i] -= coeffs2[i];
+            }
+
+            return true;
+        }
+    }
+    else if (is_expr_(node))
+    {
+        if (auto expr = dynamic_cast<const AST::NodeBin*>(node))
+        {
+            switch (expr->op)
+            {
+                using enum AST::eOperators;
+
+            case ADD:
+                [[fallthrough]];
+            case SUB:
+            {
+                // std::vector<double> coeffs2;
+                if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                    return false;
+                if (!collect_poly_(expr->r.get(), coeffs, symbol))
+                    return false;
+
+                // if (coeffs2.size() > coeffs.size())
+                //     coeffs.resize(coeffs2.size());
+                // for (size_t i = 0; i < coeffs2.size(); ++i)
+                //     coeffs[i] += coeffs2[i];
+                return true;
+            }
+
+            // case SUB:
+            // {
+            //     // std::vector<double> coeffs2;
+            //     if (!collect_poly_(expr->l.get(), coeffs, symbol))
+            //         return false;
+            //     if (!collect_poly_(expr->r.get(), coeffs, symbol))
+            //         return false;
+
+            // // if (coeffs2.size() > coeffs.size())
+            //     // coeffs.resize(coeffs2.size());
+            // // for (size_t i = 0; i < coeffs2.size(); ++i)
+            //     // coeffs[i] -= coeffs2[i];
+
+            // return true;
+            // }
+            case MUL:
+            {
+                const AST::INode* l;
+                const AST::INode* r;
+                if (is_num_(expr->l.get()))
+                {
+                    l = expr->l.get();
+                    r = expr->r.get();
+                }
+                else if (is_num_(expr->r.get()))
+                {
+                    l = expr->r.get();
+                    r = expr->l.get();
+                }
+                else
+                    return false;
+
+                // e.g. 1*1
+                if (is_num_(l) && is_num_(r))
+                {
+                    double dl;
+                    double dr;
+                    if (!AST::LeafNum::getValue(l, dl) || !AST::LeafNum::getValue(r, dr))
+                    {
+                        std::cerr << "ERROR: unable to get numbers\n";
+                        return false;
+                    }
+
+                    const double dlr = dl * dr;
+                    if (coeffs.size() == 0)
+                        coeffs.push_back(dlr);
+                    else
+                        coeffs[0] += dlr;
+
+                    return true;
+                }
+                // e.g. 2*x | x*2
+                if (is_num_(l) && is_symbol_(r))
+                {
+                    double d;
+                    if (!AST::LeafNum::getValue(l, d))
+                    {
+                        std::cerr << "ERROR: unable to get number\n";
+                        return false;
+                    }
+
+                    switch (coeffs.size())
+                    {
+                    case 0:
+                        coeffs.push_back(0);
+                        [[fallthrough]];
+                    case 1:
+                        coeffs.push_back(d);
+                        break;
+                    default:
+                    case 2:
+                        coeffs[1] += d;
+                    }
+
+                    return true;
+                }
+
+                if (is_expr_(l))
+                    if (!collect_poly_(l, coeffs, symbol))
+                        return false;
+
+                if (is_expr_(r))
+                    if (!collect_poly_(r, coeffs, symbol))
+                        return false;
+            }
+            break;
+            case DIV:
+            {
+                // e.g. 1/1
+                if (is_num_(expr->l.get()) && is_num_(expr->r.get()))
+                {
+                    double dl;
+                    double dr;
+                    if (!AST::LeafNum::getValue(expr->l.get(), dl) || !AST::LeafNum::getValue(expr->r.get(), dr))
+                    {
+                        std::cerr << "ERROR: unable to get numbers\n";
+                        return false;
+                    }
+
+                    // if(dr == 0.0)
+                    // {
+                    // division by zero
+                    // }
+                    const double dlr = dl / dr;
+                    if (coeffs.size() == 0)
+                        coeffs.push_back(dlr);
+                    else
+                        coeffs[0] += dlr;
+
+                    return true;
+                }
+                // e.g. [expr]/2
+                if (is_num_(expr->r.get()))
+                {
+                    double d;
+                    if (!AST::LeafNum::getValue(expr->r.get(), d))
+                    {
+                        std::cerr << "ERROR: unable to get number\n";
+                        return false;
+                    }
+
+                    if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                        return false;
+
+                    for (auto& c : coeffs)
+                        c /= d;
+
+                    // switch (coeffs.size())
+                    // {
+                    // case 0:
+                    //     coeffs.push_back(0);
+                    //     [[fallthrough]];
+                    // case 1:
+                    //     coeffs.push_back(d);
+                    //     break;
+                    // default:
+                    // case 2:
+                    //     coeffs[1] += d;
+                    // }
+
+                    return true;
+                }
+
+                // if (is_expr_(l))
+                //     if (!collect_poly_(l, coeffs, symbol))
+                //         return false;
+
+                // if (is_expr_(r))
+                //     if (!collect_poly_(r, coeffs, symbol))
+                //         return false;
+            }
+            break;
+            case POW:
+                // TODO
+                break;
+            }
+        }
+    }
+
+    return false;
+}
 
 bool Solver::has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept
 {
@@ -19,7 +295,7 @@ bool Solver::has_symbol_(const AST::INode* node, const std::string_view symbol) 
     return false;
 }
 
-bool Solver::is_equation_(const AST::INode* node) const noexcept
+bool Solver::is_equation_(const AST::INode* node)
 {
     if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
         return bin->op == AST::eOperators::EQUAL;
@@ -27,7 +303,7 @@ bool Solver::is_equation_(const AST::INode* node) const noexcept
     return false;
 }
 
-bool Solver::is_expr_(const AST::INode* node) const noexcept
+bool Solver::is_expr_(const AST::INode* node)
 {
     if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
         return bin->op == AST::eOperators::ADD ||
@@ -39,23 +315,17 @@ bool Solver::is_expr_(const AST::INode* node) const noexcept
     return false;
 }
 
-bool Solver::is_unary_(const AST::INode* node) const noexcept
+bool Solver::is_unary_(const AST::INode* node)
 {
-    if (auto uni = dynamic_cast<const AST::NodeUnary*>(node))
-        return true;
-    else
-        return false;
+    return dynamic_cast<const AST::NodeUnary*>(node) != nullptr;
 }
 
-bool Solver::is_symbol_(const AST::INode* node) const noexcept
+bool Solver::is_symbol_(const AST::INode* node)
 {
-    if (auto sym = dynamic_cast<const AST::LeafSymbol*>(node))
-        return true;
-
-    return false;
+    return dynamic_cast<const AST::LeafSymbol*>(node) != nullptr;
 }
 
-bool Solver::is_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept
+bool Solver::is_symbol_(const AST::INode* node, const std::string_view symbol)
 {
     if (auto sym = dynamic_cast<const AST::LeafSymbol*>(node))
     {
@@ -66,7 +336,7 @@ bool Solver::is_symbol_(const AST::INode* node, const std::string_view symbol) c
     return false;
 }
 
-bool Solver::is_num_(const AST::INode* node) const noexcept
+bool Solver::is_num_(const AST::INode* node)
 {
     if (auto num = dynamic_cast<const AST::LeafNum*>(node))
         return true;
@@ -98,94 +368,6 @@ std::unique_ptr<AST::INode> Solver::simplify_(std::unique_ptr<AST::INode>& node)
 
 std::unique_ptr<AST::INode> Solver::simplifyExpr_(std::unique_ptr<AST::INode>& node)
 {
-    // switch (t.type)
-    // {
-    // default:
-    //     nullptr;
-
-    // case eTOKENS::SUM_OP:
-    // case eTOKENS::MUL_OP:
-    // case eTOKENS::POW_OP:
-    // {
-    //     if (is_num_(left.get()) && is_num_(right.get()))
-    //     {
-    //         auto l = dynamic_cast<AST::LeafNum*>(left.get())->value;
-    //         auto r = dynamic_cast<AST::LeafNum*>(right.get())->value;
-    //         auto n = std::make_unique<AST::LeafNum>();
-    //         switch (t.value[0])
-    //         {
-    //         default:
-    //             throw std::runtime_error("t.value[0]");
-    //             break;
-    //         case '+':
-    //             n->value = l + r;
-    //             break;
-    //         case '-':
-    //             n->value = l - r;
-    //             break;
-    //         case '*':
-    //             n->value = l * r;
-    //             break;
-    //         case '/':
-    //             n->value = l / r;
-    //             break;
-    //         case '^':
-    //             n->value = std::pow(l, r);
-    //             break;
-    //         }
-
-    // return std::move(n);
-    // }
-
-    // if (t.type == eTOKENS::SUM_OP)
-    // {
-    //     if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
-    //     {
-    //         if (l->value == 0.0)
-    //             return std::move(right);
-    //     }
-    //     else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
-    //     {
-    //         if (r->value == 0.0)
-    //             return std::move(left);
-    //     }
-    // }
-    // else if (t.type == eTOKENS::MUL_OP)
-    // {
-    //     if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))
-    //     {
-    //         if (l->value == 1.0)
-    //             return std::move(right);
-    //     }
-    //     else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))
-    //     {
-    //         if (r->value == 1.0)
-    //             return std::move(left);
-    //     }
-    // }
-    // else if (t.type == eTOKENS::POW_OP)
-    // {
-    //     if (auto l = dynamic_cast<AST::LeafNum*>(left.get()))    // 1^x
-    //     {
-    //         if (l->value == 1.0)
-    //             return std::move(left);                                // returning 1.0
-    //     }
-    //     else if (auto r = dynamic_cast<AST::LeafNum*>(right.get()))    // x^1
-    //     {
-    //         if (r->value == 1.0)
-    //             return std::move(left);    // returning x
-    //     }
-    // }
-    // }
-    // break;
-    // }
-
-    // auto n   = std::make_unique<AST::NodeBin>();
-    // n->token = t;
-    // n->l     = std::move(left);
-    // n->r     = std::move(right);
-    // return std::move(n);
-
     auto bin = dynamic_cast<AST::NodeBin*>(node.get());
     if (bin == nullptr)
         throw std::invalid_argument("simplifyExpr_ called without a NodeBin");
@@ -314,102 +496,58 @@ std::unique_ptr<AST::INode> Solver::simplifyExprSumOrMulOrPow_(std::unique_ptr<A
 
 bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol)
 {
-    // if (auto node_eq = dynamic_cast<AST::NodeBin*>(node))
-    // {
-    //     if (node_eq->token.type != eTOKENS::EQUAL)
-    //         return false;
-
-    // const AST::INode* l = nullptr;
-    // const AST::INode* r = nullptr;
-
-    // if (is_symbol_(node_eq->l.get(), for_symbol))
-    // {
-    //     l = node_eq->l.get();
-    //     r = node_eq->r.get();
-    // }
-    // else if (is_symbol_(node_eq->r.get(), for_symbol))
-    // {
-    //     // swap l,r
-    //     auto tmp                              = std::move(const_cast<AST::NodeBin*>(node_eq)->l);
-    //     const_cast<AST::NodeBin*>(node_eq)->l = std::move(const_cast<AST::NodeBin*>(node_eq)->r);
-    //     const_cast<AST::NodeBin*>(node_eq)->r = std::move(tmp);
-
-    // l = node_eq->l.get();
-    // r = node_eq->r.get();
-    // }
-
-    // if (l != nullptr && r != nullptr)
-    // {
-    //     node_eq->r = simplify_(node_eq->r);
-    //     r          = node_eq->r.get();
-
-    // // x = 1 or x = a or x = [expr]
-    // if (is_num_(r))
-    // {
-    //     // m_solution << std::format("{} = {}\n", for_symbol, dynamic_cast<const LeafNum*>(r)->value);
-    //     return true;
-    // }
-    // else if (is_symbol_(r))
-    // {
-    //     // m_solution << std::format("{} = {}\n", for_symbol, dynamic_cast<const LeafSymbol*>(r)->value);
-    //     return true;
-    // }
-    // else if (is_expr_(r))
-    // {
-    //     // x = (1+a)
-    //     auto res = solve_expr_(node_eq->r, for_symbol);
-    //     if (!res.has_value())
-    //     {
-    //         // m_solution << std::format("{} = {}", for_symbol)
-    //         return true;
-    //     }
-
-    // if (res.value())
-    //     return solve_equation_(node, for_symbol);    // redo it
-    // else
-    //     return false;
-    // }
-    // }
-    // else
-    // {
-    // // RHS - LHS=0
-    // auto zero      = std::make_unique<AST::LeafNum>();
-    // zero->value    = 0.0;
-    // auto n         = std::make_unique<AST::NodeBin>();
-    // n->token.type  = eTOKENS::SUM_OP;
-    // n->token.value = "-";
-    // n->l           = std::move(node_eq->r);
-    // n->r           = std::move(node_eq->l);
-    // node_eq->l     = std::move(n);
-    // node_eq->r     = std::move(zero);
-
-    // node_eq->l = simplify_(node_eq->l);
-    // auto res   = solve_expr_(node_eq->l, for_symbol);
-
-    // if (!res.has_value())
-    //     return true;
-
-    // if (res.value())
-    //     return solve_equation_(node, for_symbol);    // redo it
-    // else
-    //     return false;
-    // }
-    // }
-
-
-    // -------------------------
-
     auto bin = dynamic_cast<AST::NodeBin*>(node);
     if (bin->op != AST::eOperators::EQUAL)
         return false;
 
     // LHS - RHS = 0
     // expr: LHS - RHS
-    std::unique_ptr<AST::INode> n   = AST::NodeBin::make(AST::eOperators::SUB, std::move(bin->l), std::move(bin->r));
-    auto                        res = solve_expr_(n, for_symbol);
+    std::unique_ptr<AST::INode> n = AST::NodeBin::make(AST::eOperators::SUB, std::move(bin->l), std::move(bin->r));
 
 
-    return res.has_value() && res.value();
+    auto pf = analyze_poly_(n.get(), for_symbol);
+
+    switch (pf.degree)
+    {
+    case 0:    // no variables
+        if (is_num_(bin->l.get()) && is_num_(bin->r.get()))
+        {
+            double l;
+            double r;
+
+            if (!AST::LeafNum::getValue(bin->l.get(), l) || !AST::LeafNum::getValue(bin->r.get(), r))
+            {
+                std::cerr << "ERROR: unable to extract numbers\n";
+                return false;
+            }
+
+            if (std::fabs(l - r) < 1e-6)
+                m_solution = std::format("inf solutions");
+            else
+                m_solution = std::format("no solution");
+
+            return true;
+        }
+        break;
+    case 1:    // linear
+        m_solution = std::format("{} = {}", for_symbol, -pf.coeffs[0] / pf.coeffs[1]);
+        return true;
+
+    case 2:
+        // todo
+        break;
+    default:
+        // todo
+        break;
+    }
+
+    return false;
+
+
+    // auto res = solve_expr_(n, for_symbol);
+
+
+    // return res.has_value() && res.value();
 }
 
 std::optional<bool> Solver::solve_expr_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol)
@@ -559,6 +697,7 @@ bool Solver::solve_unary_(std::unique_ptr<AST::INode>& node, const std::string_v
 
 bool Solver::solve(AST& ast, const std::string_view for_symbol)
 {
+    m_solution = "";
     if (!has_symbol_(ast.getRoot(), for_symbol))
     {
         std::cerr << std::format("Symbol to solve for '{}' not found!\n", for_symbol);
