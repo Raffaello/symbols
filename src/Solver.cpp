@@ -569,16 +569,9 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
     if (auto bin = dynamic_cast<AST::NodeBin*>(pRoot))
     {
         // the operator here is = as it is an equation
-        // // LHS - RHS = 0
-        // // expr: LHS - RHS
-        // bin->token.type  = eTOKENS::SUM_OP;
-        // bin->token.value = '-';
-
-        // solve_equation_(bin, for_symbol);
-
         if (!solve_equation_(bin, for_symbol))
         {
-            std::cerr << std::format("ERROR: unable to solve equation [{}, {}]\n", ast.to_string(), for_symbol);
+            std::cerr << std::format("ERROR: unable to solve equation: [{}, {}]\n", ast.to_string(), for_symbol);
             return false;
         }
     }
