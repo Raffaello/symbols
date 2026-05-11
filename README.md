@@ -73,6 +73,8 @@ Not supporting solving equation, but only if those are reduced to what is consid
 
 > TODO
 
+Just a basic polynomial solver at the moment.
+
 # REPL
 
 The REPL is the program using all other components.
