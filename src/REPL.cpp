@@ -4,6 +4,7 @@
 #include <format>
 #include <algorithm>
 #include <stdexcept>
+#include <ranges>
 
 std::string REPL::extract_args_(std::string_view s, std::string_view cmd)
 {
