@@ -26,7 +26,14 @@ Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string
         return pf;
     }
 
-    pf.degree = static_cast<int>(pf.coeffs.size()) - 1;
+    // counting all coeffs different from zeros
+    for (const auto& c : pf.coeffs)
+    {
+        if (c != 0.0)
+            pf.degree++;
+    }
+
+    pf.degree = std::max(0, pf.degree - 1);
     return pf;
 }
 
@@ -541,25 +548,12 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
     switch (pf.degree)
     {
     case 0:    // no variables
-        if (is_num_(bin->l.get()) && is_num_(bin->r.get()))
-        {
-            double l;
-            double r;
+        if (pf.coeffs[0] == 0)
+            m_solution = std::format("inf solutions");
+        else
+            m_solution = std::format("no solution");
 
-            if (!AST::LeafNum::getValue(bin->l.get(), l) || !AST::LeafNum::getValue(bin->r.get(), r))
-            {
-                std::cerr << "ERROR: unable to extract numbers\n";
-                return false;
-            }
-
-            if (std::fabs(l - r) < 1e-6)
-                m_solution = std::format("inf solutions");
-            else
-                m_solution = std::format("no solution");
-
-            return true;
-        }
-        break;
+        return true;
     case 1:    // linear
         m_solution = std::format("{} = {}", for_symbol, -pf.coeffs[0] / pf.coeffs[1]);
         return true;

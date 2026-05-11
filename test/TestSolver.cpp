@@ -45,7 +45,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("(2+x)*(3-2)+x=-2*x", "x", "x = -0.5"),
         std::make_tuple("(2+x)*(3-2)+x*1+0=-2*x", "x", "x = -0.5"),
         std::make_tuple("(2+x)*(3-2)+x*1+0=2*-x", "x", "x = -0.5"),
-        std::make_tuple("(2+x)*(3-2)+x*1+0=-2*-x*1", "x", "x = 0.5"),
+        std::make_tuple("(2+x)*(3-2)+x*1+0=-2*-x*1", "x", "no solution"),
         std::make_tuple("(2+x)*(3-2)+x*1+0=-2*-x*-1", "x", "x = -0.5")
         // TODO: POW
 
