@@ -39,12 +39,7 @@ std::vector<std::string> REPL::splitString_(const std::string& str, char delimit
     };
 
     while (std::getline(ss, token, delimiter))
-    {
-        // token = trim(token);
-        // tokens.push_back(token);
-
         tokens.emplace_back(trim(token));
-    }
 
     return tokens;
 }

@@ -21,13 +21,13 @@ Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string
 
     if (!collect_poly_(node, pf.coeffs, symbol))
     {
-        pf.degree = 0;
+        pf.degree = -1;
         pf.coeffs.clear();
         return pf;
     }
 
     // get the first non zero coeffs from reverse (higher)
-    pf.degree = 0;
+    pf.degree = -1;
     for (size_t i = pf.coeffs.size(); i > 0; --i)
     {
         const auto i2 = i - 1;
@@ -105,151 +105,263 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
         }
     }
     else if (is_expr_(node))
+        return collect_poly_expr_(node, coeffs, symbol);
+
+    return false;
+}
+
+bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol)
+{
+    if (auto expr = dynamic_cast<const AST::NodeBin*>(node))
     {
-        if (auto expr = dynamic_cast<const AST::NodeBin*>(node))
+        switch (expr->op)
         {
-            switch (expr->op)
+            using enum AST::eOperators;
+
+        case ADD:
+        {
+            std::vector<double> coeffs2;
+            if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                return false;
+            if (!collect_poly_(expr->r.get(), coeffs2, symbol))
+                return false;
+
+            if (coeffs2.size() > coeffs.size())
+                coeffs.resize(coeffs2.size());
+            for (size_t i = 0; i < coeffs2.size(); ++i)
+                coeffs[i] += coeffs2[i];
+            return true;
+        }
+
+        case SUB:
+        {
+            std::vector<double> coeffs2;
+            if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                return false;
+            if (!collect_poly_(expr->r.get(), coeffs2, symbol))
+                return false;
+
+            if (coeffs2.size() > coeffs.size())
+                coeffs.resize(coeffs2.size());
+            for (size_t i = 0; i < coeffs2.size(); ++i)
+                coeffs[i] -= coeffs2[i];
+
+            return true;
+        }
+
+        case MUL:
+        {
+            const AST::INode* l;
+            const AST::INode* r;
+
+            if (is_expr_(expr->l.get()) ||
+                is_expr_(expr->r.get()) ||
+                is_unary_(expr->l.get()) ||
+                is_unary_(expr->r.get()))
             {
-                using enum AST::eOperators;
-
-            case ADD:
-            {
-                std::vector<double> coeffs2;
-                if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                std::vector<double> c1;
+                std::vector<double> c2;
+                if (!collect_poly_(expr->l.get(), c1, symbol))
                     return false;
-                if (!collect_poly_(expr->r.get(), coeffs2, symbol))
+                if (!collect_poly_(expr->r.get(), c2, symbol))
                     return false;
 
-                if (coeffs2.size() > coeffs.size())
-                    coeffs.resize(coeffs2.size());
-                for (size_t i = 0; i < coeffs2.size(); ++i)
-                    coeffs[i] += coeffs2[i];
-                return true;
-            }
+                int          deg1  = c1.size() - 1;
+                int          deg2  = c2.size() - 1;
+                const size_t max_c = deg1 + deg2 + 1;
+                if (coeffs.size() < max_c)
+                    coeffs.resize(max_c);
 
-            case SUB:
-            {
-                std::vector<double> coeffs2;
-                if (!collect_poly_(expr->l.get(), coeffs, symbol))
-                    return false;
-                if (!collect_poly_(expr->r.get(), coeffs2, symbol))
-                    return false;
-
-                if (coeffs2.size() > coeffs.size())
-                    coeffs.resize(coeffs2.size());
-                for (size_t i = 0; i < coeffs2.size(); ++i)
-                    coeffs[i] -= coeffs2[i];
-
-                return true;
-            }
-            case MUL:
-            {
-                const AST::INode* l;
-                const AST::INode* r;
-
-                if (is_expr_(expr->l.get()) ||
-                    is_expr_(expr->r.get()) ||
-                    is_unary_(expr->l.get()) ||
-                    is_unary_(expr->r.get()))
+                for (size_t i = 0; i < c1.size(); ++i)
                 {
-                    std::vector<double> c1;
-                    std::vector<double> c2;
-                    if (!collect_poly_(expr->l.get(), c1, symbol))
-                        return false;
-                    if (!collect_poly_(expr->r.get(), c2, symbol))
-                        return false;
+                    for (size_t j = 0; j < c2.size(); ++j)
+                        coeffs[j + i] += c1[i] * c2[j];
+                }
 
-                    int          deg1  = c1.size() - 1;
-                    int          deg2  = c2.size() - 1;
-                    const size_t max_c = deg1 + deg2 + 1;
-                    if (coeffs.size() < max_c)
-                        coeffs.resize(max_c);
+                return true;
+            }
+            else if (is_num_(expr->l.get()))
+            {
+                l = expr->l.get();
+                r = expr->r.get();
+            }
+            else if (is_num_(expr->r.get()))
+            {
+                l = expr->r.get();
+                r = expr->l.get();
+            }
+            else
+                return false;
 
+            // e.g. 1*1
+            if (is_num_(l) && is_num_(r))
+            {
+                double dl;
+                double dr;
+                if (!AST::LeafNum::getValue(l, dl) || !AST::LeafNum::getValue(r, dr))
+                {
+                    std::cerr << "ERROR: unable to get numbers\n";
+                    return false;
+                }
+
+                const double dlr = dl * dr;
+                if (coeffs.size() == 0)
+                    coeffs.push_back(dlr);
+                else
+                    coeffs[0] += dlr;
+
+                return true;
+            }
+            // e.g. 2*x | x*2
+            if (is_num_(l) && is_symbol_(r))
+            {
+                double d;
+                if (!AST::LeafNum::getValue(l, d))
+                {
+                    std::cerr << "ERROR: unable to get number\n";
+                    return false;
+                }
+
+                switch (coeffs.size())
+                {
+                case 0:
+                    coeffs.push_back(0);
+                    [[fallthrough]];
+                case 1:
+                    coeffs.push_back(d);
+                    break;
+                default:
+                case 2:
+                    coeffs[1] += d;
+                }
+
+                return true;
+            }
+
+            if (is_expr_(l))
+                if (!collect_poly_(l, coeffs, symbol))
+                    return false;
+
+            if (is_expr_(r))
+                if (!collect_poly_(r, coeffs, symbol))
+                    return false;
+        }
+        break;
+
+        case DIV:
+        {
+            // e.g. 1/1
+            if (is_num_(expr->l.get()) && is_num_(expr->r.get()))
+            {
+                double dl;
+                double dr;
+                if (!AST::LeafNum::getValue(expr->l.get(), dl) || !AST::LeafNum::getValue(expr->r.get(), dr))
+                {
+                    std::cerr << "ERROR: unable to get numbers\n";
+                    return false;
+                }
+
+                // division by zero
+                // if(dr == 0.0)
+                // {
+                // }
+
+                const double dlr = dl / dr;
+                if (coeffs.size() == 0)
+                    coeffs.push_back(dlr);
+                else
+                    coeffs[0] += dlr;
+
+                return true;
+            }
+            // e.g. [expr]/2
+            if (is_num_(expr->r.get()))
+            {
+                double d;
+                if (!AST::LeafNum::getValue(expr->r.get(), d))
+                {
+                    std::cerr << "ERROR: unable to get number\n";
+                    return false;
+                }
+
+                if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                    return false;
+
+                for (auto& c : coeffs)
+                    c /= d;
+
+                return true;
+            }
+        }
+        break;
+        case POW:
+        {
+            // TODO: handle special cases, e.g.: x^0 => 1
+
+            if (is_expr_(expr->l.get()) ||
+                is_expr_(expr->r.get()) ||
+                is_unary_(expr->l.get()) ||
+                is_unary_(expr->r.get()))
+            {
+                // TODO: not sure if it is ok, need to double check it.
+
+                // TODO: used pf instead of 2 vectors and 2 degrees,
+                //        and also create the compute degree function inside pf directly
+                std::vector<double> c1;
+                std::vector<double> c2;
+                if (!collect_poly_(expr->l.get(), c1, symbol))
+                    return false;
+                if (!collect_poly_(expr->r.get(), c2, symbol))
+                    return false;
+
+                int deg1 = c1.size() - 1;
+                int deg2 = c2.size() - 1;
+
+                if (deg2 != 0)
+                {
+                    std::cerr << "ERROR: e.g. 'x^x', only polynomials: 'x^2' not supported yet\n";
+                    return false;
+                }
+
+                // x^2 => x*x => c[2] += 1
+                const size_t max_c = (c1.size() * c2.size()) + 1;
+                if (coeffs.size() < max_c)
+                    coeffs.resize(max_c);
+
+                if (c2[0] == 0.0)
+                {
+                    for (size_t i = 0; i < c1.size(); ++i)
+                        coeffs[i] += 1;
+                }
+                else if (c2[0] == 1.0)
+                {
+                    for (size_t i = 0; i < c1.size(); ++i)
+                        coeffs[i] += c1[i];
+                }
+                else
+                {
+                    // this can support only x^2 | (x+1)^(1+2)
+                    // not with a symbol in the RHS
                     for (size_t i = 0; i < c1.size(); ++i)
                     {
                         for (size_t j = 0; j < c2.size(); ++j)
-                            coeffs[j + i] += c1[i] * c2[j];
+                            coeffs[i + j + 1] += std::pow(c1[i], c2[j]);
                     }
-
-                    return true;
-                }
-                else if (is_num_(expr->l.get()))
-                {
-                    l = expr->l.get();
-                    r = expr->r.get();
-                }
-                else if (is_num_(expr->r.get()))
-                {
-                    l = expr->r.get();
-                    r = expr->l.get();
-                }
-                else
-                    return false;
-
-                // e.g. 1*1
-                if (is_num_(l) && is_num_(r))
-                {
-                    double dl;
-                    double dr;
-                    if (!AST::LeafNum::getValue(l, dl) || !AST::LeafNum::getValue(r, dr))
-                    {
-                        std::cerr << "ERROR: unable to get numbers\n";
-                        return false;
-                    }
-
-                    const double dlr = dl * dr;
-                    if (coeffs.size() == 0)
-                        coeffs.push_back(dlr);
-                    else
-                        coeffs[0] += dlr;
-
-                    return true;
-                }
-                // e.g. 2*x | x*2
-                if (is_num_(l) && is_symbol_(r))
-                {
-                    double d;
-                    if (!AST::LeafNum::getValue(l, d))
-                    {
-                        std::cerr << "ERROR: unable to get number\n";
-                        return false;
-                    }
-
-                    switch (coeffs.size())
-                    {
-                    case 0:
-                        coeffs.push_back(0);
-                        [[fallthrough]];
-                    case 1:
-                        coeffs.push_back(d);
-                        break;
-                    default:
-                    case 2:
-                        coeffs[1] += d;
-                    }
-
-                    return true;
                 }
 
-                if (is_expr_(l))
-                    if (!collect_poly_(l, coeffs, symbol))
-                        return false;
-
-                if (is_expr_(r))
-                    if (!collect_poly_(r, coeffs, symbol))
-                        return false;
-
-                auto r1 = is_num_(r);
-                auto r2 = is_symbol_(r);
-                auto r3 = is_unary_(r);
-                auto r4 = is_expr_(r);
-                int  i  = 0;
+                return true;
             }
-            break;
-            case DIV:
+            // e.g 2^x | 2^2
+            else if (is_num_(expr->l.get()))
             {
-                // e.g. 1/1
-                if (is_num_(expr->l.get()) && is_num_(expr->r.get()))
+                // TODO e.g 2^x
+                if (is_symbol_(expr->r.get()))
+                {
+                    std::cerr << "ERROR: POW operator not fully supported in solver yet! Can't elevate for a symbol\n";
+                    return false;
+                }
+                // e.g 2^2
+                else if (is_num_(expr->r.get()))
                 {
                     double dl;
                     double dr;
@@ -259,11 +371,7 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
                         return false;
                     }
 
-                    // if(dr == 0.0)
-                    // {
-                    // division by zero
-                    // }
-                    const double dlr = dl / dr;
+                    const double dlr = std::pow(dl, dr);
                     if (coeffs.size() == 0)
                         coeffs.push_back(dlr);
                     else
@@ -271,51 +379,39 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
 
                     return true;
                 }
-                // e.g. [expr]/2
-                if (is_num_(expr->r.get()))
+            }
+            // e.g x^2 || x^x
+            else if (is_symbol_(expr->l.get(), symbol))
+            {
+                // TODO
+                if (is_symbol_(expr->r.get()))
                 {
+                    std::cerr << "ERROR: POW operator not fully supported in solver yet! Can't elevate for a symbol\n";
+                    return false;
+                }
+                else if (is_num_(expr->r.get()))
+                {
+                    // // TODO
+                    // return false;
+
                     double d;
                     if (!AST::LeafNum::getValue(expr->r.get(), d))
-                    {
-                        std::cerr << "ERROR: unable to get number\n";
-                        return false;
-                    }
-
-                    if (!collect_poly_(expr->l.get(), coeffs, symbol))
                         return false;
 
-                    for (auto& c : coeffs)
-                        c /= d;
+                    int di = static_cast<int>(std::round(d));
+                    if (d - di != 0)
+                        std::cout << "WARN: this can solve only integer exponential at the moment\n";
 
-                    // switch (coeffs.size())
-                    // {
-                    // case 0:
-                    //     coeffs.push_back(0);
-                    //     [[fallthrough]];
-                    // case 1:
-                    //     coeffs.push_back(d);
-                    //     break;
-                    // default:
-                    // case 2:
-                    //     coeffs[1] += d;
-                    // }
+                    if (coeffs.size() < di + 1)
+                        coeffs.resize(di + 1);    // di as an index, so di + 1
 
+                    coeffs[di] += 1;
                     return true;
                 }
-
-                // if (is_expr_(l))
-                //     if (!collect_poly_(l, coeffs, symbol))
-                //         return false;
-
-                // if (is_expr_(r))
-                //     if (!collect_poly_(r, coeffs, symbol))
-                //         return false;
             }
-            break;
-            case POW:
-                // TODO
-                break;
-            }
+        }
+
+        break;
         }
     }
 
@@ -544,13 +640,17 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
 
     // LHS - RHS = 0
     // expr: LHS - RHS
-    std::unique_ptr<AST::INode> n = AST::NodeBin::make(AST::eOperators::SUB, std::move(bin->l), std::move(bin->r));
-
+    std::unique_ptr<AST::INode> n    = AST::NodeBin::make(AST::eOperators::SUB, std::move(bin->l), std::move(bin->r));
+    auto                        nbin = dynamic_cast<AST::NodeBin*>(n.get());
 
     auto pf = analyze_poly_(n.get(), for_symbol);
+    bin->l  = std::move(nbin->l);
+    bin->r  = std::move(nbin->r);
 
     switch (pf.degree)
     {
+    case -1:
+        break;
     case 0:    // no variables
         if (pf.coeffs[0] == 0)
             m_solution = std::format("inf solutions");
@@ -571,8 +671,40 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
         return true;
 
     case 2:
-        // todo
-        break;
+    {
+        const double a = pf.coeffs[2];
+        const double b = pf.coeffs[1];
+        const double c = pf.coeffs[0];
+
+        const double delta = (b * b) - (4.0 * a * c);
+
+        if (delta < 0.0)
+        {
+            m_solution = "no real solutions, complex roots not supported yet";
+            return true;
+        }
+
+        const double        sq_delta = std::sqrt(delta);
+        const double        a2       = 2.0 * a;
+        std::vector<double> s;
+        // sol 1
+        const double s1 = (-b + sq_delta) / a2;
+        s.push_back(s1);
+        // sol 2
+        if (delta != 0.0)
+        {
+            const double s2 = (-b - sq_delta) / a2;
+            s.push_back(s2);
+        }
+
+        if (s.size() == 2)
+            m_solution = std::format("{} = {}, {} = {}", for_symbol, s[0], for_symbol, s[1]);
+        else
+            m_solution = std::format("{} = {}", for_symbol, s[0]);
+
+        return true;
+    }
+    break;
     default:
         // todo
         break;

@@ -9,21 +9,16 @@
 #include <memory>
 
 /**
- * TODO: This is to be rewritten as it is wrong.
- *       Most Likely have a better AST specific for the solver
- *       need to work out how to manipulate the whole AST, for e.g. dividing by 2 all the equation, like to solve the case 2*x=1
- *       Also need to have a better grammar about to condense symbols: 2*x or x*2 => 2x, x+x => 2x etc..
- *       at the moment the syntax 2x is not neither supported and it should instead
- *
  * @brief Solver for 1 variable e.g. -x = x+2 => -2x=2 => x = -1
  *
  * TODO: for now just 1 variable is fine.
- * TODO: should have symbol table? no
  * TODO: later try to solve this: ax + b = 0 => x = b/a [b is not know, a is not known] so are just really symbols without a value
  */
 class Solver
 {
 public:
+    // TODO: create a compute degree function here, so doesn't have to do every single time in the solver,
+    //       also the operation to add a coeffs, if it has to push it back or update what is already there (operator[])
     struct PolynomialForm
     {
         int                 degree;
@@ -31,11 +26,15 @@ public:
     };
 
 private:
-    std::shared_ptr<SymbolTable> m_pSymbolTable;
-    std::string                  m_solution;
+    std::shared_ptr<SymbolTable> m_pSymbolTable;    // TODO: not used yet as it is too simple:
+                                                    // can be used only for known symbols for substitution into numbers
+                                                    // as a pre step changing the AST, (or when navigating it)
+
+    std::string m_solution;
 
     PolynomialForm analyze_poly_(const AST::INode* node, std::string_view symbol) const noexcept;
     static bool    collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
+    static bool    collect_poly_expr_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
 
     bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
 
