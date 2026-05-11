@@ -36,6 +36,9 @@ std::vector<std::string> REPL::splitString_(const std::string& str, char delimit
         auto first = std::ranges::find_if(sv, is_not_space);
         auto last  = std::ranges::find_if(sv | std::views::reverse, is_not_space).base();
 
+        if (last < first)
+            last = first;
+
         return std::string_view(first, last - first);
     };
 
@@ -160,7 +163,7 @@ int REPL::runLoop()
         // prefer to doing at REPL level, (the grammar was done and then reverted, as that would have needed 2 grammars)
         std::vector<std::string> inputs = splitString_(input, ',');
 
-        for (size_t i = 0; i < inputs.size(); ++i)
+        for (size_t i = 0; i < inputs.size();)
         {
             const std::string& in = inputs[i];
 
@@ -174,15 +177,14 @@ int REPL::runLoop()
                 if (!m_intr.eval(m_parser.ast()))
                     continue;
 
-                printShellLine_();
-                std::cout << std::format("{}\n", m_intr.lastExpr());
+                std::cout << std::format("|>{}\n", m_intr.lastExpr());
                 break;
             case eType::SOLVER:
             {
                 ++i;
                 if (i >= inputs.size())
                 {
-                    std::cerr << std::format("ERROR: missing symbol to solve for in '{}'\n Usage e.g: x+1=0, x\n, ", in);
+                    std::cerr << std::format("ERROR: missing symbol to solve for in '{}'\n Usage e.g: x+1=0, x\n", in);
                     break;
                 }
 
@@ -194,6 +196,8 @@ int REPL::runLoop()
             default:
                 throw std::runtime_error("unknown m_type");
             }
+
+            ++i;
         }
     }
 

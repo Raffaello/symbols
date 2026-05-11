@@ -4,6 +4,7 @@
 #include <format>
 #include <cmath>
 #include <stdexcept>
+#include <cassert>
 
 Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTable(pSymbolTable)
 {
@@ -63,7 +64,7 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
     {
         if (!is_symbol_(node, symbol))
         {
-            std::cerr << std::format("ERROR: generic symbolic solver not implemented yet: unknow symbol '{}'\n", AST::LeafSymbol::getValue(node));
+            std::cerr << std::format("ERROR: generic symbolic solver not implemented yet: unknown symbol '{}'\n", AST::LeafSymbol::getValue(node));
             return false;
         }
 
@@ -320,22 +321,24 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
 
                 if (deg2 != 0)
                 {
-                    std::cerr << "ERROR: e.g. 'x^x', only polynomials: 'x^2' not supported yet\n";
+                    std::cerr << "ERROR: e.g. 'x^x' not supported yet, only polynomials  e.g. 'x^2'\n";
                     return false;
                 }
 
                 // x^2 => x*x => c[2] += 1
-                const size_t max_c = (c1.size() * c2.size()) + 1;
-                if (coeffs.size() < max_c)
-                    coeffs.resize(max_c);
-
                 if (c2[0] == 0.0)
                 {
+                    if (coeffs.size() < c1.size())
+                        coeffs.resize(c1.size());
+
                     for (size_t i = 0; i < c1.size(); ++i)
                         coeffs[i] += 1;
                 }
                 else if (c2[0] == 1.0)
                 {
+                    if (coeffs.size() < c1.size())
+                        coeffs.resize(c1.size());
+
                     for (size_t i = 0; i < c1.size(); ++i)
                         coeffs[i] += c1[i];
                 }
@@ -343,10 +346,29 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                 {
                     // this can support only x^2 | (x+1)^(1+2)
                     // not with a symbol in the RHS
-                    for (size_t i = 0; i < c1.size(); ++i)
+                    for (size_t k = 0; k < c2.size(); ++k)
                     {
-                        for (size_t j = 0; j < c2.size(); ++j)
-                            coeffs[i + j + 1] += std::pow(c1[i], c2[j]);
+                        int times = static_cast<int>(std::round(c2[k]));
+                        if (times - c2[k] != 0.0)
+                            return false;
+
+                        assert(times >= 2);
+                        --times;
+                        for (size_t i = 0; i < c1.size(); ++i)
+                        {
+                            for (size_t j = 0; j < c1.size(); ++j)
+                            {
+                                const double ct = c1[i] * c1[j];
+                                for (int t = 0; t < times; ++t)
+                                {
+                                    const int i2 = i + j + t;
+                                    if (coeffs.size() < i2 + 1)
+                                        coeffs.resize(i2 + 1);
+
+                                    coeffs[i2] += ct;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -510,7 +532,7 @@ std::unique_ptr<AST::INode> Solver::simplify_(std::unique_ptr<AST::INode>& node)
     }
 
 
-    throw std::runtime_error("?");
+    throw std::runtime_error("cannot simplify");
 }
 
 std::unique_ptr<AST::INode> Solver::simplifyExpr_(std::unique_ptr<AST::INode>& node)
@@ -550,7 +572,7 @@ std::unique_ptr<AST::INode> Solver::simplifyExprSumOrMulOrPow_(std::unique_ptr<A
     {
         double l;
         double r;
-        if (!AST::LeafNum::getValue(bin->l.get(), l) || AST::LeafNum::getValue(bin->r.get(), r))
+        if (!AST::LeafNum::getValue(bin->l.get(), l) || !AST::LeafNum::getValue(bin->r.get(), r))
         {
             std::cerr << std::format("ERROR: unable to extract number\n");
             return nullptr;
@@ -715,157 +737,9 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
     }
     break;
     default:
+        // Newton's method
         // todo
         break;
-    }
-
-    return false;
-
-
-    // auto res = solve_expr_(n, for_symbol);
-
-
-    // return res.has_value() && res.value();
-}
-
-std::optional<bool> Solver::solve_expr_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol)
-{
-    node = simplify_(node);
-
-    if (auto bin = dynamic_cast<AST::NodeBin*>(node.get()))
-    {
-        if (bin->op == AST::eOperators::EQUAL)
-            return false;
-
-        if (is_expr_(bin->l.get()))
-        {
-            if (!solve_expr_(bin->l, for_symbol))
-                return false;
-        }
-
-        if (is_expr_(bin->r.get()))
-        {
-            if (!solve_expr_(bin->r, for_symbol))
-                return false;
-        }
-
-        if (is_unary_(bin->l.get()))
-        {
-            if (!solve_unary_(bin->l, for_symbol))
-                return false;
-        }
-
-        if (is_unary_(bin->r.get()))
-        {
-            if (!solve_unary_(bin->r, for_symbol))
-                return false;
-        }
-
-        if (is_num_(bin->l.get()) && is_num_(bin->r.get()))
-        {
-            switch (bin->op)
-            {
-                using enum AST::eOperators;
-
-            default:
-                [[fallthrough]];
-            case NONE:
-                return false;
-
-            case ADD:
-            {
-                auto n   = std::make_unique<AST::LeafNum>();
-                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value + dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
-                node     = std::move(n);
-            }
-            break;
-            case SUB:
-            {
-                auto n   = std::make_unique<AST::LeafNum>();
-                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value - dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
-                node     = std::move(n);
-            }
-            break;
-            case MUL:
-            {
-                auto n   = std::make_unique<AST::LeafNum>();
-                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value * dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
-                node     = std::move(n);
-            }
-            break;
-            case DIV:
-            {
-                auto n   = std::make_unique<AST::LeafNum>();
-                n->value = dynamic_cast<const AST::LeafNum*>(bin->l.get())->value / dynamic_cast<const AST::LeafNum*>(bin->r.get())->value;
-                node     = std::move(n);
-            }
-            break;
-            case POW:
-            {
-                auto n   = std::make_unique<AST::LeafNum>();
-                n->value = std::pow(dynamic_cast<const AST::LeafNum*>(bin->l.get())->value, dynamic_cast<const AST::LeafNum*>(bin->r.get())->value);
-                node     = std::move(n);
-            }
-            break;
-            }
-
-            return true;
-        }
-        else
-        {
-            // This case l and r are not an expression nor a num
-            // can be unary or symbols or mixed with number
-            // -1 + a  ==> should be rewritten as a - 1
-            // or 1 + a ==> can do nothing, this form is final
-            // or 2 * x ==> need to check if it is asymbol here
-            // return true;
-
-            if (is_symbol_(bin->l.get(), for_symbol))
-            {
-                // e.g: x + 1
-                // (x * (x + 1)) ==> how to resolve this?
-            }
-            else if (is_symbol_(bin->r.get(), for_symbol))
-            {
-                // e.g 1 + x
-            }
-            else
-                return std::nullopt;
-
-            // TODO: simplify symbols and so on...
-            // return false;
-        }
-    }
-
-    return false;
-}
-
-bool Solver::solve_unary_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol)
-{
-    if (auto uni = dynamic_cast<AST::NodeUnary*>(node.get()))
-    {
-        if (!uni->negate)
-        {
-            node = std::move(uni->n);
-            return true;
-        }
-
-        // '-'
-        if (is_num_(uni->n.get()))
-        {
-            auto n   = std::make_unique<AST::LeafNum>();
-            n->value = -dynamic_cast<AST::LeafNum*>(uni->n.get())->value;
-            node     = std::move(n);
-
-            return true;
-        }
-        else if (is_unary_(uni->n.get()))
-            return solve_unary_(uni->n, for_symbol);
-        else if (is_symbol_(uni->n.get()))
-        {
-            // TODO: if it is -x must multiply everything else for -1
-            return true;
-        }
     }
 
     return false;

@@ -23,7 +23,7 @@ EBNF:
 
 ```ebnf
 stmt      ::= stmt' END | stmt' , stmt
-stmt'      ::= expr END | equation END
+stmt'      ::= expr | equation
 
 equation ::= expr = expr
 
@@ -79,4 +79,4 @@ Just a basic polynomial solver at the moment.
 
 The REPL is the program using all other components.
 
-Switch among interpreter and solver, with `:eval` and `:solve` keywords.
+Switch among interpreter and solver, with `:eval` and `:solver` keywords.
