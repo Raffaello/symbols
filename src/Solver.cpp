@@ -27,7 +27,7 @@ Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string
     }
 
     // get the first non zero coeffs from reverse (higher)
-    pf.degree = -1;
+    pf.degree = 0;    // default at this point is a 0=0 solution
     for (size_t i = pf.coeffs.size(); i > 0; --i)
     {
         const auto i2 = i - 1;
@@ -405,7 +405,15 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                     if (coeffs.size() < di + 1)
                         coeffs.resize(di + 1);    // di as an index, so di + 1
 
+                                                  // x^0
+                    // if (di == 0)
+                    // coeffs[0] += 1;
+                    // else if (di == 1)
+                    //     coeffs[1] += 1;
+                    // else
                     coeffs[di] += 1;
+
+
                     return true;
                 }
             }
