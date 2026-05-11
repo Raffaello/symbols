@@ -163,7 +163,7 @@ int REPL::runLoop()
         // prefer to doing at REPL level, (the grammar was done and then reverted, as that would have needed 2 grammars)
         std::vector<std::string> inputs = splitString_(input, ',');
 
-        for (size_t i = 0; i < inputs.size();)
+        for (size_t i = 0; i < inputs.size(); ++i)
         {
             const std::string& in = inputs[i];
 
@@ -196,8 +196,6 @@ int REPL::runLoop()
             default:
                 throw std::runtime_error("unknown m_type");
             }
-
-            ++i;
         }
     }
 

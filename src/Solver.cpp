@@ -217,6 +217,12 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
             // e.g. 2*x | x*2
             if (is_num_(l) && is_symbol_(r))
             {
+                if (!is_symbol_(r, symbol))
+                {
+                    std::cerr << std::format("ERROR: generic symbolic solver not implemented yet: unknown symbol '{}'\n", AST::LeafSymbol::getValue(r));
+                    return false;
+                }
+
                 double d;
                 if (!AST::LeafNum::getValue(l, d))
                 {
@@ -423,7 +429,10 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
 
                     int di = static_cast<int>(std::round(d));
                     if (d - di != 0)
-                        std::cout << "WARN: this can solve only integer exponential at the moment\n";
+                    {
+                        std::cout << "ERROR: this can solve only integer exponential at the moment\n";
+                        return false;
+                    }
 
                     if (coeffs.size() < di + 1)
                         coeffs.resize(di + 1);    // di as an index, so di + 1
@@ -453,6 +462,11 @@ bool Solver::has_symbol_(const AST::INode* node, const std::string_view symbol) 
 {
     if (is_symbol_(node, symbol))
         return true;
+    else if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
+    {
+        if (has_symbol_(uny->n.get(), symbol))
+            return true;
+    }
     else if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
     {
         if (has_symbol_(bin->l.get(), symbol))
