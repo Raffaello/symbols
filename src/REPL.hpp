@@ -37,7 +37,8 @@ private:
     eType m_type = eType::EVAL;
     bool  m_quit = false;
 
-    std::string extract_args_(std::string_view s, std::string_view cmd);
+    std::string              extract_args_(std::string_view s, std::string_view cmd);
+    std::vector<std::string> splitString_(const std::string& str, char delimiter);
 
     void banner_() const noexcept;
     void help_() const noexcept;

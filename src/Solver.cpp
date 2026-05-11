@@ -725,7 +725,7 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
     m_solution = "";
     if (!has_symbol_(ast.getRoot(), for_symbol))
     {
-        std::cerr << std::format("Symbol to solve for '{}' not found!\n", for_symbol);
+        std::cerr << std::format("Symbol to solve for '{}' not found in {}\n", for_symbol, ast.to_string());
         return false;
     }
 

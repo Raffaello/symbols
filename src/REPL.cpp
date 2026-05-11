@@ -19,7 +19,35 @@ std::string REPL::extract_args_(std::string_view s, std::string_view cmd)
         s.remove_suffix(1);
 
     return std::string(s);
-};
+}
+
+std::vector<std::string> REPL::splitString_(const std::string& str, char delimiter)
+{
+    std::vector<std::string> tokens;
+    std::stringstream        ss(str);
+    std::string              token;
+
+    auto trim = [](std::string_view sv) {
+        auto is_not_space = [](unsigned char ch) {
+            return !std::isspace(ch);
+        };
+
+        auto first = std::ranges::find_if(sv, is_not_space);
+        auto last  = std::ranges::find_if(sv | std::views::reverse, is_not_space).base();
+
+        return std::string_view(first, last - first);
+    };
+
+    while (std::getline(ss, token, delimiter))
+    {
+        // token = trim(token);
+        // tokens.push_back(token);
+
+        tokens.emplace_back(trim(token));
+    }
+
+    return tokens;
+}
 
 void REPL::banner_() const noexcept
 {
@@ -125,9 +153,6 @@ int REPL::runLoop()
             continue;
         }
 
-        // if (input.empty())
-        //     continue;
-
         // Handling REPL special commands
         if (!input.empty() && input[0] == ':')
         {
@@ -135,30 +160,44 @@ int REPL::runLoop()
                 continue;
         }
 
-        m_lex.setInput(std::make_unique<std::stringstream>(input));
-        if (!m_parser.parse())
-            continue;
+        // NOTE: split the input by ',',instead of doing a grammar for that,
+        // prefer to doing at REPL level, (the grammar was done and then reverted, as that would have needed 2 grammars)
+        std::vector<std::string> inputs = splitString_(input, ',');
 
-        switch (m_type)
+        for (size_t i = 0; i < inputs.size(); ++i)
         {
-        case eType::EVAL:
-            if (!m_intr.eval(m_parser.ast()))
+            const std::string& in = inputs[i];
+
+            m_lex.setInput(std::make_unique<std::stringstream>(in));
+            if (!m_parser.parse())
                 continue;
 
-            printShellLine_();
-            std::cout << std::format("{}\n", m_intr.lastExpr());
-            break;
-        case eType::SOLVER:
-            // TODO: how to pass to solve for x? using the comma token? like 'x+a+b-c=0, x=?'
-            //       do it in the REPL separated by a ',' following is the symbol
-            // if (m_solver.solve(m_parser.ast(), "x"))
-            //     std::cout << std::format("|> {}\n", m_parser.ast().to_string());
-            if (m_solver.solve(m_parser.ast(), "x"))
-                std::cout << std::format("|> {}\n", m_solver.solution());
+            switch (m_type)
+            {
+            case eType::EVAL:
+                if (!m_intr.eval(m_parser.ast()))
+                    continue;
 
+                printShellLine_();
+                std::cout << std::format("{}\n", m_intr.lastExpr());
+                break;
+            case eType::SOLVER:
+            {
+                ++i;
+                if (i >= inputs.size())
+                {
+                    std::cerr << std::format("ERROR: missing symbol to solve for in '{}'\n Usage e.g: x+1=0, x\n, ", in);
+                    break;
+                }
+
+                const std::string in2 = inputs[i];
+                if (m_solver.solve(m_parser.ast(), in2))
+                    std::cout << std::format("|> {}\n", m_solver.solution());
+            }
             break;
-        default:
-            throw std::runtime_error("unknown m_type");
+            default:
+                throw std::runtime_error("unknown m_type");
+            }
         }
     }
 

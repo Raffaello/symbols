@@ -52,6 +52,7 @@ private:
     std::unique_ptr<AST::INode> simplifyExprSumOrMulOrPow_(std::unique_ptr<AST::INode>& node);
 
 
+    // TODO: for_symbol would be better as a INode (LeafSymbol type), right?
     bool                solve_equation_(AST::INode* node, const std::string_view for_symbol);
     std::optional<bool> solve_expr_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol);
     bool                solve_unary_(std::unique_ptr<AST::INode>& node, const std::string_view for_symbol);
