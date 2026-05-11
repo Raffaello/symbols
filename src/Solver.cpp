@@ -61,10 +61,11 @@ bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, 
     }
     else if (is_symbol_(node))
     {
-        // if (std::string(symbol) == AST::LeafSymbol::getValue(node))
-        // {
-        //     // coeffs_x
-        // }
+        if (!is_symbol_(node, symbol))
+        {
+            std::cerr << std::format("ERROR: generic symbolic solver not implemented yet: unknow symbol '{}'\n", AST::LeafSymbol::getValue(node));
+            return false;
+        }
 
         switch (coeffs.size())
         {

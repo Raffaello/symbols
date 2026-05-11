@@ -58,9 +58,10 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("(x+0)^2 = 1", "x", "x = 1, x = -1"),
         std::make_tuple("x^0 = 1", "x", "inf solutions"),
         std::make_tuple("x^0 + x = 1", "x", "x = 0")
+        // std::make_tuple("x+1+a = 0", "x", "..")
 
 
-            ));
+        ));
 
 class TestSolverError : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
 {
@@ -90,10 +91,11 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x=1", "y"),
 
         // POW
-        std::make_tuple("x^x", "x"),
-        std::make_tuple("a^x", "x"),
-        std::make_tuple("x^a", "x"),
-        std::make_tuple("1^x", "x")
+        std::make_tuple("x^x=0", "x"),
+        std::make_tuple("a^x=0", "x"),
+        std::make_tuple("x^a=0", "x"),
+        std::make_tuple("1^x=0", "x"),
+        std::make_tuple("x+1+a = 0", "x")
 
             ));
 
