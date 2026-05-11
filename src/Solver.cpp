@@ -26,14 +26,18 @@ Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string
         return pf;
     }
 
-    // counting all coeffs different from zeros
-    for (const auto& c : pf.coeffs)
+    // get the first non zero coeffs from reverse (higher)
+    pf.degree = 0;
+    for (size_t i = pf.coeffs.size(); i > 0; --i)
     {
-        if (c != 0.0)
-            pf.degree++;
+        const auto i2 = i - 1;
+        if (pf.coeffs[i2] != 0.0)
+        {
+            pf.degree = i2;
+            break;
+        }
     }
 
-    pf.degree = std::max(0, pf.degree - 1);
     return pf;
 }
 
@@ -555,7 +559,15 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
 
         return true;
     case 1:    // linear
-        m_solution = std::format("{} = {}", for_symbol, -pf.coeffs[0] / pf.coeffs[1]);
+    {
+        double s = -pf.coeffs[0] / pf.coeffs[1];
+
+        // To avoid having -0 as it is just 0
+        if (s == 0.0)
+            s = std::fabs(s);
+
+        m_solution = std::format("{} = {}", for_symbol, s);
+    }
         return true;
 
     case 2:
