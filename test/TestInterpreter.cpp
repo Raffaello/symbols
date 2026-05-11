@@ -17,7 +17,7 @@ TEST_P(TestInterpreter, eval)
 {
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
-    Interpreter interpreter;
+    Interpreter interpreter(std::make_shared<SymbolTable>());
 
     ASSERT_TRUE(parser.parse());
     parser.ast().print();
@@ -70,7 +70,7 @@ TEST_P(TestInterpreterError, eval_error)
 {
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
-    Interpreter interpreter;
+    Interpreter interpreter(std::make_shared<SymbolTable>());
 
     ASSERT_TRUE(parser.parse());
     ASSERT_FALSE(interpreter.eval(parser.ast()));

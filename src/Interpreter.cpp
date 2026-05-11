@@ -4,6 +4,13 @@
 #include <iostream>
 #include <format>
 #include <cmath>
+#include <stdexcept>
+
+Interpreter::Interpreter(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTable(pSymbolTable)
+{
+    if (m_pSymbolTable == nullptr)
+        throw std::invalid_argument("symbol table is null");
+}
 
 std::optional<bool> Interpreter::evalNum_(const AST::INode* node)
 {
@@ -21,7 +28,7 @@ std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
     const char* v = AST::LeafSymbol::getValue(node);
     if (v != nullptr)
     {
-        if (m_symbolTable.getSymbol(v, m_lastValue))
+        if (m_pSymbolTable->getSymbol(v, m_lastValue))
         {
             m_lastExpr = std::format("{} = {}", v, m_lastValue);
             return true;
@@ -70,7 +77,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         // TODO: specific for the assignment:
         if (bin->op == AST::eOperators::EQUAL)
         {
-            const char* sym = m_symbolTable.setSymbol(bin->l.get(), r);
+            const char* sym = m_pSymbolTable->setSymbol(bin->l.get(), r);
             if (sym != nullptr)
             {
                 m_lastValue = r;
@@ -167,12 +174,12 @@ bool Interpreter::eval(const AST& ast)
 
 bool Interpreter::unsetSymbol(const std::string& symbol) noexcept
 {
-    if (m_symbolTable.contains(symbol))
+    if (m_pSymbolTable->contains(symbol))
     {
-        m_symbolTable.erase(symbol);
+        m_pSymbolTable->erase(symbol);
         return true;
     }
 
-    std::cerr << std::format("ERROR: Symbol {} not found!\n", symbol);
+    std::cerr << std::format("ERROR: Symbol {} undefined!\n", symbol);
     return false_();
 }

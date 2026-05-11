@@ -77,3 +77,10 @@ macro_test(
     FIXTURES 
     LINKS_PRIVATE "interpreter"
 )
+
+macro_test(
+    EXE TestSolver
+    FILES "TestSolver.cpp"
+    FIXTURES 
+    LINKS_PRIVATE "solver"
+)
