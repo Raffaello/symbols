@@ -32,9 +32,12 @@ private:
 
     std::string m_solution;
 
-    PolynomialForm analyze_poly_(const AST::INode* node, std::string_view symbol) const noexcept;
-    static bool    collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
-    static bool    collect_poly_expr_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
+    PolynomialForm analyze_poly_(const AST::INode* node, std::string_view symbol);
+    bool           collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
+    bool           collect_poly_num_(const AST::INode* node, std::vector<double>& coeffs);
+    bool           collect_poly_sym_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
+    bool           collect_poly_uny_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
+    bool           collect_poly_expr_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
 
     bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
 
@@ -44,12 +47,6 @@ private:
     static bool is_symbol_(const AST::INode* node);
     static bool is_symbol_(const AST::INode* node, const std::string_view symbol);
     static bool is_num_(const AST::INode* node);
-
-
-    std::unique_ptr<AST::INode> simplify_(std::unique_ptr<AST::INode>& node);
-    std::unique_ptr<AST::INode> simplifyExpr_(std::unique_ptr<AST::INode>& node);
-    std::unique_ptr<AST::INode> simplifyExprSumOrMulOrPow_(std::unique_ptr<AST::INode>& node);
-
 
     // TODO: for_symbol would be better as a INode (LeafSymbol type), right?
     bool solve_equation_(AST::INode* node, const std::string_view for_symbol);
