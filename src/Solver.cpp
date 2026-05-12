@@ -12,9 +12,10 @@ Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTabl
         throw std::invalid_argument("symbol table is null");
 }
 
-bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol)
+bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_symbol)
 {
-    auto bin = dynamic_cast<AST::NodeBin*>(node);
+    auto node_ = const_cast<AST::INode*>(node);
+    auto bin   = dynamic_cast<AST::NodeBin*>(node_);
     if (bin->op != AST::eOperators::EQUAL)
         return false;
 
@@ -31,12 +32,12 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
     if (!res)
         return false;
 
-    switch (pf.degree)
+    switch (pf.degree())
     {
     case -1:
         break;
     case 0:    // no variables
-        if (pf.coeffs[0] == 0)
+        if (pf[0] == 0)
             m_solution = std::format("inf solutions");
         else
             m_solution = std::format("no solution");
@@ -44,7 +45,7 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
         return true;
     case 1:    // linear
     {
-        double s = -pf.coeffs[0] / pf.coeffs[1];
+        double s = -pf[0] / pf[1];
 
         // To avoid having -0 as it is just 0
         if (s == 0.0)
@@ -56,9 +57,9 @@ bool Solver::solve_equation_(AST::INode* node, const std::string_view for_symbol
 
     case 2:
     {
-        const double a = pf.coeffs[2];
-        const double b = pf.coeffs[1];
-        const double c = pf.coeffs[0];
+        const double a = pf[2];
+        const double b = pf[1];
+        const double c = pf[0];
 
         const double delta = (b * b) - (4.0 * a * c);
 
@@ -115,19 +116,10 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
         return false;
     }
 
-    auto pRoot = const_cast<AST::INode*>(ast.getRoot());
-    if (auto bin = dynamic_cast<AST::NodeBin*>(pRoot))
+    // the operator here is = as it is an equation
+    if (!solve_equation_(ast.getRoot(), for_symbol))
     {
-        // the operator here is = as it is an equation
-        if (!solve_equation_(bin, for_symbol))
-        {
-            std::cerr << std::format("ERROR: unable to solve equation: [{}, {}]\n", ast.to_string(), for_symbol);
-            return false;
-        }
-    }
-    else
-    {
-        std::cerr << std::format("ERROR: unable to navigate the equation.\n");
+        std::cerr << std::format("ERROR: unable to solve equation: [{}, {}]\n", ast.to_string(), for_symbol);
         return false;
     }
 

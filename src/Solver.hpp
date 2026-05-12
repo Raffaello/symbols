@@ -26,7 +26,7 @@ private:
     std::string m_solution;
 
     // TODO: for_symbol would be better as a INode (LeafSymbol type), right?
-    bool solve_equation_(AST::INode* node, const std::string_view for_symbol);
+    bool solve_equation_(const AST::INode* node, const std::string_view for_symbol);
 
 public:
     Solver(const std::shared_ptr<SymbolTable>& pSymbolTable);
