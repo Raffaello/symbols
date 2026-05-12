@@ -127,247 +127,96 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
         case MUL:
         {
-            const AST::INode* l;
-            const AST::INode* r;
-
-            if (expr->l->is_expr() ||
-                expr->r->is_expr() ||
-                expr->l->is_unary() ||
-                expr->r->is_unary())
-            {
-                PolynomialForm pf1(m_pSymbolTable), pf2(m_pSymbolTable);
-                if (!collect_poly_(expr->l.get(), pf1, symbol))
-                    return false;
-                if (!collect_poly_(expr->r.get(), pf2, symbol))
-                    return false;
-
-                int          deg1  = pf1.degree();    // pf1.coeffs.size() - 1;
-                int          deg2  = pf2.degree();    // pf2.coeffs.size() - 1;
-                const size_t max_c = deg1 + deg2 + 1;
-                for (size_t i = 0; i < pf1.size(); ++i)
-                {
-                    for (size_t j = 0; j < pf2.size(); ++j)
-                        pf[j + i] += pf1[i] * pf2[j];
-                }
-
-                return true;
-            }
-            else if (expr->l->is_num())
-            {
-                l = expr->l.get();
-                r = expr->r.get();
-            }
-            else if (expr->r->is_num())
-            {
-                l = expr->r.get();
-                r = expr->l.get();
-            }
-            else
+            PolynomialForm pf1(m_pSymbolTable), pf2(m_pSymbolTable);
+            if (!collect_poly_(expr->l.get(), pf1, symbol))
+                return false;
+            if (!collect_poly_(expr->r.get(), pf2, symbol))
                 return false;
 
-            // e.g. 1*1
-            if (l->is_num() && r->is_num())
+            int          deg1  = pf1.degree();    // pf1.coeffs.size() - 1;
+            int          deg2  = pf2.degree();    // pf2.coeffs.size() - 1;
+            const size_t max_c = deg1 + deg2 + 1;
+            for (size_t i = 0; i < pf1.size(); ++i)
             {
-                double dl;
-                double dr;
-                if (!AST::LeafNum::getValue(l, dl) || !AST::LeafNum::getValue(r, dr))
-                {
-                    std::cerr << "ERROR: unable to get numbers\n";
-                    return false;
-                }
-
-                const double dlr  = dl * dr;
-                pf[0]            += dlr;
-                return true;
-            }
-            // e.g. 2*x | x*2
-            if (l->is_num() && r->is_symbol())
-            {
-                if (!r->is_symbol(symbol))
-                {
-                    std::cerr << std::format("ERROR: generic symbolic solver not implemented yet: unknown symbol '{}'\n", AST::LeafSymbol::getValue(r));
-                    return false;
-                }
-
-                double d;
-                if (!AST::LeafNum::getValue(l, d))
-                {
-                    std::cerr << "ERROR: unable to get number\n";
-                    return false;
-                }
-
-                pf[1] += d;
-                return true;
+                for (size_t j = 0; j < pf2.size(); ++j)
+                    pf[j + i] += pf1[i] * pf2[j];
             }
 
-            if (l->is_expr())
-                if (!collect_poly_(l, pf, symbol))
-                    return false;
-
-            if (r->is_expr())
-                if (!collect_poly_(r, pf, symbol))
-                    return false;
+            return true;
         }
         break;
 
         case DIV:
         {
-            // e.g. 1/1
-            if (expr->l->is_num() && expr->r->is_num())
+            PolynomialForm pf2(m_pSymbolTable);
+            if (!collect_poly_(expr->l.get(), pf, symbol))
+                return false;
+            if (!collect_poly_(expr->r.get(), pf2, symbol))
+                return false;
+
+            const int deg2 = pf2.degree();
+            if (deg2 > 0)
             {
-                double dl;
-                double dr;
-                if (!AST::LeafNum::getValue(expr->l.get(), dl) || !AST::LeafNum::getValue(expr->r.get(), dr))
-                {
-                    std::cerr << "ERROR: unable to get numbers\n";
-                    return false;
-                }
-
-                // division by zero
-                // if(dr == 0.0)
-                // {
-                // }
-
-                const double dlr  = dl / dr;
-                pf[0]            += dlr;
-                return true;
+                std::cerr << "ERROR: rational expression not implemented yet\n";
+                return false;
             }
-            // e.g. [expr]/2
-            if (expr->r->is_num())
-            {
-                double d;
-                if (!AST::LeafNum::getValue(expr->r.get(), d))
-                {
-                    std::cerr << "ERROR: unable to get number\n";
-                    return false;
-                }
 
-                if (!collect_poly_(expr->l.get(), pf, symbol))
-                    return false;
+            assert(deg2 == 0);
+            for (size_t i = 0; i < pf.size(); ++i)
+                pf[i] /= pf2[deg2];
 
-                for (auto& c : pf.m_coeffs)
-                    c /= d;
-
-                return true;
-            }
+            return true;
         }
         break;
+
         case POW:
         {
-            // TODO: handle special cases, e.g.: x^0 => 1
+            PolynomialForm pf1(m_pSymbolTable);
+            PolynomialForm pf2(m_pSymbolTable);
+            if (!collect_poly_(expr->l.get(), pf1, symbol))
+                return false;
+            if (!collect_poly_(expr->r.get(), pf2, symbol))
+                return false;
 
-            if (expr->l->is_expr() ||
-                expr->r->is_expr() ||
-                expr->l->is_unary() ||
-                expr->r->is_unary())
+            int deg2 = pf2.degree();
+            if (deg2 > 0)
             {
-                // TODO: not sure if it is ok, need to double check it.
+                std::cerr << "ERROR: exponent can't be a symbol to solve for\n";
+                return false;
+            }
 
-                // TODO: used pf instead of 2 vectors and 2 degrees,
-                //        and also create the compute degree function inside pf directly
-                PolynomialForm pf1(m_pSymbolTable), pf2(m_pSymbolTable);
-                if (!collect_poly_(expr->l.get(), pf1, symbol))
-                    return false;
-                if (!collect_poly_(expr->r.get(), pf2, symbol))
-                    return false;
-
-                int deg1 = pf1.size() - 1;
-                int deg2 = pf2.size() - 1;
-
-                if (deg2 != 0)
+            if (pf2[0] == 0.0)
+                pf[0] += 1;
+            else if (pf2[0] == 1.0)
+            {
+                for (size_t i = 0; i < pf1.size(); ++i)
+                    pf[i] += pf1[i];
+            }
+            else
+            {
+                // this can support only x^2 | (x+1)^(1+2)
+                // not with a symbol in the RHS
+                for (size_t k = 0; k < pf2.size(); ++k)
                 {
-                    std::cerr << "ERROR: e.g. 'x^x' not supported yet, only polynomials  e.g. 'x^2'\n";
-                    return false;
-                }
+                    int times = static_cast<int>(std::round(pf2[k]));
+                    if (times - pf2[k] != 0.0)
+                        return false;
 
-                // x^2 => x*x => c[2] += 1
-                if (pf2[0] == 0.0)
-                {
+                    assert(times >= 2);
+                    --times;
                     for (size_t i = 0; i < pf1.size(); ++i)
-                        pf[i] += 1;
-                }
-                else if (pf2[0] == 1.0)
-                {
-                    for (size_t i = 0; i < pf1.size(); ++i)
-                        pf[i] += pf1[i];
-                }
-                else
-                {
-                    // this can support only x^2 | (x+1)^(1+2)
-                    // not with a symbol in the RHS
-                    for (size_t k = 0; k < pf2.size(); ++k)
                     {
-                        int times = static_cast<int>(std::round(pf2[k]));
-                        if (times - pf2[k] != 0.0)
-                            return false;
-
-                        assert(times >= 2);
-                        --times;
-                        for (size_t i = 0; i < pf1.size(); ++i)
+                        for (size_t j = 0; j < pf1.size(); ++j)
                         {
-                            for (size_t j = 0; j < pf1.size(); ++j)
-                            {
-                                const double ct = pf1[i] * pf1[j];
-                                for (int t = 0; t < times; ++t)
-                                    pf[i + j + t] += ct;
-                            }
+                            const double ct = pf1[i] * pf1[j];
+                            for (int t = 0; t < times; ++t)
+                                pf[i + j + t] += ct;
                         }
                     }
                 }
-
-                return true;
             }
-            // e.g 2^x | 2^2
-            else if (expr->l->is_num())
-            {
-                // TODO e.g 2^x
-                if (expr->r->is_symbol())
-                {
-                    std::cerr << "ERROR: POW operator not fully supported in solver yet! Can't elevate for a symbol\n";
-                    return false;
-                }
-                // e.g 2^2
-                else if (expr->r->is_num())
-                {
-                    double dl;
-                    double dr;
-                    if (!AST::LeafNum::getValue(expr->l.get(), dl) || !AST::LeafNum::getValue(expr->r.get(), dr))
-                    {
-                        std::cerr << "ERROR: unable to get numbers\n";
-                        return false;
-                    }
 
-                    const double dlr  = std::pow(dl, dr);
-                    pf[0]            += dlr;
-                    return true;
-                }
-            }
-            // e.g x^2 || x^x
-            else if (expr->l->is_symbol(symbol))
-            {
-                // TODO
-                if (expr->r->is_symbol())
-                {
-                    std::cerr << "ERROR: POW operator not fully supported in solver yet! Can't elevate for a symbol\n";
-                    return false;
-                }
-                else if (expr->r->is_num())
-                {
-                    double d;
-                    if (!AST::LeafNum::getValue(expr->r.get(), d))
-                        return false;
-
-                    int di = static_cast<int>(std::round(d));
-                    if (d - di != 0)
-                    {
-                        std::cout << "ERROR: this can solve only integer exponential at the moment\n";
-                        return false;
-                    }
-
-                    pf[di] += 1;
-                    return true;
-                }
-            }
+            return true;
         }
 
         break;

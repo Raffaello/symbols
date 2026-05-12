@@ -12,7 +12,7 @@ public:
     const std::string expAST = std::get<2>(GetParam());
 };
 
-TEST_P(TestSolver, eval)
+TEST_P(TestSolver, solver)
 {
     LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1  parser(scanner);
@@ -23,7 +23,6 @@ TEST_P(TestSolver, eval)
     AST& ast = parser.ast();
 
     ASSERT_TRUE(solver.solve(ast, sym));
-    // EXPECT_STREQ(ast.to_string().c_str(), expAST.data());
     EXPECT_STREQ(solver.solution().c_str(), expAST.c_str());
 }
 
@@ -42,6 +41,7 @@ INSTANTIATE_TEST_SUITE_P(
         // std::make_tuple("a+1*1=x", "x", "x = a + 1"),
         std::make_tuple("2*x=1", "x", "x = 0.5"),
         std::make_tuple("2*x/2=1", "x", "x = 1"),
+        std::make_tuple("2*x/-2=-1", "x", "x = 1"),
         std::make_tuple("(2+x)*(3-2)+x=0", "x", "x = -1"),
         std::make_tuple("(2+x)*(3-2)+x*1+0=0", "x", "x = -1"),
         std::make_tuple("(2+x)*(3-2)+x=-2*x", "x", "x = -0.5"),
@@ -56,7 +56,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x^2 = 1", "x", "x = 1, x = -1"),
         std::make_tuple("x^(1+1) = 1", "x", "x = 1, x = -1"),
         std::make_tuple("(x+1)^1 = 1", "x", "x = 0"),
-        std::make_tuple("(x+1)^0 = 1", "x", "x = 0"),
+        std::make_tuple("(x+1)^0 = 1", "x", "inf solutions"),
         std::make_tuple("(x+1)^2 = 1", "x", "x = 0, x = -2"),
         // std::make_tuple("(x+1)^3 = 1", "x", "x = 0, x = -2"),
         std::make_tuple("(x+0)^2 = 1", "x", "x = 1, x = -1"),
@@ -66,6 +66,47 @@ INSTANTIATE_TEST_SUITE_P(
 
 
         ));
+
+class TestSolverSymbolSubstitution : public TestSolver
+{
+public:
+};
+
+TEST_P(TestSolverSymbolSubstitution, Symbol_Simple_Substitution)
+{
+    // std::string sym          = "x";
+    // std::string expAST       = "x = 108";    // 10*2+10^2 - 10 - 5*5 + 3 = x => 20+100-10 - 25 + 3 = x => x = 88
+    auto       pSymbolTable = std::make_shared<SymbolTable>();
+    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
+    ParserLL1  parser(scanner);
+    Solver     solver(pSymbolTable);
+
+    (*pSymbolTable)["a"] = 10;
+    (*pSymbolTable)["b"] = 5;
+
+
+    ASSERT_TRUE(parser.parse());
+
+    AST& ast = parser.ast();
+
+    ASSERT_TRUE(solver.solve(ast, sym));
+
+    EXPECT_STREQ(solver.solution().c_str(), expAST.c_str());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    SolverTestSuite,
+    TestSolverSymbolSubstitution,
+    ::testing::Values(
+        std::make_tuple("a = x", "x", "x = 10"),
+        std::make_tuple("b = x", "x", "x = 5"),
+        std::make_tuple("a+b = x", "x", "x = 15"),
+        std::make_tuple("a-b = x", "x", "x = 5"),
+        std::make_tuple("a-2*b = x", "x", "x = 0"),
+        std::make_tuple("a/b = x", "x", "x = 2"),
+        std::make_tuple("a*2+a^2 -10 -b*b = x - 3", "x", "x = 88")
+
+            ));
 
 class TestSolverError : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
 {
