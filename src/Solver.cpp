@@ -20,7 +20,7 @@ Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string
         .coeffs = {},
     };
 
-    if (!collect_poly_(node, pf.coeffs, symbol))
+    if (!collect_poly_(node, pf, symbol))
     {
         pf.degree = -1;
         pf.coeffs.clear();
@@ -42,21 +42,21 @@ Solver::PolynomialForm Solver::analyze_poly_(const AST::INode* node, std::string
     return pf;
 }
 
-bool Solver::collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol)
+bool Solver::collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
 {
     if (is_num_(node))
-        return collect_poly_num_(node, coeffs);
+        return collect_poly_num_(node, pf);
     else if (is_symbol_(node))
-        return collect_poly_sym_(node, coeffs, symbol);
+        return collect_poly_sym_(node, pf, symbol);
     else if (is_unary_(node))
-        return collect_poly_uny_(node, coeffs, symbol);
+        return collect_poly_uny_(node, pf, symbol);
     else if (is_expr_(node))
-        return collect_poly_expr_(node, coeffs, symbol);
+        return collect_poly_expr_(node, pf, symbol);
 
     return false;
 }
 
-bool Solver::collect_poly_num_(const AST::INode* node, std::vector<double>& coeffs)
+bool Solver::collect_poly_num_(const AST::INode* node, PolynomialForm& pf)
 {
     double d = 0.0;
     if (!AST::LeafNum::getValue(node, d))
@@ -65,15 +65,16 @@ bool Solver::collect_poly_num_(const AST::INode* node, std::vector<double>& coef
         return false;
     }
 
-    if (coeffs.size() < 1)
-        coeffs.push_back(d);
-    else
-        coeffs[0] += d;
+    pf[0] += d;
+    // if (coeffs.size() < 1)
+    //     coeffs.push_back(d);
+    // else
+    //     coeffs[0] += d;
 
     return true;
 }
 
-bool Solver::collect_poly_sym_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol)
+bool Solver::collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
 {
     if (!is_symbol_(node, symbol))
     {
@@ -86,47 +87,51 @@ bool Solver::collect_poly_sym_(const AST::INode* node, std::vector<double>& coef
         }
 
         std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
-        if (coeffs.size() == 0)
-            coeffs.push_back(d);
-        else
-            coeffs[0] += d;
+        // if (coeffs.size() == 0)
+        //     coeffs.push_back(d);
+        // else
+        //     coeffs[0] += d;
+        pf[0] += d;
 
         return true;
     }
 
     // otherwise is the symbol to solve for
-    switch (coeffs.size())
-    {
-    case 0:
-        coeffs.push_back(0);
-        [[fallthrough]];
-    case 1:
-        coeffs.push_back(1);
-        break;
+    // switch (coeffs.size())
+    // {
+    // case 0:
+    //     coeffs.push_back(0);
+    //     [[fallthrough]];
+    // case 1:
+    //     coeffs.push_back(1);
+    //     break;
 
-    default:
-        coeffs[1] += 1;
-        break;
-    }
+    // default:
+    //     coeffs[1] += 1;
+    //     break;
+    // }
+
+    pf[1] += 1;
 
     return true;
 }
 
-bool Solver::collect_poly_uny_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol)
+bool Solver::collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
 {
     if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
     {
         if (uny->negate)
         {
-            std::vector<double> coeffs2;
-            if (!collect_poly_(uny->n.get(), coeffs2, symbol))
+            // std::vector<double> coeffs2;
+            PolynomialForm pf2;
+            if (!collect_poly_(uny->n.get(), pf2, symbol))
                 return false;
 
-            if (coeffs2.size() > coeffs.size())
-                coeffs.resize(coeffs2.size());
+            // if (coeffs2.size() > coeffs.size())
+            //     coeffs.resize(coeffs2.size());
 
-            for (size_t i = 0; i < coeffs2.size(); ++i)
-                coeffs[i] -= coeffs2[i];
+            for (size_t i = 0; i < pf2.coeffs.size(); ++i)
+                pf[i] -= pf2[i];
         }
 
         return true;
@@ -135,7 +140,7 @@ bool Solver::collect_poly_uny_(const AST::INode* node, std::vector<double>& coef
     return false;
 }
 
-bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol)
+bool Solver::collect_poly_expr_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
 {
     if (auto expr = dynamic_cast<const AST::NodeBin*>(node))
     {
@@ -145,31 +150,33 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
 
         case ADD:
         {
-            std::vector<double> coeffs2;
-            if (!collect_poly_(expr->l.get(), coeffs, symbol))
+            // std::vector<double> coeffs2;
+            PolynomialForm pf2;
+            if (!collect_poly_(expr->l.get(), pf, symbol))
                 return false;
-            if (!collect_poly_(expr->r.get(), coeffs2, symbol))
+            if (!collect_poly_(expr->r.get(), pf2, symbol))
                 return false;
 
-            if (coeffs2.size() > coeffs.size())
-                coeffs.resize(coeffs2.size());
-            for (size_t i = 0; i < coeffs2.size(); ++i)
-                coeffs[i] += coeffs2[i];
+            // if (coeffs2.size() > coeffs.size())
+            //     coeffs.resize(coeffs2.size());
+            for (size_t i = 0; i < pf2.coeffs.size(); ++i)
+                pf[i] += pf2[i];
             return true;
         }
 
         case SUB:
         {
-            std::vector<double> coeffs2;
-            if (!collect_poly_(expr->l.get(), coeffs, symbol))
+            // std::vector<double> coeffs2;
+            PolynomialForm pf2;
+            if (!collect_poly_(expr->l.get(), pf, symbol))
                 return false;
-            if (!collect_poly_(expr->r.get(), coeffs2, symbol))
+            if (!collect_poly_(expr->r.get(), pf2, symbol))
                 return false;
 
-            if (coeffs2.size() > coeffs.size())
-                coeffs.resize(coeffs2.size());
-            for (size_t i = 0; i < coeffs2.size(); ++i)
-                coeffs[i] -= coeffs2[i];
+            // if (coeffs2.size() > coeffs.size())
+            //     coeffs.resize(coeffs2.size());
+            for (size_t i = 0; i < pf2.coeffs.size(); ++i)
+                pf[i] -= pf2[i];
 
             return true;
         }
@@ -184,23 +191,24 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                 is_unary_(expr->l.get()) ||
                 is_unary_(expr->r.get()))
             {
-                std::vector<double> c1;
-                std::vector<double> c2;
-                if (!collect_poly_(expr->l.get(), c1, symbol))
+                // std::vector<double> c1;
+                // std::vector<double> c2;
+                PolynomialForm pf1, pf2;
+                if (!collect_poly_(expr->l.get(), pf1, symbol))
                     return false;
-                if (!collect_poly_(expr->r.get(), c2, symbol))
+                if (!collect_poly_(expr->r.get(), pf2, symbol))
                     return false;
 
-                int          deg1  = c1.size() - 1;
-                int          deg2  = c2.size() - 1;
+                int          deg1  = pf1.coeffs.size() - 1;
+                int          deg2  = pf2.coeffs.size() - 1;
                 const size_t max_c = deg1 + deg2 + 1;
-                if (coeffs.size() < max_c)
-                    coeffs.resize(max_c);
+                // if (pf.coeffs.size() < max_c)
+                //     coeffs.resize(max_c);
 
-                for (size_t i = 0; i < c1.size(); ++i)
+                for (size_t i = 0; i < pf1.coeffs.size(); ++i)
                 {
-                    for (size_t j = 0; j < c2.size(); ++j)
-                        coeffs[j + i] += c1[i] * c2[j];
+                    for (size_t j = 0; j < pf2.coeffs.size(); ++j)
+                        pf[j + i] += pf1[i] * pf2[j];
                 }
 
                 return true;
@@ -230,10 +238,10 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                 }
 
                 const double dlr = dl * dr;
-                if (coeffs.size() == 0)
-                    coeffs.push_back(dlr);
-                else
-                    coeffs[0] += dlr;
+                // if (coeffs.size() == 0)
+                //     coeffs.push_back(dlr);
+                // else
+                pf[0] += dlr;
 
                 return true;
             }
@@ -253,28 +261,29 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                     return false;
                 }
 
-                switch (coeffs.size())
-                {
-                case 0:
-                    coeffs.push_back(0);
-                    [[fallthrough]];
-                case 1:
-                    coeffs.push_back(d);
-                    break;
-                default:
-                case 2:
-                    coeffs[1] += d;
-                }
+                // switch (coeffs.size())
+                // {
+                // case 0:
+                //     coeffs.push_back(0);
+                //     [[fallthrough]];
+                // case 1:
+                //     coeffs.push_back(d);
+                //     break;
+                // default:
+                // case 2:
+                // coeffs[1] += d;
+                // }
 
+                pf[1] += d;
                 return true;
             }
 
             if (is_expr_(l))
-                if (!collect_poly_(l, coeffs, symbol))
+                if (!collect_poly_(l, pf, symbol))
                     return false;
 
             if (is_expr_(r))
-                if (!collect_poly_(r, coeffs, symbol))
+                if (!collect_poly_(r, pf, symbol))
                     return false;
         }
         break;
@@ -298,11 +307,12 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                 // }
 
                 const double dlr = dl / dr;
-                if (coeffs.size() == 0)
-                    coeffs.push_back(dlr);
-                else
-                    coeffs[0] += dlr;
+                // if (coeffs.size() == 0)
+                //     coeffs.push_back(dlr);
+                // else
+                //     coeffs[0] += dlr;
 
+                pf[0] += dlr;
                 return true;
             }
             // e.g. [expr]/2
@@ -315,10 +325,10 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                     return false;
                 }
 
-                if (!collect_poly_(expr->l.get(), coeffs, symbol))
+                if (!collect_poly_(expr->l.get(), pf, symbol))
                     return false;
 
-                for (auto& c : coeffs)
+                for (auto& c : pf.coeffs)
                     c /= d;
 
                 return true;
@@ -338,15 +348,16 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
 
                 // TODO: used pf instead of 2 vectors and 2 degrees,
                 //        and also create the compute degree function inside pf directly
-                std::vector<double> c1;
-                std::vector<double> c2;
-                if (!collect_poly_(expr->l.get(), c1, symbol))
+                // std::vector<double> c1;
+                // std::vector<double> c2;
+                PolynomialForm pf1, pf2;
+                if (!collect_poly_(expr->l.get(), pf1, symbol))
                     return false;
-                if (!collect_poly_(expr->r.get(), c2, symbol))
+                if (!collect_poly_(expr->r.get(), pf2, symbol))
                     return false;
 
-                int deg1 = c1.size() - 1;
-                int deg2 = c2.size() - 1;
+                int deg1 = pf1.coeffs.size() - 1;
+                int deg2 = pf2.coeffs.size() - 1;
 
                 if (deg2 != 0)
                 {
@@ -355,46 +366,46 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                 }
 
                 // x^2 => x*x => c[2] += 1
-                if (c2[0] == 0.0)
+                if (pf2[0] == 0.0)
                 {
-                    if (coeffs.size() < c1.size())
-                        coeffs.resize(c1.size());
+                    // if (coeffs.size() < c1.size())
+                    //     coeffs.resize(c1.size());
 
-                    for (size_t i = 0; i < c1.size(); ++i)
-                        coeffs[i] += 1;
+                    for (size_t i = 0; i < pf1.coeffs.size(); ++i)
+                        pf[i] += 1;
                 }
-                else if (c2[0] == 1.0)
+                else if (pf2[0] == 1.0)
                 {
-                    if (coeffs.size() < c1.size())
-                        coeffs.resize(c1.size());
+                    // if (coeffs.size() < c1.size())
+                    //     coeffs.resize(c1.size());
 
-                    for (size_t i = 0; i < c1.size(); ++i)
-                        coeffs[i] += c1[i];
+                    for (size_t i = 0; i < pf1.coeffs.size(); ++i)
+                        pf[i] += pf1[i];
                 }
                 else
                 {
                     // this can support only x^2 | (x+1)^(1+2)
                     // not with a symbol in the RHS
-                    for (size_t k = 0; k < c2.size(); ++k)
+                    for (size_t k = 0; k < pf2.coeffs.size(); ++k)
                     {
-                        int times = static_cast<int>(std::round(c2[k]));
-                        if (times - c2[k] != 0.0)
+                        int times = static_cast<int>(std::round(pf2[k]));
+                        if (times - pf2[k] != 0.0)
                             return false;
 
                         assert(times >= 2);
                         --times;
-                        for (size_t i = 0; i < c1.size(); ++i)
+                        for (size_t i = 0; i < pf1.coeffs.size(); ++i)
                         {
-                            for (size_t j = 0; j < c1.size(); ++j)
+                            for (size_t j = 0; j < pf1.coeffs.size(); ++j)
                             {
-                                const double ct = c1[i] * c1[j];
+                                const double ct = pf1[i] * pf1[j];
                                 for (int t = 0; t < times; ++t)
                                 {
                                     const int i2 = i + j + t;
-                                    if (coeffs.size() < i2 + 1)
-                                        coeffs.resize(i2 + 1);
+                                    // if (coeffs.size() < i2 + 1)
+                                    //     coeffs.resize(i2 + 1);
 
-                                    coeffs[i2] += ct;
+                                    pf[i2] += ct;
                                 }
                             }
                         }
@@ -424,11 +435,12 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                     }
 
                     const double dlr = std::pow(dl, dr);
-                    if (coeffs.size() == 0)
-                        coeffs.push_back(dlr);
-                    else
-                        coeffs[0] += dlr;
+                    // if (coeffs.size() == 0)
+                    //     coeffs.push_back(dlr);
+                    // else
+                    //     coeffs[0] += dlr;
 
+                    pf[0] += dlr;
                     return true;
                 }
             }
@@ -457,10 +469,11 @@ bool Solver::collect_poly_expr_(const AST::INode* node, std::vector<double>& coe
                         return false;
                     }
 
-                    if (coeffs.size() < di + 1)
-                        coeffs.resize(di + 1);    // di as an index, so di + 1
+                    // if (coeffs.size() < di + 1)
+                    //     coeffs.resize(di + 1);    // di as an index, so di + 1
 
-                    coeffs[di] += 1;
+                    // coeffs[di] += 1;
+                    pf[di] += 1;
                     return true;
                 }
             }

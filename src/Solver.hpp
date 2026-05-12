@@ -21,23 +21,40 @@ public:
     //       also the operation to add a coeffs, if it has to push it back or update what is already there (operator[])
     struct PolynomialForm
     {
+        // private:
         int                 degree;
         std::vector<double> coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
+
+                                       // public:
+        double& operator[](size_t index)
+        {
+            if (coeffs.size() < index + 1)
+                coeffs.resize(index + 1);
+
+            return coeffs[index];
+        }
+
+        // TODO: later
+        // inline degree()
+        // {
+
+        // }
     };
 
 private:
-    std::shared_ptr<SymbolTable> m_pSymbolTable;    // TODO: not used yet as it is too simple:
-                                                    // can be used only for known symbols for substitution into numbers
-                                                    // as a pre step changing the AST, (or when navigating it)
+    std::shared_ptr<SymbolTable>
+        m_pSymbolTable;    // TODO: not used yet as it is too simple:
+                           // can be used only for known symbols for substitution into numbers
+                           // as a pre step changing the AST, (or when navigating it)
 
     std::string m_solution;
 
     PolynomialForm analyze_poly_(const AST::INode* node, std::string_view symbol);
-    bool           collect_poly_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
-    bool           collect_poly_num_(const AST::INode* node, std::vector<double>& coeffs);
-    bool           collect_poly_sym_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
-    bool           collect_poly_uny_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
-    bool           collect_poly_expr_(const AST::INode* node, std::vector<double>& coeffs, std::string_view symbol);
+    bool           collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    bool           collect_poly_num_(const AST::INode* node, PolynomialForm& pf);
+    bool           collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    bool           collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    bool           collect_poly_expr_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
 
     bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
 
