@@ -21,6 +21,12 @@ public:
     struct INode
     {
         virtual ~INode() = default;
+
+        inline bool is_expr() const noexcept;
+        inline bool is_unary() const noexcept;
+        inline bool is_symbol() const noexcept;
+        inline bool is_symbol(const std::string_view symbol) const noexcept;
+        inline bool is_num() const noexcept;
     };
 
     struct LeafNum : public INode
@@ -105,18 +111,71 @@ private:
     void to_string_(const INode* node, std::stringstream& ss, const int level) const;
     void print_(const INode* node, const int indent);
 
+    bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
+
 public:
     AST()  = default;
     ~AST() = default;
 
+    inline bool         isEquation() const noexcept;
     inline const INode* getRoot() const noexcept;
     void                setRoot(std::unique_ptr<INode>& root);
+    bool                has_symbol(const std::string_view symbol) const noexcept;
 
     std::string to_string() const;
     void        print();
 
     static char operator_to_string(const eOperators op);
 };
+
+inline bool AST::isEquation() const noexcept
+{
+    if (auto bin = dynamic_cast<const AST::NodeBin*>(getRoot()))
+        return bin->op == AST::eOperators::EQUAL;
+
+    return false;
+}
+
+inline bool AST::INode::is_expr() const noexcept
+{
+    if (auto bin = dynamic_cast<const AST::NodeBin*>(this))
+        return bin->op == AST::eOperators::ADD ||
+               bin->op == AST::eOperators::SUB ||
+               bin->op == AST::eOperators::MUL ||
+               bin->op == AST::eOperators::DIV ||
+               bin->op == AST::eOperators::POW;
+
+    return false;
+}
+
+inline bool AST::INode::is_unary() const noexcept
+{
+    return dynamic_cast<const AST::NodeUnary*>(this) != nullptr;
+}
+
+inline bool AST::INode::is_symbol() const noexcept
+{
+    return dynamic_cast<const AST::LeafSymbol*>(this) != nullptr;
+}
+
+inline bool AST::INode::is_symbol(const std::string_view symbol) const noexcept
+{
+    if (auto sym = dynamic_cast<const AST::LeafSymbol*>(this))
+    {
+        if (sym->value == symbol)
+            return true;
+    }
+
+    return false;
+}
+
+inline bool AST::INode::is_num() const noexcept
+{
+    if (auto num = dynamic_cast<const AST::LeafNum*>(this))
+        return true;
+
+    return false;
+}
 
 inline const AST::INode* AST::getRoot() const noexcept
 {

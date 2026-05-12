@@ -29,6 +29,7 @@ add_library(solver)
 add_dependencies(solver parser)
 target_sources(solver PRIVATE
     Solver.cpp
+    PolynomialForm.cpp
   )
 target_include_directories(solver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(solver PUBLIC parser)
