@@ -91,6 +91,68 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         return true;
     }
     break;
+    case 3:
+    {
+        // Cardano's formula
+        std::vector<double> s;
+
+        const double a = pf[2] / pf[3];
+        const double b = pf[1] / pf[3];
+        const double c = pf[0] / pf[3];
+        // const double d = pf[0] / pf[3];
+
+        const double aa = a * a;
+        const double p  = b - aa / 3.0;
+        const double q  = 2.0 * a * aa / 27.0 - a * b / 3.0 + c;
+
+        const double p3    = p * p * p;
+        const double delta = (q * q) / 4.0 + p3 / 27.0;
+
+        if (delta > 0.0)
+        {
+            // one real solution, two complex
+            const double sq_delta = std::sqrt(delta);
+            const double u        = std::cbrt(-q / 2.0 + sq_delta);
+            const double v        = std::cbrt(-q / 2.0 - sq_delta);
+            const double y        = u + v;
+
+            s.push_back(y - (a / 3.0));
+            // return true;
+        }
+        else if (delta < 0.0)
+        {
+            const double r   = 2.0 * std::sqrt(-p / 3.0);
+            const double phi = std::acos((-q / 2.0) / std::sqrt(-p3 / 27.0));
+
+            s.push_back(r * std::cos(phi / 3.0) - a / 3.0);
+            s.push_back(r * std::cos((phi + 2.0 * M_PI) / 3.0) - a / 3.0);
+            s.push_back(r * std::cos((phi + 4.0 * M_PI) / 3.0) - a / 3.0);
+        }
+        else
+        {
+            const double u = std::cbrt(-q / 2.0);
+            s.push_back((2.0 * u) - a / 3.0);
+            s.push_back((-u) - a / 3.0);
+        }
+
+        // round the solution for eventual numeric errors
+        m_solution = "";
+        for (int i = 0; i < s.size(); ++i)
+        {
+            const double near = std::round(s[i]);
+            if (std::fabs(s[i] - near) < SOLVER_EPSILON)
+                s[i] = near;
+
+            m_solution = m_solution + std::format("{} = {}, ", for_symbol, s[i]);
+        }
+
+        m_solution.pop_back();
+        m_solution.pop_back();
+        std::cout << m_solution << "\n";
+        return true;
+    }
+    break;
+
     default:
         // Newton's method
         // todo
