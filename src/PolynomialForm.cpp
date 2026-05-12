@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cassert>
+#include <format>
 
 PolynomialForm::PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTable(pSymbolTable)
 {
