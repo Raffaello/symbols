@@ -5,6 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <cassert>
+#include <set>
 
 Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTable(pSymbolTable)
 {
@@ -136,15 +137,19 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
 
         // round the solution for eventual numeric errors
-        m_solution = "";
+        std::set<double> s_;
         for (int i = 0; i < s.size(); ++i)
         {
             const double near = std::round(s[i]);
             if (std::fabs(s[i] - near) < SOLVER_EPSILON)
                 s[i] = near;
 
-            m_solution = m_solution + std::format("{} = {}, ", for_symbol, s[i]);
+            s_.insert(s[i]);
         }
+
+        m_solution = "";
+        for (auto& d : s_)
+            m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
 
         m_solution.pop_back();
         m_solution.pop_back();

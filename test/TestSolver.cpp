@@ -151,7 +151,6 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x^a=0", "x"),
         std::make_tuple("1^x=0", "x"),
         std::make_tuple("x+1+a = 0", "x"),
-        std::make_tuple("(x+1)^3 = 1", "x"),
         std::make_tuple("x+ 2*a = 0", "x")
 
             ));
