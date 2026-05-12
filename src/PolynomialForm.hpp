@@ -7,9 +7,6 @@
 #include <string>
 #include <memory>
 
-// TODO: create a compute degree function here, so doesn't have to do every single time in the solver,
-//       also the operation to add a coeffs, if it has to push it back or update what is already there (operator[])
-
 class PolynomialForm
 {
 private:

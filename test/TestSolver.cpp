@@ -74,8 +74,6 @@ public:
 
 TEST_P(TestSolverSymbolSubstitution, Symbol_Simple_Substitution)
 {
-    // std::string sym          = "x";
-    // std::string expAST       = "x = 108";    // 10*2+10^2 - 10 - 5*5 + 3 = x => 20+100-10 - 25 + 3 = x => x = 88
     auto       pSymbolTable = std::make_shared<SymbolTable>();
     LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1  parser(scanner);
