@@ -74,14 +74,19 @@ bool PolynomialForm::collect_poly_uny_(const AST::INode* node, PolynomialForm& p
 {
     if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
     {
+        PolynomialForm pf2(m_pSymbolTable);
+        if (!collect_poly_(uny->n.get(), pf2, symbol))
+            return false;
+
         if (uny->negate)
         {
-            PolynomialForm pf2(m_pSymbolTable);
-            if (!collect_poly_(uny->n.get(), pf2, symbol))
-                return false;
-
             for (size_t i = 0; i < pf2.size(); ++i)
                 pf[i] -= pf2[i];
+        }
+        else
+        {
+            for (size_t i = 0; i < pf2.size(); ++i)
+                pf[i] += pf2[i];
         }
 
         return true;

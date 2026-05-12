@@ -33,6 +33,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("-x=1", "x", "x = -1"),
 
         std::make_tuple("x=1", "x", "x = 1"),
+        std::make_tuple("+x=1", "x", "x = 1"),
         std::make_tuple("1=x", "x", "x = 1"),
         std::make_tuple("1+0=x", "x", "x = 1"),
         std::make_tuple("1*1=x", "x", "x = 1"),
