@@ -62,21 +62,51 @@ P    ::= (E) | SYMBOL | NUM
 
 # Interpreter
 
-> TODO
-
 Basic interpreter evaluating a single `AST` at time for now.
 
 Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
  `x=1`, but not `x+1=2`
 
+ > TODO more?
+
 # Solver
 
-> TODO
+Just a basic polynomial solver at the moment for quadratic polynomials.
 
-Just a basic polynomial solver at the moment.
+> TODO: all polynomials, rational equation, etc..
+
 
 # REPL
 
 The REPL is the program using all other components.
 
 Switch among interpreter and solver, with `:eval` and `:solver` keywords.
+
+it support the `,` comma operator to have multiple lines into one: for the eval each statement after the comma is one expression or assignment to be solved, e.g.:
+
+```shell
+$eval> a=1, 1+a
+|> a = 1
+|> 1 + 1 = 2
+```
+
+for the solver is an equation to solve for the 2nd argument
+```shell
+x+1=0, x, y-1=0, y
+|> x = -1
+|> y = 1
+```
+
+the solver can do basic symbol substitution if those are defined (must be defined in the interpreter, `$eval>` shell):
+```shell
+$eval> a=1
+|> a = 1
+$eval> :solver
+$solver> x+a=1, x
+$|> x = 0
+
+```
+
+NOTE: if the symbol is defined but it will be solve for it, its numerical value will be ignored.
+
+TODO: solver should be able to define and assign values to symbols.

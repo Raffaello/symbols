@@ -177,7 +177,7 @@ int REPL::runLoop()
                 if (!m_intr.eval(m_parser.ast()))
                     continue;
 
-                std::cout << std::format("|>{}\n", m_intr.lastExpr());
+                std::cout << std::format("|> {}\n", m_intr.lastExpr());
                 break;
             case eType::SOLVER:
             {
