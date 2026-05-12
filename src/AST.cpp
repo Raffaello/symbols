@@ -104,9 +104,36 @@ void AST::print_(const INode* node, const int indent)
     std::cout << "<Unknown node>\n";
 }
 
+bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept
+{
+    if (node->is_symbol(symbol))
+        return true;
+    else if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
+    {
+        if (has_symbol_(uny->n.get(), symbol))
+            return true;
+    }
+    else if (auto bin = dynamic_cast<const AST::NodeBin*>(node))
+    {
+        if (has_symbol_(bin->l.get(), symbol))
+            return true;
+
+        return has_symbol_(bin->r.get(), symbol);
+    }
+
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 void AST::setRoot(std::unique_ptr<INode>& root)
 {
     m_pRoot = std::move(root);
+}
+
+bool AST::has_symbol(const std::string_view symbol) const noexcept
+{
+    return has_symbol_(getRoot(), symbol);
 }
 
 std::string AST::to_string() const
