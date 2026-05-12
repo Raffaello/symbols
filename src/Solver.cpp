@@ -14,6 +14,7 @@ Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTabl
 
 bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_symbol)
 {
+    // TODO: avoid to const_cast, but for now is ok
     auto node_ = const_cast<AST::INode*>(node);
     auto bin   = dynamic_cast<AST::NodeBin*>(node_);
     if (bin->op != AST::eOperators::EQUAL)
@@ -93,6 +94,8 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     default:
         // Newton's method
         // todo
+        std::cout << std::format("Not implemented to solve polynomial of degree {}\n", pf.degree());
+        return false;
         break;
     }
 

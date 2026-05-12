@@ -60,7 +60,7 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
             return false;
         }
 
-        std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
+        // std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
         pf[0] += d;
         return true;
     }
@@ -138,9 +138,9 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             if (!collect_poly_(expr->r.get(), pf2, symbol))
                 return false;
 
-            int          deg1  = pf1.degree();    // pf1.coeffs.size() - 1;
-            int          deg2  = pf2.degree();    // pf2.coeffs.size() - 1;
-            const size_t max_c = deg1 + deg2 + 1;
+            int deg1 = pf1.degree();    // pf1.coeffs.size() - 1;
+            int deg2 = pf2.degree();    // pf2.coeffs.size() - 1;
+            // const size_t max_c = deg1 + deg2 + 1;
             for (size_t i = 0; i < pf1.size(); ++i)
             {
                 for (size_t j = 0; j < pf2.size(); ++j)
@@ -168,7 +168,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
             assert(deg2 == 0);
             for (size_t i = 0; i < pf.size(); ++i)
-                pf[i] /= pf2[deg2];
+                pf[i] /= pf2[0];    // pf2[deg2];
 
             return true;
         }
@@ -199,26 +199,28 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             }
             else
             {
-                // this can support only x^2 | (x+1)^(1+2)
-                // not with a symbol in the RHS
-                for (size_t k = 0; k < pf2.size(); ++k)
-                {
-                    int times = static_cast<int>(std::round(pf2[k]));
-                    if (times - pf2[k] != 0.0)
-                        return false;
+                // General integer exponentiation via repeated multiplication
+                int exponent = static_cast<int>(std::round(pf2[0]));
+                if (exponent - pf2[0] != 0.0)
+                    return false;
 
-                    assert(times >= 2);
-                    --times;
-                    for (size_t i = 0; i < pf1.size(); ++i)
-                    {
+                assert(exponent >= 2);
+
+                // result = pf1^exponent via repeated multiplication
+                PolynomialForm result(m_pSymbolTable);
+                result[0] = 1.0;    // start with 1
+
+                for (int e = 0; e < exponent; ++e)
+                {
+                    PolynomialForm tmp(m_pSymbolTable);
+                    for (size_t i = 0; i < result.size(); ++i)
                         for (size_t j = 0; j < pf1.size(); ++j)
-                        {
-                            const double ct = pf1[i] * pf1[j];
-                            for (int t = 0; t < times; ++t)
-                                pf[i + j + t] += ct;
-                        }
-                    }
+                            tmp[i + j] += result[i] * pf1[j];
+                    result = std::move(tmp);
                 }
+
+                for (size_t i = 0; i < result.size(); ++i)
+                    pf[i] += result[i];
             }
 
             return true;

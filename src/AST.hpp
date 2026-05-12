@@ -171,10 +171,7 @@ inline bool AST::INode::is_symbol(const std::string_view symbol) const noexcept
 
 inline bool AST::INode::is_num() const noexcept
 {
-    if (auto num = dynamic_cast<const AST::LeafNum*>(this))
-        return true;
-
-    return false;
+    return dynamic_cast<const AST::LeafNum*>(this);
 }
 
 inline const AST::INode* AST::getRoot() const noexcept
