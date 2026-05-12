@@ -66,7 +66,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         std::make_tuple("(x+1)^3 = 1", "x", "x = 0"),
         std::make_tuple("(x+1)^3 = 0", "x", "x = -1"),
-        std::make_tuple("x^3+ 2*x^2 -5*x^1 - 6*x^0 = 0", "x", "x = 2, x = -3, x = -1")
+        std::make_tuple("x^3+ 2*x^2 -5*x^1 - 6*x^0 = 0", "x", "x = -3, x = -1, x = 2")
 
         // std::make_tuple("(2*x+1)^3 = 1", "x", "x = 0, x = ..."),
         // std::make_tuple("(x+1)^4 = 1", "x", "x = 0, x = ..."),
