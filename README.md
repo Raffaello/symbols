@@ -109,4 +109,6 @@ $|> x = 0
 
 NOTE: if the symbol is defined but it will be solve for it, its numerical value will be ignored.
 
-TODO: solver should be able to define and assign values to symbols.
+> TODO: solver should be able to define and assign values to symbols.
+> TODO: should solve for undefined symbol returning the generic symbol as a result, e.g: `x+1=a, x => x = a-1`
+> TODO: .... and so on
