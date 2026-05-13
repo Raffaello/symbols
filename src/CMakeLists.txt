@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
 
-# find_package(Boost 1.84 REQUIRED COMPONENTS multiprecision)
-
-
 add_library(lex_scanner)
 target_sources(lex_scanner PRIVATE
     LexScanner.cpp
