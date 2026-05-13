@@ -4,6 +4,13 @@
 
 Symbolic Computation Educational Project.
 
+## Dependencies
+
+- Boost
+- GMP
+- MPFR
+
+
 # Lexical Scanner
 
 > TODO: not completed yet
@@ -113,6 +120,7 @@ NOTE: if the symbol is defined but it will be solve for, its numerical value wil
 
 > TODO: use rational numbers (GMP) instead of `double`
 > TODO: add complex numbers and solutions
+> TODO: Gröbner bases ?
 > TODO: solver should be able to define and assign values to symbols.
 > TODO: should solve for undefined symbol returning the generic symbol as a result, e.g: `x+1=a, x => x = a-1`
 > TODO: .... and so on

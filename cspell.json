@@ -11,9 +11,12 @@
         "endforeach",
         "endmacro",
         "gmock",
+        "Gröbner",
         "MPFR",
+        "Multiprecision",
         "Raffaello",
         "STREQ",
+        "ucrt",
         "Wextra"
     ],
     "ignoreWords": [],
