@@ -4,6 +4,8 @@
 #include <list>
 #include <sstream>
 
+#include <boost/multiprecision/mpfr.hpp>
+
 class AST
 {
 public:

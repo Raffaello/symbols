@@ -13,7 +13,12 @@ target_sources(parser PRIVATE
     AST.cpp
   )
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
-target_link_libraries(parser PUBLIC lex_scanner)
+target_link_libraries(parser PUBLIC
+    lex_scanner
+    boost_mp
+    gmp
+    mpfr
+ )
 
 add_library(interpreter)
 add_dependencies(interpreter parser)
@@ -50,7 +55,7 @@ target_include_directories(symbols PRIVATE
 target_link_libraries(symbols PRIVATE
     interpreter
     solver
-    boost_mp
-    gmp
-    mpfr
+    # boost_mp
+    # gmp
+    # mpfr
 )
