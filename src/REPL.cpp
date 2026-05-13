@@ -50,7 +50,7 @@ std::vector<std::string> REPL::splitString_(const std::string& str, char delimit
 
 void REPL::banner_() const noexcept
 {
-    std::cout << std::format("Symbols REPL v0.1.0\n");
+    std::cout << std::format("Symbols REPL v0.2.0\n");
     std::cout << std::format("Type \":{}\" for more information.\n", CMD_HELP);
 }
 
@@ -97,7 +97,7 @@ void REPL::symbols_clear_() noexcept
     printSymbolTable_();
 }
 
-void REPL::printShellLine_() const
+void REPL::printShellInputLine_() const
 {
     switch (m_type)
     {
@@ -110,6 +110,11 @@ void REPL::printShellLine_() const
     default:
         throw std::invalid_argument("m_type invalid");
     }
+}
+
+void REPL::printShellOutputLine(std::string_view str) const noexcept
+{
+    std::cout << std::format("|> {}\n", str);
 }
 
 bool REPL::handleReplCmd(const std::string_view replCmd)
@@ -145,7 +150,7 @@ int REPL::runLoop()
     {
         std::string input;
 
-        printShellLine_();
+        printShellInputLine_();
         if (!std::getline(std::cin, input))
         {
             std::cin.clear();
@@ -177,7 +182,7 @@ int REPL::runLoop()
                 if (!m_intr.eval(m_parser.ast()))
                     continue;
 
-                std::cout << std::format("|>{}\n", m_intr.lastExpr());
+                printShellOutputLine(m_intr.lastExpr());
                 break;
             case eType::SOLVER:
             {
@@ -190,7 +195,7 @@ int REPL::runLoop()
 
                 const std::string in2 = inputs[i];
                 if (m_solver.solve(m_parser.ast(), in2))
-                    std::cout << std::format("|> {}\n", m_solver.solution());
+                    printShellOutputLine(m_solver.solution());
             }
             break;
             default:

@@ -47,7 +47,8 @@ private:
     void symbol_unset_(const std::string_view replCmd) noexcept;
     void symbols_clear_() noexcept;
 
-    void printShellLine_() const;
+    void printShellInputLine_() const;
+    void printShellOutputLine(const std::string_view str) const noexcept;
     bool handleReplCmd(const std::string_view replCmd);
 
 

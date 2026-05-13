@@ -9,6 +9,8 @@
 #include <memory>
 #include <string_view>
 
+static constexpr double SOLVER_EPSILON = 1e-14;
+
 /**
  * @brief Solver for 1 variable e.g. -x = x+2 => -2x=2 => x = -1
  *
@@ -17,7 +19,6 @@
  */
 class Solver
 {
-public:
 private:
     std::shared_ptr<SymbolTable> m_pSymbolTable;    // TODO: not used yet as it is too simple:
                                                     // can be used only for known symbols for substitution into numbers

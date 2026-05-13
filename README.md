@@ -62,21 +62,57 @@ P    ::= (E) | SYMBOL | NUM
 
 # Interpreter
 
-> TODO
-
 Basic interpreter evaluating a single `AST` at time for now.
 
 Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
  `x=1`, but not `x+1=2`
 
+ > TODO more?
+ > TODO replace assignment `=` with `:=` specific for the assignment instead?
+
 # Solver
 
-> TODO
+Just a basic polynomial solver at the moment for cubic or lower polynomials.
 
-Just a basic polynomial solver at the moment.
+> TODO: all polynomials, rational equation, etc..
+
 
 # REPL
 
 The REPL is the program using all other components.
 
 Switch among interpreter and solver, with `:eval` and `:solver` keywords.
+
+it supports the `,` comma operator for multiple statements in one line: in eval mode, each comma-separated statement is evaluated, e.g:
+
+```shell
+$eval> a=1, 1+a
+|> a = 1
+|> 1 + 1 = 2
+```
+
+In solver mode, each pair is: equation, symbol-to-solve-for
+
+```shell
+$solver> x+1=0, x, y-1=0, y
+|> x = -1
+|> y = 1
+```
+
+the solver can do basic symbol substitution if those are defined (must be defined in the interpreter, `$eval>` shell):
+```shell
+$eval> a=1
+|> a = 1
+$eval> :solver
+$solver> x+a=1, x
+|> x = 0
+
+```
+
+NOTE: if the symbol is defined but it will be solve for, its numerical value will be ignored.
+
+> TODO: use rational numbers (GMP) instead of `double`
+> TODO: add complex numbers and solutions
+> TODO: solver should be able to define and assign values to symbols.
+> TODO: should solve for undefined symbol returning the generic symbol as a result, e.g: `x+1=a, x => x = a-1`
+> TODO: .... and so on
