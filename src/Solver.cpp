@@ -34,10 +34,12 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     if (!res)
         return false;
 
+    std::vector<double> sols;
     switch (pf.degree())
     {
     case -1:
-        break;
+        return false;
+
     case 0:    // no variables
         if (pf[0] == 0)
             m_solution = std::format("inf solutions");
@@ -45,17 +47,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
             m_solution = std::format("no solution");
 
         return true;
+
     case 1:    // linear
-    {
-        double s = -pf[0] / pf[1];
-
-        // To avoid having -0 as it is just 0
-        if (s == 0.0)
-            s = std::fabs(s);
-
-        m_solution = std::format("{} = {}", for_symbol, s);
-    }
-        return true;
+        sols.emplace_back(-pf[0] / pf[1]);
+        break;
 
     case 2:
     {
@@ -71,36 +66,22 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
             return true;
         }
 
-        const double        sq_delta = std::sqrt(delta);
-        const double        a2       = 2.0 * a;
-        std::vector<double> s;
+        const double sq_delta = std::sqrt(delta);
+        const double a2       = 2.0 * a;
         // sol 1
-        const double s1 = (-b + sq_delta) / a2;
-        s.push_back(s1);
+        sols.emplace_back((-b + sq_delta) / a2);
         // sol 2
         if (delta != 0.0)
-        {
-            const double s2 = (-b - sq_delta) / a2;
-            s.push_back(s2);
-        }
-
-        if (s.size() == 2)
-            m_solution = std::format("{} = {}, {} = {}", for_symbol, s[0], for_symbol, s[1]);
-        else
-            m_solution = std::format("{} = {}", for_symbol, s[0]);
-
-        return true;
+            sols.emplace_back((-b - sq_delta) / a2);
     }
     break;
+
     case 3:
     {
         // Cardano's formula
-        std::vector<double> s;
-
         const double a = pf[2] / pf[3];
         const double b = pf[1] / pf[3];
         const double c = pf[0] / pf[3];
-        // const double d = pf[0] / pf[3];
 
         const double aa = a * a;
         const double p  = b - aa / 3.0;
@@ -109,52 +90,34 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         const double p3    = p * p * p;
         const double delta = (q * q) / 4.0 + p3 / 27.0;
 
+        const double a_3 = a / 3.0;
+        const double q_2 = q / 2.0;
+
         if (delta > 0.0)
         {
             // one real solution, two complex
             const double sq_delta = std::sqrt(delta);
-            const double u        = std::cbrt(-q / 2.0 + sq_delta);
-            const double v        = std::cbrt(-q / 2.0 - sq_delta);
+            const double u        = std::cbrt(-q_2 + sq_delta);
+            const double v        = std::cbrt(-q_2 - sq_delta);
             const double y        = u + v;
 
-            s.push_back(y - (a / 3.0));
-            // return true;
+            sols.emplace_back(y - (a_3));
         }
-        else if (delta < 0.0)
+        else if (std::fabs(delta) < SOLVER_EPSILON)    // if delta is zero (approx.)
+        {
+            const double u = std::cbrt(-q_2);
+            sols.emplace_back((2.0 * u) - a_3);
+            sols.emplace_back((-u) - a_3);
+        }
+        else    // if (delta < 0.0)
         {
             const double r   = 2.0 * std::sqrt(-p / 3.0);
-            const double phi = std::acos((-q / 2.0) / std::sqrt(-p3 / 27.0));
+            const double phi = std::acos((-q_2) / std::sqrt(-p3 / 27.0));
 
-            s.push_back(r * std::cos(phi / 3.0) - a / 3.0);
-            s.push_back(r * std::cos((phi + 2.0 * M_PI) / 3.0) - a / 3.0);
-            s.push_back(r * std::cos((phi + 4.0 * M_PI) / 3.0) - a / 3.0);
+            sols.emplace_back(r * std::cos(phi / 3.0) - a / 3.0);
+            sols.emplace_back(r * std::cos((phi + 2.0 * M_PI) / 3.0) - a_3);
+            sols.emplace_back(r * std::cos((phi + 4.0 * M_PI) / 3.0) - a_3);
         }
-        else
-        {
-            const double u = std::cbrt(-q / 2.0);
-            s.push_back((2.0 * u) - a / 3.0);
-            s.push_back((-u) - a / 3.0);
-        }
-
-        // round the solution for eventual numeric errors
-        for (int i = 0; i < s.size(); ++i)
-        {
-            const double near = std::round(s[i]);
-            if (std::fabs(s[i] - near) < SOLVER_EPSILON)
-                s[i] = near;
-        }
-
-        s.erase(std::unique(s.begin(), s.end()), s.end());
-        std::sort(s.begin(), s.end() /*, std::greater<>()*/);
-
-        m_solution = "";
-        for (auto& d : s)
-            m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
-
-        m_solution.pop_back();
-        m_solution.pop_back();
-        std::cout << m_solution << "\n";
-        return true;
     }
     break;
 
@@ -166,7 +129,28 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         break;
     }
 
-    return false;
+    // round the solution for eventual numeric errors
+    for (int i = 0; i < sols.size(); ++i)
+    {
+        const double near = std::round(sols[i]);
+        if (std::fabs(sols[i] - near) < SOLVER_EPSILON)
+            sols[i] = near;
+
+        // To avoid having -0 as it is just 0
+        if (sols[i] == 0.0)
+            sols[i] = std::fabs(sols[i]);
+    }
+
+    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
+    std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
+
+    m_solution = "";
+    for (auto& d : sols)
+        m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
+
+    m_solution.pop_back();
+    m_solution.pop_back();
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
