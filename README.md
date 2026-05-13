@@ -68,6 +68,7 @@ Not supporting solving equation, but only if those are reduced to what is consid
  `x=1`, but not `x+1=2`
 
  > TODO more?
+ > TODO replace assignment `=` with `:=` specific for the assignment instead?
 
 # Solver
 
