@@ -54,6 +54,6 @@ target_link_libraries(symbols PRIVATE
     interpreter
     solver
     boost_mp
-    MPFR
-    GMP
+    gmp
+    mpfr
 )
