@@ -94,7 +94,7 @@ $eval> a=1, 1+a
 In solver mode, each pair is: equation, symbol-to-solve-for
 
 ```shell
-x+1=0, x, y-1=0, y
+$solver> x+1=0, x, y-1=0, y
 |> x = -1
 |> y = 1
 ```
@@ -105,11 +105,11 @@ $eval> a=1
 |> a = 1
 $eval> :solver
 $solver> x+a=1, x
-$|> x = 0
+|> x = 0
 
 ```
 
-NOTE: if the symbol is defined but it will be solve for it, its numerical value will be ignored.
+NOTE: if the symbol is defined but it will be solve for, its numerical value will be ignored.
 
 > TODO: use rational numbers (GMP) instead of `double`
 > TODO: add complex numbers and solutions
