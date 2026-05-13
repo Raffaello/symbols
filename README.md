@@ -83,7 +83,7 @@ The REPL is the program using all other components.
 
 Switch among interpreter and solver, with `:eval` and `:solver` keywords.
 
-it support the `,` comma operator to have multiple lines into one: for the eval each statement after the comma is one expression or assignment to be solved, e.g.:
+it supports the `,` comma operator for multiple statements in one line: in eval mode, each comma-separated statement is evaluated, e.g:
 
 ```shell
 $eval> a=1, 1+a
@@ -91,7 +91,8 @@ $eval> a=1, 1+a
 |> 1 + 1 = 2
 ```
 
-for the solver is an equation to solve for the 2nd argument
+In solver mode, each pair is: equation, symbol-to-solve-for
+
 ```shell
 x+1=0, x, y-1=0, y
 |> x = -1

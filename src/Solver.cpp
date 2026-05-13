@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <cassert>
 #include <algorithm>
+#include <numbers>
 
 Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTable(pSymbolTable)
 {
@@ -111,12 +112,15 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
         else    // if (delta < 0.0)
         {
-            const double r   = 2.0 * std::sqrt(-p / 3.0);
-            const double phi = std::acos((-q_2) / std::sqrt(-p3 / 27.0));
+            constexpr double PI = std::numbers::pi_v<double>;
+
+            const double r     = 2.0 * std::sqrt(-p / 3.0);
+            const double denom = std::sqrt(-p3 / 27.0);
+            const double phi   = std::acos(std::clamp((-q_2) / denom, -1.0, 1.0));
 
             sols.emplace_back(r * std::cos(phi / 3.0) - a / 3.0);
-            sols.emplace_back(r * std::cos((phi + 2.0 * M_PI) / 3.0) - a_3);
-            sols.emplace_back(r * std::cos((phi + 4.0 * M_PI) / 3.0) - a_3);
+            sols.emplace_back(r * std::cos((phi + 2.0 * PI) / 3.0) - a_3);
+            sols.emplace_back(r * std::cos((phi + 4.0 * PI) / 3.0) - a_3);
         }
     }
     break;
@@ -141,8 +145,8 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
             sols[i] = std::fabs(sols[i]);
     }
 
-    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
     std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
+    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
 
     m_solution = "";
     for (auto& d : sols)
