@@ -71,7 +71,7 @@ Not supporting solving equation, but only if those are reduced to what is consid
 
 # Solver
 
-Just a basic polynomial solver at the moment for quadratic polynomials.
+Just a basic polynomial solver at the moment for cubic or lower polynomials.
 
 > TODO: all polynomials, rational equation, etc..
 
