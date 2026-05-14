@@ -33,11 +33,7 @@ TEST_P(TestInterpreter, eval)
     ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 
     if (!sym.empty())
-    {
-        // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
-        EXPECT_MPFR_NEAR(interpreter.symbolTable().table().at(sym), expVal, 1e-6);
-        // ASSERT_EQ(interpreter.symbolTable().at(sym), expVal);
-    }
+        EXPECT_MPFR_NEAR(interpreter.symbolTable().table().at(sym), expVal, MPFR_EPSILON);
 }
 
 INSTANTIATE_TEST_SUITE_P(

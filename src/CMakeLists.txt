@@ -19,8 +19,8 @@ target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(parser PUBLIC
     lex_scanner
     boost_mp
-    gmp
-    mpfr
+    ${GMP_LIBRARY}
+    ${MPFR_LIBRARY}
  )
 
 add_library(interpreter)

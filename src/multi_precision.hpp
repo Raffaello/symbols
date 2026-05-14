@@ -5,9 +5,11 @@
 
 namespace mp = boost::multiprecision;
 
+// typedef boost::multiprecision::mpfr_float ast_num_t;
 typedef boost::multiprecision::mpq_rational ast_num_t;
 
 constexpr int MPFR_PRECISION       = 192;
+constexpr int MPFR_FORMAT_DIGITS   = 18;
 constexpr int MPQ_PRECISION_DIGITS = 4;
 
 inline constexpr bool is_ast_t_rational = std::is_same_v<ast_num_t, mp::mpq_rational>;

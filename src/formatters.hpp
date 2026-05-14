@@ -27,7 +27,7 @@ struct std::formatter<boost::multiprecision::mpfr_float> : std::formatter<std::s
         std::string s;
         auto        out = ctx.out();
         if (spec.empty())
-            s = x.str(std::numeric_limits<double>::max_digits10, std::ios_base::fmtflags(0));
+            s = x.str(MPFR_FORMAT_DIGITS, std::ios_base::fmtflags(0));
         else
         {
             int  precision = 0;
