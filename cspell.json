@@ -21,6 +21,7 @@
         "MPFR",
         "Multiprecision",
         "Raffaello",
+        "sizeinbase",
         "softprops",
         "STREQ",
         "ucrt",

@@ -6,17 +6,20 @@
 
 #include <assertion_mpfr.hpp>
 
-class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string, ast_num_t, std::string, std::string>>
+class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string, std::string, std::string, std::string>>
 {
 public:
-    const std::string line   = std::get<0>(GetParam());
-    const ast_num_t   expVal = std::get<1>(GetParam());
-    const std::string sym    = std::get<2>(GetParam());
-    const std::string expr   = std::get<3>(GetParam());
+    const std::string line      = std::get<0>(GetParam());
+    const std::string expValStr = (std::get<1>(GetParam()));
+
+    const std::string sym  = std::get<2>(GetParam());
+    const std::string expr = std::get<3>(GetParam());
 };
 
 TEST_P(TestInterpreter, eval)
 {
+    const ast_num_t expVal = mp_parse_decimal(expValStr);
+
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
     Interpreter interpreter(std::make_shared<SymbolTable>());
@@ -42,23 +45,23 @@ INSTANTIATE_TEST_SUITE_P(
     InterpreterTestSuite,
     TestInterpreter,
     ::testing::Values(
-        std::make_tuple("1", 1.0, "", "1"),
-        std::make_tuple("(1)", 1.0, "", "1"),
-        std::make_tuple("1+1", 2.0, "", "1 + 1 = 2"),
-        std::make_tuple("1-1", 0.0, "", "1 - 1 = 0"),
-        std::make_tuple("-1", -1.0, "", "-(1)"),
-        std::make_tuple("+1", 1.0, "", "1"),
-        std::make_tuple("-(+(-(+(-1))))", -1.0, "", "-(1)"),
-        std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", 10.0, "", "7 + 3 = 10"),
-        std::make_tuple("x=1", 1.0, "x", "x = 1"),
-        std::make_tuple("x=(1 * 10)   / 2. - 4.1", 0.9, "x", "x = 0.9"),
-        std::make_tuple("2^2", 4.0, "", "2 ^ 2 = 4"),
-        std::make_tuple("(1+1)^(2*1)", 4.0, "", "2 ^ 2 = 4"),
-        std::make_tuple("1+2*2^2", 9.0, "", "1 + 8 = 9"),
-        std::make_tuple("-2^2", -4.0, "", "-(2 ^ 2 = 4)"),
-        std::make_tuple("2^-2", 0.25, "", "2 ^ -2 = 0.25"),
-        std::make_tuple("2^3^2", 512, "", "2 ^ 9 = 512"),
-        std::make_tuple("2*3^2+1", 19, "", "18 + 1 = 19")
+        std::make_tuple("1", "1.0", "", "1"),
+        std::make_tuple("(1)", "1.0", "", "1"),
+        std::make_tuple("1+1", "2.0", "", "1 + 1 = 2"),
+        std::make_tuple("1-1", "0.0", "", "1 - 1 = 0"),
+        std::make_tuple("-1", "-1.0", "", "-(1)"),
+        std::make_tuple("+1", "1.0", "", "1"),
+        std::make_tuple("-(+(-(+(-1))))", "-1.0", "", "-(1)"),
+        std::make_tuple("10 + 2 - 10 * 1 / 2 + (3.14 - .14)", "10.0", "", "7 + 3 = 10"),
+        std::make_tuple("x=1", "1.0", "x", "x = 1"),
+        std::make_tuple("x=(1 * 10)   / 2. - 4.1", "0.9", "x", "x = 9/10"),
+        std::make_tuple("2^2", "4.0", "", "2 ^ 2 = 4"),
+        std::make_tuple("(1+1)^(2*1)", "4.0", "", "2 ^ 2 = 4"),
+        std::make_tuple("1+2*2^2", "9.0", "", "1 + 8 = 9"),
+        std::make_tuple("-2^2", "-4.0", "", "-(2 ^ 2 = 4)"),
+        std::make_tuple("2^-2", "0.25", "", "2 ^ -2 = 1/4"),
+        std::make_tuple("2^3^2", "512", "", "2 ^ 9 = 512"),
+        std::make_tuple("2*3^2+1", "19", "", "18 + 1 = 19")
 
             ));
 
@@ -75,6 +78,7 @@ TEST_P(TestInterpreterError, eval_error)
     Interpreter interpreter(std::make_shared<SymbolTable>());
 
     ASSERT_TRUE(parser.parse());
+    parser.ast().print();
     ASSERT_FALSE(interpreter.eval(parser.ast()));
 }
 

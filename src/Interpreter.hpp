@@ -2,6 +2,7 @@
 
 #include "AST.hpp"
 #include "SymbolTable.hpp"
+#include "multi_precision.hpp"
 
 
 #include <string>
@@ -16,7 +17,7 @@ private:
     std::shared_ptr<SymbolTable> m_pSymbolTable = nullptr;
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
-    ast_num_t   m_lastValue = std::numeric_limits<double>::quiet_NaN();
+    ast_num_t   m_lastValue = NAN_VALUE;
     std::string m_lastExpr  = "";    // the result of the last resolved expression
 
     std::optional<bool> evalNum_(const AST::INode* node);

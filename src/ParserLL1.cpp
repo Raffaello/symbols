@@ -1,5 +1,6 @@
 #include "ParserLL1.hpp"
 #include "multi_precision.hpp"
+#include "formatters.hpp"
 
 #include <iostream>
 #include <format>
@@ -240,9 +241,7 @@ std::unique_ptr<AST::INode> ParserLL1::pred_()
     break;
     case NUM:
     {
-        size_t    pos = 0;
-        ast_num_t num(m_token.value);
-
+        ast_num_t num = mp_parse_decimal(m_token.value);
         advance_();
         return AST::LeafNum::make(num);
     }

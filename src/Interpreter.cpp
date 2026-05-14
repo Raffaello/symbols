@@ -153,7 +153,7 @@ bool Interpreter::eval_(const AST::INode* node)
 
 bool Interpreter::false_() noexcept
 {
-    m_lastValue = std::numeric_limits<double>::quiet_NaN();
+    m_lastValue = NAN_VALUE;
     m_lastExpr  = "";
     return false;
 }

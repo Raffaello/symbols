@@ -119,8 +119,8 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         {
             const mp::mpfr_float PI = std::numbers::pi_v<double>;
 
-            const ast_num_t r     = 2.0 * mp_sqrt(-p / 3.0);
-            const ast_num_t denom = mp_sqrt(-p3 / 27.0);
+            const ast_num_t r     = 2.0 * mp_sqrt(ast_num_t(-p / 3));
+            const ast_num_t denom = mp_sqrt(ast_num_t(-p3 / 27));
             ast_num_t       z     = -q_2 / denom;
             z                     = mp_clamp(z, ast_num_t(-1), ast_num_t(+1));
 
@@ -142,24 +142,31 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         break;
     }
 
+    std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
+    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
+
     // round the solution for eventual numeric errors
     for (int i = 0; i < sols.size(); ++i)
     {
         const ast_num_t near = mp_roundNear(sols[i]);
-        if (mp_isZero(sols[i] - near))
-            sols[i] = near;
-
         // To avoid having -0 as it is just 0
         if (sols[i] == 0.0)
             sols[i] = mp::abs(sols[i]);
     }
 
-    std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
-    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
-
     m_solution = "";
     for (auto& d : sols)
-        m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
+    {
+        // check is not weird rational
+        if (mp_isWeird_rational(d))
+        {
+            const mp::mpfr_float f  = d;
+            const mp::mpfr_float fr = mp_roundNear(f);
+            m_solution              = m_solution + std::format("{} = {}, ", for_symbol, fr);
+        }
+        else
+            m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
+    }
 
     m_solution.pop_back();
     m_solution.pop_back();
