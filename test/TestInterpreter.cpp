@@ -10,10 +10,9 @@ class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string, 
 {
 public:
     const std::string line      = std::get<0>(GetParam());
-    const std::string expValStr = (std::get<1>(GetParam()));
-
-    const std::string sym  = std::get<2>(GetParam());
-    const std::string expr = std::get<3>(GetParam());
+    const std::string expValStr = std::get<1>(GetParam());
+    const std::string sym       = std::get<2>(GetParam());
+    const std::string expr      = std::get<3>(GetParam());
 };
 
 TEST_P(TestInterpreter, eval)
@@ -29,7 +28,7 @@ TEST_P(TestInterpreter, eval)
     ASSERT_TRUE(interpreter.eval(parser.ast()));
 
     // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
-    EXPECT_MPFR_NEAR(interpreter.lastValue(), expVal, 1e-6);
+    EXPECT_MPFR_NEAR(interpreter.lastValue(), expVal, MPFR_EPSILON);
     // ASSERT_EQ(interpreter.lastValue(), expVal);
     ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 

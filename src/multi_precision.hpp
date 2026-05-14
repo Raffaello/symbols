@@ -3,6 +3,8 @@
 #include <boost/multiprecision/mpfr.hpp>
 #include <boost/multiprecision/gmp.hpp>
 
+namespace mp = boost::multiprecision;
+
 // typedef boost::multiprecision::mpfr_float ast_num_t;
 typedef boost::multiprecision::mpq_rational ast_num_t;
 
@@ -10,11 +12,10 @@ typedef boost::multiprecision::mpq_rational ast_num_t;
 constexpr int MPFR_PRECISION     = 210;
 constexpr int MPQ_PRECISION_BITS = 128;
 
-const boost::multiprecision::mpfr_float MPFR_EPSILON = 1e-5;
-const ast_num_t                         NAN_VALUE    = ast_num_t("0/0");
+inline constexpr bool is_ast_t_rational = std::is_same_v<ast_num_t, mp::mpq_rational>;
 
-
-namespace mp = boost::multiprecision;
+const boost::multiprecision::mpfr_float MPFR_EPSILON = 1e-12;
+const ast_num_t                         NAN_VALUE    = is_ast_t_rational ? ast_num_t("0/0") : ast_num_t("nan");
 
 static auto mp_isWeird_rational(const mp::mpq_rational& q)
 {
@@ -29,6 +30,17 @@ static auto mp_isWeird_rational(const mp::mpq_rational& q)
         return true;
 
     return false;
+}
+
+template <typename T>
+static auto mp_isWeird(const T& x)
+{
+    if constexpr (std::is_same_v<T, mp::mpq_rational>)
+    {
+        return mp_isWeird_rational(x);
+    }
+    else
+        return false;
 }
 
 static auto mp_parse_decimal(const std::string& s)
@@ -49,7 +61,7 @@ static auto mp_parse_decimal(const std::string& s)
     den[0] = '1';
     mp::mpq_rational z(num + "/" + den);
     mpq_canonicalize(z.backend().data());
-    return z;
+    return ast_num_t(z);
 }
 
 template <typename T>

@@ -157,8 +157,8 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     m_solution = "";
     for (auto& d : sols)
     {
-        // check is not weird rational
-        if (mp_isWeird_rational(d))
+        // check it is not weird rational
+        if (mp_isWeird(d))
         {
             const mp::mpfr_float f  = d;
             const mp::mpfr_float fr = mp_roundNear(f);
