@@ -1,4 +1,6 @@
 #include "Interpreter.hpp"
+#include "formatters.hpp"
+#include "multi_precision.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -72,7 +74,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         if (!eval_(bin->r.get()))
             return false_();
 
-        const double r = m_lastValue;
+        const auto r = m_lastValue;
 
         // TODO: specific for the assignment:
         if (bin->op == AST::eOperators::EQUAL)
@@ -92,7 +94,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         if (!eval_(bin->l.get()))
             return false_();
 
-        const double l = m_lastValue;
+        const auto l = m_lastValue;
         switch (bin->op)
         {
             using enum AST::eOperators;
@@ -113,7 +115,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
             m_lastValue = l / r;
             break;
         case POW:
-            m_lastValue = std::pow(l, r);
+            m_lastValue = mp_pow(l, r);
             break;
         default:
             std::cerr << std::format("ERROR: not supported operator '{}'\n", static_cast<int>(bin->op));
@@ -121,7 +123,6 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
         }
 
         m_lastExpr = std::format("{} {} {} = {}", l, AST::operator_to_string(bin->op), r, m_lastValue);
-        // std::cout << std::format("|> {}\n", m_lastExpr);
         return true;
     }
 
@@ -169,7 +170,11 @@ bool Interpreter::eval(const AST& ast)
         return false_();
     }
 
-    return eval_(n);
+    const bool res = eval_(n);
+    // if (res)
+    //     m_lastValue = mp_roundNear(m_lastValue);
+
+    return res;
 }
 
 bool Interpreter::unsetSymbol(const std::string& symbol) noexcept

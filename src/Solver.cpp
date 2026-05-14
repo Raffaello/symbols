@@ -1,4 +1,7 @@
 #include "Solver.hpp"
+#include "formatters.hpp"
+#include "multi_precision.hpp"
+
 
 #include <iostream>
 #include <format>
@@ -35,7 +38,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     if (!res)
         return false;
 
-    std::vector<double> sols;
+    std::vector<ast_num_t> sols;
     switch (pf.degree())
     {
     case -1:
@@ -55,11 +58,11 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
 
     case 2:
     {
-        const double a = pf[2];
-        const double b = pf[1];
-        const double c = pf[0];
+        const ast_num_t a = pf[2];
+        const ast_num_t b = pf[1];
+        const ast_num_t c = pf[0];
 
-        const double delta = (b * b) - (4.0 * a * c);
+        const ast_num_t delta = (b * b) - (4.0 * a * c);
 
         if (delta < 0.0)
         {
@@ -67,8 +70,8 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
             return true;
         }
 
-        const double sq_delta = std::sqrt(delta);
-        const double a2       = 2.0 * a;
+        const ast_num_t sq_delta = mp_sqrt(delta);
+        const ast_num_t a2       = 2.0 * a;
         // sol 1
         sols.emplace_back((-b + sq_delta) / a2);
         // sol 2
@@ -80,47 +83,53 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     case 3:
     {
         // Cardano's formula
-        const double a = pf[2] / pf[3];
-        const double b = pf[1] / pf[3];
-        const double c = pf[0] / pf[3];
+        const ast_num_t a = pf[2] / pf[3];
+        const ast_num_t b = pf[1] / pf[3];
+        const ast_num_t c = pf[0] / pf[3];
 
-        const double aa = a * a;
-        const double p  = b - aa / 3.0;
-        const double q  = 2.0 * a * aa / 27.0 - a * b / 3.0 + c;
+        const ast_num_t aa = a * a;
+        const ast_num_t p  = b - aa / 3.0;
+        const ast_num_t q  = 2.0 * a * aa / 27.0 - a * b / 3.0 + c;
 
-        const double p3    = p * p * p;
-        const double delta = (q * q) / 4.0 + p3 / 27.0;
+        const ast_num_t p3    = p * p * p;
+        const ast_num_t delta = (q * q) / 4.0 + p3 / 27.0;
 
-        const double a_3 = a / 3.0;
-        const double q_2 = q / 2.0;
+        const ast_num_t a_3 = a / 3.0;
+        const ast_num_t q_2 = q / 2.0;
 
         if (delta > 0.0)
         {
             // one real solution, two complex
-            const double sq_delta = std::sqrt(delta);
-            const double u        = std::cbrt(-q_2 + sq_delta);
-            const double v        = std::cbrt(-q_2 - sq_delta);
-            const double y        = u + v;
+            const ast_num_t sq_delta = mp_sqrt(delta);
+
+            const ast_num_t u = mp_cbrt(ast_num_t(-q_2 + sq_delta));
+            const ast_num_t v = mp_cbrt(ast_num_t(-q_2 - sq_delta));
+            const ast_num_t y = u + v;
 
             sols.emplace_back(y - (a_3));
         }
-        else if (std::fabs(delta) < SOLVER_EPSILON)    // if delta is zero (approx.)
+        // else if (mp::fabs(delta) < MPFR_EPSILON)    // if delta is zero (approx.)
+        else if (mp_isZero(delta))
         {
-            const double u = std::cbrt(-q_2);
+            const ast_num_t u = mp_cbrt(ast_num_t(-q_2));
             sols.emplace_back((2.0 * u) - a_3);
             sols.emplace_back((-u) - a_3);
         }
         else    // if (delta < 0.0)
         {
-            constexpr double PI = std::numbers::pi_v<double>;
+            const mp::mpfr_float PI = std::numbers::pi_v<double>;
 
-            const double r     = 2.0 * std::sqrt(-p / 3.0);
-            const double denom = std::sqrt(-p3 / 27.0);
-            const double phi   = std::acos(std::clamp((-q_2) / denom, -1.0, 1.0));
+            const ast_num_t r     = 2.0 * mp_sqrt(-p / 3.0);
+            const ast_num_t denom = mp_sqrt(-p3 / 27.0);
+            ast_num_t       z     = -q_2 / denom;
+            z                     = mp_clamp(z, ast_num_t(-1), ast_num_t(+1));
 
-            sols.emplace_back(r * std::cos(phi / 3.0) - a / 3.0);
-            sols.emplace_back(r * std::cos((phi + 2.0 * PI) / 3.0) - a_3);
-            sols.emplace_back(r * std::cos((phi + 4.0 * PI) / 3.0) - a_3);
+            const mp::mpfr_float a_3f = a_3;
+            const mp::mpfr_float phi  = mp::acos(mp::mpfr_float(z));
+
+            sols.emplace_back(r * mp::cos(phi / 3.0) - a / 3.0);
+            sols.emplace_back(r * mp::cos((phi + 2.0 * PI) / 3.0) - a_3f);
+            sols.emplace_back(r * mp::cos((phi + 4.0 * PI) / 3.0) - a_3f);
         }
     }
     break;
@@ -136,13 +145,13 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     // round the solution for eventual numeric errors
     for (int i = 0; i < sols.size(); ++i)
     {
-        const double near = std::round(sols[i]);
-        if (std::fabs(sols[i] - near) < SOLVER_EPSILON)
+        const ast_num_t near = mp_roundNear(sols[i]);
+        if (mp_isZero(sols[i] - near))
             sols[i] = near;
 
         // To avoid having -0 as it is just 0
         if (sols[i] == 0.0)
-            sols[i] = std::fabs(sols[i]);
+            sols[i] = mp::abs(sols[i]);
     }
 
     std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);

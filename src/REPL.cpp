@@ -1,4 +1,5 @@
 #include "REPL.hpp"
+#include "formatters.hpp"
 
 #include <iostream>
 #include <format>

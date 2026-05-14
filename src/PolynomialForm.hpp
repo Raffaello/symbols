@@ -2,6 +2,7 @@
 
 #include "AST.hpp"
 #include "SymbolTable.hpp"
+#include "multi_precision.hpp"
 
 #include <vector>
 #include <string>
@@ -12,8 +13,8 @@ class PolynomialForm
 private:
     std::shared_ptr<SymbolTable> m_pSymbolTable;
 
-    int                 m_degree = -2;
-    std::vector<double> m_coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
+    int                    m_degree = -2;
+    std::vector<ast_num_t> m_coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
 
     bool collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
     bool collect_poly_num_(const AST::INode* node, PolynomialForm& pf);
@@ -24,7 +25,7 @@ private:
 public:
     PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable);
 
-    double& operator[](size_t index);
+    ast_num_t& operator[](size_t index);
 
     bool analyze(const AST::INode* node, const std::string& symbol);
     int  degree() noexcept;

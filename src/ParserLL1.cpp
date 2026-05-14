@@ -1,4 +1,5 @@
 #include "ParserLL1.hpp"
+#include "multi_precision.hpp"
 
 #include <iostream>
 #include <format>
@@ -239,19 +240,8 @@ std::unique_ptr<AST::INode> ParserLL1::pred_()
     break;
     case NUM:
     {
-        size_t pos = 0;
-        double num = 0.0;
-        try
-        {
-            num = std::stod(m_token.value, &pos);
-            if (pos != m_token.value.size())
-                throw std::runtime_error("");
-        }
-        catch (const std::exception&)
-        {
-            std::cerr << std::format("ERROR: unable to parse number: {}, parsed into: {}\n", m_token.value, num);
-            return nullptr;
-        }
+        size_t    pos = 0;
+        ast_num_t num(m_token.value);
 
         advance_();
         return AST::LeafNum::make(num);
@@ -267,6 +257,7 @@ std::unique_ptr<AST::INode> ParserLL1::pred_()
 
 ParserLL1::ParserLL1(LexScanner& lex_scanner) : m_lexer(lex_scanner)
 {
+    mp::mpfr_float::default_precision(MPFR_PRECISION);
 }
 
 bool ParserLL1::parse()

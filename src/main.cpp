@@ -17,7 +17,7 @@ int main()
     // mp::mpfr_float x = 2;
     // mp::mpfr_float y = 10.5;    // boost::multiprecision::sqrt(x);
 
-    // mp::mpq_rational q(1, 3);
+    // mp::mpq_rational q(10.1, 1);
 
     // mpq_t zq;
     // mpq_init(zq);

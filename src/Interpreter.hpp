@@ -16,7 +16,7 @@ private:
     std::shared_ptr<SymbolTable> m_pSymbolTable = nullptr;
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
-    double      m_lastValue = std::numeric_limits<double>::quiet_NaN();
+    ast_num_t   m_lastValue = std::numeric_limits<double>::quiet_NaN();
     std::string m_lastExpr  = "";    // the result of the last resolved expression
 
     std::optional<bool> evalNum_(const AST::INode* node);
@@ -35,12 +35,12 @@ public:
     bool unsetSymbol(const std::string& symbol) noexcept;
 
     inline void               clearSymbols() noexcept;
-    inline double             lastValue() const noexcept;
+    inline ast_num_t          lastValue() const noexcept;
     inline std::string_view   lastExpr() const noexcept;
     inline const SymbolTable& symbolTable() const noexcept;
 };
 
-inline double Interpreter::lastValue() const noexcept
+inline ast_num_t Interpreter::lastValue() const noexcept
 {
     return m_lastValue;
 }
