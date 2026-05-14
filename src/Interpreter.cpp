@@ -167,11 +167,7 @@ bool Interpreter::eval(const AST& ast)
         return false_();
     }
 
-    const bool res = eval_(n);
-    // if (res)
-    //     m_lastValue = mp_roundNear(m_lastValue);
-
-    return res;
+    return eval_(n);
 }
 
 bool Interpreter::unsetSymbol(const std::string& symbol) noexcept

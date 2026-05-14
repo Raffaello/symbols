@@ -82,7 +82,7 @@ Not supporting solving equation, but only if those are reduced to what is consid
  > TODO more?
  > TODO replace assignment `=` with `:=` specific for the assignment instead?
 
- # Solver
+# Solver
 
 Just a basic polynomial solver at the moment for cubic or lower polynomials.
 The evaluations is performed through rational numbers,

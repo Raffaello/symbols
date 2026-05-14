@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <gtest/gtest.h>
 #include <boost/multiprecision/mpfr.hpp>
 #include <format>

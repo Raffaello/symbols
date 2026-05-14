@@ -5,10 +5,8 @@
 
 namespace mp = boost::multiprecision;
 
-// typedef boost::multiprecision::mpfr_float ast_num_t;
 typedef boost::multiprecision::mpq_rational ast_num_t;
 
-// constexpr int                           REPL_PRECISION = 14;
 constexpr int MPFR_PRECISION       = 192;
 constexpr int MPQ_PRECISION_DIGITS = 4;
 
@@ -199,19 +197,12 @@ static auto mp_cbrt(const T& x)
 template <typename T>
 static auto mp_clamp(const T& x, const T& min, const T& max)
 {
-    // if constexpr (std::is_same_v<mp::mpq_rational, ast_num_t>)
-    // {
     if (x < min)
         return min;
     else if (x > max)
         return max;
     else
         return x;
-    // }
-    // else
-    // {
-
-    // }
 }
 
 template <typename T>

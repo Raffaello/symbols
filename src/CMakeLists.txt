@@ -55,7 +55,4 @@ target_include_directories(symbols PRIVATE
 target_link_libraries(symbols PRIVATE
     interpreter
     solver
-    # boost_mp
-    # gmp
-    # mpfr
 )
