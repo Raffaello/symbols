@@ -13,7 +13,7 @@ constexpr int MPQ_PRECISION_DIGITS = 4;
 inline constexpr bool is_ast_t_rational = std::is_same_v<ast_num_t, mp::mpq_rational>;
 
 const boost::multiprecision::mpfr_float MPFR_EPSILON = 1e-14;
-const ast_num_t                         NAN_VALUE    = is_ast_t_rational ? ast_num_t("0/0") : ast_num_t("nan");
+const ast_num_t                         NAN_VALUE    = is_ast_t_rational ? ast_num_t("0") : ast_num_t("nan");
 
 static auto mp_isWeird_rational(const mp::mpq_rational& q)
 {
