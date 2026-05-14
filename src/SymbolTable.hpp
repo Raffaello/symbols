@@ -44,7 +44,7 @@ public:
      * @param val
      * @return const char* @c nullptr if it didn't set, symbol value (name) otherwise
      */
-    const char* setSymbol(const AST::INode* pNode, const ast_num_t val);
+    const char* setSymbol(const AST::INode* pNode, const ast_num_t& val);
     bool        getSymbol(const std::string& name, ast_num_t& val) const noexcept;
 };
 

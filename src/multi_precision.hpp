@@ -24,7 +24,6 @@ static auto mp_isWeird_rational(const mp::mpq_rational& q)
     if (mpz_sizeinbase(&q_->_mp_den, 10) > MPQ_PRECISION_DIGITS)
         return true;
 
-    auto a = mpz_sizeinbase(&q_->_mp_den, 2);
     if (q_->_mp_den._mp_size != 1)
         return true;
 

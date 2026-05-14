@@ -117,7 +117,9 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
         else    // if (delta < 0.0)
         {
-            const mp::mpfr_float PI = std::numbers::pi_v<double>;
+            // const mp::mpfr_float PI = std::numbers::pi_v<double>;
+            mp::mpfr_float PI;
+            mpfr_const_pi(PI.backend().data(), MPFR_RNDN);
 
             const ast_num_t r     = 2.0 * mp_sqrt(ast_num_t(-p / 3));
             const ast_num_t denom = mp_sqrt(ast_num_t(-p3 / 27));
@@ -142,17 +144,17 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         break;
     }
 
-    std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
-    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
-
     // round the solution for eventual numeric errors
     for (int i = 0; i < sols.size(); ++i)
     {
-        const ast_num_t near = mp_roundNear(sols[i]);
+        sols[i] = mp_roundNear(sols[i]);
         // To avoid having -0 as it is just 0
         if (sols[i] == 0.0)
             sols[i] = mp::abs(sols[i]);
     }
+
+    std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
+    sols.erase(std::unique(sols.begin(), sols.end()), sols.end());
 
     m_solution = "";
     for (auto& d : sols)

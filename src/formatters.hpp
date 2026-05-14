@@ -30,16 +30,13 @@ struct std::formatter<boost::multiprecision::mpfr_float> : std::formatter<std::s
             s = x.str(std::numeric_limits<double>::max_digits10, std::ios_base::fmtflags(0));
         else
         {
-            s              = x.str(0, std::ios_base::fmtflags(0));
-            int  precision = -1;
+            int  precision = 0;
             auto dot       = spec.find('.');
             if (dot != std::string::npos)
                 precision = std::stoi(spec.substr(dot + 1));
 
-            if (precision >= 0)
-                s = x.str(precision, std::ios_base::fmtflags(0));
+            s = x.str(precision, std::ios_base::fmtflags(0));
         }
-
 
         return std::formatter<std::string>::format(s, ctx);
     }

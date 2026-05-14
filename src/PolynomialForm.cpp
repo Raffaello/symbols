@@ -167,6 +167,12 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             }
 
             assert(deg2 == 0);
+            if (pf2[0] == 0)
+            {
+                std::cerr << "ERROR: division by zero\n";
+                return false;
+            }
+
             for (size_t i = 0; i < pf.size(); ++i)
                 pf[i] /= pf2[0];    // pf2[deg2];
 
@@ -204,8 +210,13 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 if (exponent - pf2[0] != 0.0)
                     return false;
 
-                assert(exponent >= 2);
+                if (exponent < 0)
+                {
+                    std::cerr << "ERROR: negative exponents are not supported in polynomial form\n";
+                    return false;
+                }
 
+                assert(exponent >= 2);
                 // result = pf1^exponent via repeated multiplication
                 PolynomialForm result(m_pSymbolTable);
                 result[0] = 1.0;    // start with 1

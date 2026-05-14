@@ -24,7 +24,7 @@ This is the NFA of the lexical scanner.
 # Parser
 
 > TODO not completed yet
-> TODO add rational number to be parsed(e.g. 1/2) and number (e.g 0.5) ?
+> TODO add rational number to be parsed as whole rational numbers (e.g. 1/2) alongside real numbers (e.g 0.5) ? (so it can output the same as user input eventually)
 
 The Grammar for the arithmetical expression is the following, it doesn't allow + or - chains operator like in C (`+-+-1` is valid in C, but i prefer a more mathematical approach so a user must write: `+(-(+(-1)))` eventually.
 
@@ -125,7 +125,6 @@ $solver> x+a=1, x
 
 NOTE: if the symbol is defined but it will be solve for, its numerical value will be ignored.
 
-> TODO: use rational numbers (GMP) instead of `double`
 > TODO: add complex numbers and solutions
 > TODO: Gröbner bases ?
 > TODO: solver should be able to define and assign values to symbols.

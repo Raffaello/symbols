@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 
+find_library(GMP_LIBRARY NAMES gmp REQUIRED)
+find_library(MPFR_LIBRARY NAMES mpfr REQUIRED)
+
 add_library(lex_scanner)
 target_sources(lex_scanner PRIVATE
     LexScanner.cpp
