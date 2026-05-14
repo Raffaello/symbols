@@ -101,11 +101,6 @@ static T mp_roundNear(const T& x)
     }
     else if constexpr (std::is_same_v<mp::mpfr_float, T>)
     {
-        // const ast_num_t near = mp::round(x);
-        // if (mp::fabs(x - near) < MPFR_EPSILON)
-        //     return near;
-
-        // return x;
         return mp_round_near_mpfr(x);
     }
     else
