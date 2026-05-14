@@ -9,23 +9,24 @@ namespace mp = boost::multiprecision;
 typedef boost::multiprecision::mpq_rational ast_num_t;
 
 // constexpr int                           REPL_PRECISION = 14;
-constexpr int MPFR_PRECISION     = 210;
-constexpr int MPQ_PRECISION_BITS = 128;
+constexpr int MPFR_PRECISION       = 192;
+constexpr int MPQ_PRECISION_DIGITS = 4;
 
 inline constexpr bool is_ast_t_rational = std::is_same_v<ast_num_t, mp::mpq_rational>;
 
-const boost::multiprecision::mpfr_float MPFR_EPSILON = 1e-12;
+const boost::multiprecision::mpfr_float MPFR_EPSILON = 1e-14;
 const ast_num_t                         NAN_VALUE    = is_ast_t_rational ? ast_num_t("0/0") : ast_num_t("nan");
 
 static auto mp_isWeird_rational(const mp::mpq_rational& q)
 {
     const auto q_ = q.backend().data();
 
-    if (mpz_sizeinbase(&q_->_mp_num, 2) > MPQ_PRECISION_BITS)
+    if (mpz_sizeinbase(&q_->_mp_num, 10) > MPQ_PRECISION_DIGITS)
         return true;
-    if (mpz_sizeinbase(&q_->_mp_den, 2) > MPQ_PRECISION_BITS)
+    if (mpz_sizeinbase(&q_->_mp_den, 10) > MPQ_PRECISION_DIGITS)
         return true;
 
+    auto a = mpz_sizeinbase(&q_->_mp_den, 2);
     if (q_->_mp_den._mp_size != 1)
         return true;
 

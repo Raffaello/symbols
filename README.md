@@ -10,6 +10,7 @@ Symbolic Computation Educational Project.
 - GMP
 - MPFR
 
+Used for rational number computation.
 
 # Lexical Scanner
 
@@ -23,6 +24,7 @@ This is the NFA of the lexical scanner.
 # Parser
 
 > TODO not completed yet
+> TODO add rational number to be parsed(e.g. 1/2) and number (e.g 0.5) ?
 
 The Grammar for the arithmetical expression is the following, it doesn't allow + or - chains operator like in C (`+-+-1` is valid in C, but i prefer a more mathematical approach so a user must write: `+(-(+(-1)))` eventually.
 
@@ -70,6 +72,9 @@ P    ::= (E) | SYMBOL | NUM
 # Interpreter
 
 Basic interpreter evaluating a single `AST` at time for now.
+The evaluation is performed through rational numbers.
+
+> TODO give a choice to display also real solutions?
 
 Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
  `x=1`, but not `x+1=2`
@@ -77,9 +82,11 @@ Not supporting solving equation, but only if those are reduced to what is consid
  > TODO more?
  > TODO replace assignment `=` with `:=` specific for the assignment instead?
 
-# Solver
+ # Solver
 
 Just a basic polynomial solver at the moment for cubic or lower polynomials.
+The evaluations is performed through rational numbers,
+to solve the equation it might switch to real values
 
 > TODO: all polynomials, rational equation, etc..
 
