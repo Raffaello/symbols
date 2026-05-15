@@ -4,7 +4,7 @@
 #include <ParserLL1.hpp>
 #include <array>
 
-#include <assertion_mpfr.hpp>
+#include <assertion_mp.hpp>
 
 class TestInterpreter : public ::testing::TestWithParam<std::tuple<std::string, std::string, std::string, std::string>>
 {
@@ -17,7 +17,7 @@ public:
 
 TEST_P(TestInterpreter, eval)
 {
-    const ast_num_t expVal = mp_parse_decimal(expValStr);
+    const int_num_t expVal = mp_parse_decimal(expValStr);
 
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
@@ -28,12 +28,12 @@ TEST_P(TestInterpreter, eval)
     ASSERT_TRUE(interpreter.eval(parser.ast()));
 
     // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
-    EXPECT_MPFR_NEAR(interpreter.lastValue(), expVal, MPFR_EPSILON);
+    EXPECT_INT_NUM_T_NEAR(interpreter.lastValue(), expVal, MPFR_EPSILON);
     // ASSERT_EQ(interpreter.lastValue(), expVal);
     ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 
     if (!sym.empty())
-        EXPECT_MPFR_NEAR(interpreter.symbolTable().table().at(sym), expVal, MPFR_EPSILON);
+        EXPECT_INT_NUM_T_NEAR(interpreter.symbolTable().table().at(sym), expVal, MPFR_EPSILON);
 }
 
 INSTANTIATE_TEST_SUITE_P(

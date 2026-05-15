@@ -10,6 +10,7 @@
 #include <optional>
 #include <string_view>
 #include <memory>
+#include <variant>
 
 class Interpreter
 {
@@ -17,7 +18,7 @@ private:
     std::shared_ptr<SymbolTable> m_pSymbolTable = nullptr;
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
-    ast_num_t   m_lastValue = NAN_VALUE;
+    int_num_t   m_lastValue = NAN_VALUE;
     std::string m_lastExpr  = "";    // the result of the last resolved expression
 
     std::optional<bool> evalNum_(const AST::INode* node);
@@ -36,14 +37,26 @@ public:
     bool unsetSymbol(const std::string& symbol) noexcept;
 
     inline void               clearSymbols() noexcept;
-    inline ast_num_t          lastValue() const noexcept;
+    inline int_num_t          lastValue() const noexcept;
+    inline mp::mpq_rational   lastValueRational() const noexcept;
+    inline mp::mpfr_float     lastValueFloat() const noexcept;
     inline std::string_view   lastExpr() const noexcept;
     inline const SymbolTable& symbolTable() const noexcept;
 };
 
-inline ast_num_t Interpreter::lastValue() const noexcept
+inline int_num_t Interpreter::lastValue() const noexcept
 {
     return m_lastValue;
+}
+
+inline mp::mpq_rational Interpreter::lastValueRational() const noexcept
+{
+    return std::get<mp::mpq_rational>(m_lastValue);
+}
+
+inline mp::mpfr_float Interpreter::lastValueFloat() const noexcept
+{
+    return std::get<mp::mpfr_float>(m_lastValue);
 }
 
 inline std::string_view Interpreter::lastExpr() const noexcept

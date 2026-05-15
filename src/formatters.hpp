@@ -1,5 +1,7 @@
 #pragma once
 
+#include "multi_precision.hpp"
+
 #include <format>
 #include <string>
 #include <boost/multiprecision/mpfr.hpp>
@@ -49,5 +51,27 @@ struct std::formatter<boost::multiprecision::mpq_rational> : std::formatter<std:
     {
         std::string s = q.str();
         return std::formatter<std::string>::format(s, ctx);
+    }
+};
+
+template <>
+struct std::formatter<int_num_t> : std::formatter<std::string>
+{
+    auto format(const int_num_t& n, std::format_context& ctx) const
+    {
+        if (auto q_ = std::get_if<mp::mpq_rational>(&n))
+        {
+            auto& q = *q_;
+            if (mp_isWeird(q))
+            {
+                mp::mpfr_float z = q;
+                return std::format_to(ctx.out(), "{}", mp_roundNear(z));
+            }
+
+            return std::format_to(ctx.out(), "{}", q);
+        }
+
+        auto x = std::get<mp::mpfr_float>(n);
+        return std::format_to(ctx.out(), "{}", x);
     }
 };

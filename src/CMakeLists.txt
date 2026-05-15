@@ -14,6 +14,7 @@ add_dependencies(parser lex_scanner)
 target_sources(parser PRIVATE
     ParserLL1.cpp
     AST.cpp
+    multi_precision.cpp
   )
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(parser PUBLIC

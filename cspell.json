@@ -9,6 +9,7 @@
         "coeffs",
         "ctest",
         "DCMAKE",
+        "denref",
         "EBNF",
         "endforeach",
         "endmacro",

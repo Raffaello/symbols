@@ -16,9 +16,11 @@ Interpreter::Interpreter(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_p
 
 std::optional<bool> Interpreter::evalNum_(const AST::INode* node)
 {
-    if (AST::LeafNum::getValue(node, m_lastValue))
+    ast_num_t v;
+    if (AST::LeafNum::getValue(node, v))
     {
-        m_lastExpr = std::format("{}", m_lastValue);
+        m_lastValue = v;
+        m_lastExpr  = std::format("{}", m_lastValue);
         return true;
     }
 
@@ -30,9 +32,11 @@ std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
     const char* v = AST::LeafSymbol::getValue(node);
     if (v != nullptr)
     {
-        if (m_pSymbolTable->getSymbol(v, m_lastValue))
+        int_num_t n;
+        if (m_pSymbolTable->getSymbol(v, n))
         {
-            m_lastExpr = std::format("{} = {}", v, m_lastValue);
+            m_lastValue = n;
+            m_lastExpr  = std::format("{} = {}", v, m_lastValue);
             return true;
         }
         else
@@ -106,7 +110,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
             m_lastValue = l * r;
             break;
         case DIV:
-            if (r == 0)
+            if (mp_isZero(r))
             {
                 std::cerr << std::format("ERROR: division by zero detected\n");
                 return false;

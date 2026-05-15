@@ -38,17 +38,17 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("1+0=x", "x", "x = 1"),
         std::make_tuple("1*1=x", "x", "x = 1"),
 
-        std::make_tuple("2*x=1", "x", "x = 1/2"),
+        std::make_tuple("2*x=1", "x", "x = 0.5"),
         std::make_tuple("2*x/2=1", "x", "x = 1"),
         std::make_tuple("2*x/-2=-1", "x", "x = 1"),
 
         std::make_tuple("(2+x)*(3-2)+x=0", "x", "x = -1"),
         std::make_tuple("(2+x)*(3-2)+x*1+0=0", "x", "x = -1"),
-        std::make_tuple("(2+x)*(3-2)+x=-2*x", "x", "x = -1/2"),
-        std::make_tuple("(2+x)*(3-2)+x*1+0=-2*x", "x", "x = -1/2"),
-        std::make_tuple("(2+x)*(3-2)+x*1+0=2*-x", "x", "x = -1/2"),
+        std::make_tuple("(2+x)*(3-2)+x=-2*x", "x", "x = -0.5"),
+        std::make_tuple("(2+x)*(3-2)+x*1+0=-2*x", "x", "x = -0.5"),
+        std::make_tuple("(2+x)*(3-2)+x*1+0=2*-x", "x", "x = -0.5"),
         std::make_tuple("(2+x)*(3-2)+x*1+0=-2*-x*1", "x", "no solution"),
-        std::make_tuple("(2+x)*(3-2)+x*1+0=-2*-x*-1", "x", "x = -1/2"),
+        std::make_tuple("(2+x)*(3-2)+x*1+0=-2*-x*-1", "x", "x = -0.5"),
 
         std::make_tuple("11*x=0", "x", "x = 0"),
         // POW
@@ -91,8 +91,8 @@ TEST_P(TestSolverSymbolSubstitution, Symbol_Simple_Substitution)
     ParserLL1  parser(scanner);
     Solver     solver(pSymbolTable);
 
-    (*pSymbolTable)["a"] = 10;
-    (*pSymbolTable)["b"] = 5;
+    (*pSymbolTable)["a"] = mp::mpq_rational{10};
+    (*pSymbolTable)["b"] = mp::mpq_rational{5};
 
 
     ASSERT_TRUE(parser.parse());
