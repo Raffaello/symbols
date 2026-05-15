@@ -62,13 +62,13 @@ TEST(TestMultiPrecision, logic)
 
     EXPECT_TRUE(to_mpfr_float(b) == b2);
 
-    mp_num_t w = mp::mpq_rational{"10000 / 9999"};
+    mp_num_t w = mp::mpq_rational{"10000/9999"};
     EXPECT_FALSE(mp_isWeird(w));
 
     w = mp::mpq_rational("123456/654321");
     EXPECT_TRUE(mp_isWeird(w));
 
-    w = mp::mpq_rational{"1000000000000000 / 999999999999999"};
+    w = mp::mpq_rational{"1000000000000000/999999999999999"};
     EXPECT_TRUE(mp_isWeird(w));
 
     mp::mpz_int zi = mp_extract_mpz_int(w);
@@ -110,7 +110,7 @@ TEST(TestMultiPrecision, pow_sqrt_cbrt)
     mp_num_t pa  = mp_pow(a, 2);
     mp_num_t pb  = mp_pow(b, 2);
     mp_num_t pc1 = mp_pow(c1, 2);
-    mp_num_t pc2 = mp_pow(c1, 2);
+    mp_num_t pc2 = mp_pow(c2, 2);
 
     EXPECT_TRUE(pa == pb);
     EXPECT_TRUE(pc1 == pc2);

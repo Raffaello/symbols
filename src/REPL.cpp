@@ -82,7 +82,7 @@ void REPL::printSymbolTable_() const noexcept
 
 void REPL::printLastValue_() const noexcept
 {
-    const auto z = m_intr.lastValue();
+    std::cout << std::format("|> $? = {}\n", m_intr.lastValue());
 }
 
 void REPL::symbol_unset_(const std::string_view replCmd) noexcept

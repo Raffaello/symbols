@@ -208,7 +208,10 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 // General integer exponentiation via repeated multiplication
                 mp::mpz_int exponent = static_cast<mp::mpz_int>(mp_extract_mpz_int(pf2[0]));
                 if (mp_num_t{mp::mpq_rational{exponent}} - pf2[0] != 0.0)
+                {
+                    std::cerr << "ERROR exponent must be an integer\n";
                     return false;
+                }
 
                 if (exponent < 0)
                 {
