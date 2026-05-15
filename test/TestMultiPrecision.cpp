@@ -142,6 +142,22 @@ TEST(TestMultiPrecision, solve_factor_p)
     EXPECT_TRUE(c == 0);
 }
 
+TEST(TestMultiprecision, formatters)
+{
+
+    int_num_t a = mp::mpq_rational{"1/3"};
+    EXPECT_STRCASEEQ("1/3", std::format("{}", a).c_str());
+
+    a = mp_sqrt(mp::mpq_rational{2});
+    EXPECT_STRCASEEQ("1.41421356237309505", std::format("{}", a).c_str());
+    EXPECT_STRCASEEQ("1.414", std::format("{:.3}", a).c_str());
+    EXPECT_STRCASEEQ("1", std::format("{:.0}", a).c_str());
+
+    a = mp::mpq_rational{"1000000/999999"};
+    EXPECT_STRCASEEQ("1.000001000001", std::format("{}", a).c_str());
+    EXPECT_STRCASEEQ("1.000", std::format("{:.3}", a).c_str());
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
