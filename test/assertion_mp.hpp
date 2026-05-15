@@ -34,7 +34,7 @@ namespace mp = boost::multiprecision;
 
 #define EXPECT_MPQ_EQ(val1, val2) EXPECT_TRUE(MPQEq((val1), (val2)))
 
-::testing::AssertionResult IntNum_t_Near(const int_num_t& a, const int_num_t& b, const int_num_t& eps)
+::testing::AssertionResult IntNum_t_Near(const mp_num_t& a, const mp_num_t& b, const mp_num_t& eps)
 {
     if (mp_abs(a - b) <= eps)
         return ::testing::AssertionSuccess();

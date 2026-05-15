@@ -5,15 +5,15 @@
 
 #include <array>
 
-class TestMultiPrecision : public ::testing::TestWithParam<std::tuple<int_num_t, int_num_t, int_num_t, int_num_t, int_num_t, int_num_t>>
+class TestMultiPrecision : public ::testing::TestWithParam<std::tuple<mp_num_t, mp_num_t, mp_num_t, mp_num_t, mp_num_t, mp_num_t>>
 {
 public:
-    const int_num_t a      = std::get<0>(GetParam());
-    const int_num_t b      = std::get<1>(GetParam());
-    const int_num_t expAdd = std::get<2>(GetParam());
-    const int_num_t expSub = std::get<3>(GetParam());
-    const int_num_t expMul = std::get<4>(GetParam());
-    const int_num_t expDiv = std::get<5>(GetParam());
+    const mp_num_t a      = std::get<0>(GetParam());
+    const mp_num_t b      = std::get<1>(GetParam());
+    const mp_num_t expAdd = std::get<2>(GetParam());
+    const mp_num_t expSub = std::get<3>(GetParam());
+    const mp_num_t expMul = std::get<4>(GetParam());
+    const mp_num_t expDiv = std::get<5>(GetParam());
 };
 
 TEST_P(TestMultiPrecision, add_sub_mul_div)
@@ -46,9 +46,9 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(TestMultiPrecision, logic)
 {
-    const int_num_t a  = mp::mpfr_float{10.3};
-    const int_num_t b  = mp::mpq_rational{10};
-    const int_num_t b2 = mp::mpfr_float{10.0};
+    const mp_num_t a  = mp::mpfr_float{10.3};
+    const mp_num_t b  = mp::mpq_rational{10};
+    const mp_num_t b2 = mp::mpfr_float{10.0};
 
     EXPECT_TRUE(b < a);
     EXPECT_TRUE(b <= a);
@@ -57,10 +57,12 @@ TEST(TestMultiPrecision, logic)
     EXPECT_TRUE(-b == -b2);
     EXPECT_TRUE(b2 == b);
     EXPECT_TRUE(-b2 == -b);
+    EXPECT_TRUE(a > b);
+    EXPECT_TRUE(a >= b);
 
     EXPECT_TRUE(to_mpfr_float(b) == b2);
 
-    int_num_t w = mp::mpq_rational{"10000 / 9999"};
+    mp_num_t w = mp::mpq_rational{"10000 / 9999"};
     EXPECT_FALSE(mp_isWeird(w));
 
     w = mp::mpq_rational("123456/654321");
@@ -75,9 +77,9 @@ TEST(TestMultiPrecision, logic)
     EXPECT_FALSE(w == 1);
     EXPECT_TRUE(mp_roundNear(w) == 1);
 
-    EXPECT_TRUE(mp_clamp(a, int_num_t{mp::mpq_rational{10}}, int_num_t{mp::mpq_rational{10}}) == 10);
-    EXPECT_TRUE(mp_clamp(a, int_num_t{mp::mpq_rational{10.5}}, int_num_t{mp::mpq_rational{11}}) == 10.5);
-    EXPECT_TRUE(mp_clamp(a, int_num_t{mp::mpq_rational{10}}, int_num_t{mp::mpq_rational{11}}) == 10.3);
+    EXPECT_TRUE(mp_clamp(a, mp_num_t{mp::mpq_rational{10}}, mp_num_t{mp::mpq_rational{10}}) == 10);
+    EXPECT_TRUE(mp_clamp(a, mp_num_t{mp::mpq_rational{10.5}}, mp_num_t{mp::mpq_rational{11}}) == 10.5);
+    EXPECT_TRUE(mp_clamp(a, mp_num_t{mp::mpq_rational{10}}, mp_num_t{mp::mpq_rational{11}}) == 10.3);
 
     EXPECT_TRUE(mp_abs(-a) == a);
     EXPECT_TRUE(mp_abs(-b) == b);
@@ -86,17 +88,17 @@ TEST(TestMultiPrecision, logic)
 
     EXPECT_FALSE(mp_isZero(a));
     EXPECT_FALSE(mp_isZero(b));
-    EXPECT_TRUE(mp_isZero(int_num_t{mp::mpq_rational{0}}));
-    EXPECT_TRUE(mp_isZero(int_num_t{mp::mpfr_float{0}}));
+    EXPECT_TRUE(mp_isZero(mp_num_t{mp::mpq_rational{0}}));
+    EXPECT_TRUE(mp_isZero(mp_num_t{mp::mpfr_float{0}}));
 };
 
 TEST(TestMultiPrecision, pow_sqrt_cbrt)
 {
-    const int_num_t a  = mp::mpfr_float{2};
-    const int_num_t b  = mp::mpq_rational{-2};
-    const int_num_t c1 = mp::mpq_rational{25};
-    const int_num_t c2 = mp::mpfr_float{25};
-    const int_num_t d  = mp::mpq_rational(64);
+    const mp_num_t a  = mp::mpfr_float{2};
+    const mp_num_t b  = mp::mpq_rational{-2};
+    const mp_num_t c1 = mp::mpq_rational{25};
+    const mp_num_t c2 = mp::mpfr_float{25};
+    const mp_num_t d  = mp::mpq_rational(64);
 
     EXPECT_TRUE(-a == b);
     EXPECT_TRUE(a == -b);
@@ -105,28 +107,28 @@ TEST(TestMultiPrecision, pow_sqrt_cbrt)
     EXPECT_TRUE(c1 == c2);
     EXPECT_TRUE(c2 == c1);
 
-    int_num_t pa  = mp_pow(a, 2);
-    int_num_t pb  = mp_pow(b, 2);
-    int_num_t pc1 = mp_pow(c1, 2);
-    int_num_t pc2 = mp_pow(c1, 2);
+    mp_num_t pa  = mp_pow(a, 2);
+    mp_num_t pb  = mp_pow(b, 2);
+    mp_num_t pc1 = mp_pow(c1, 2);
+    mp_num_t pc2 = mp_pow(c1, 2);
 
     EXPECT_TRUE(pa == pb);
     EXPECT_TRUE(pc1 == pc2);
 
-    int_num_t sa  = mp_sqrt(a);
-    int_num_t sb  = mp_sqrt(-b);
-    int_num_t sc1 = mp_sqrt(c1);
-    int_num_t sc2 = mp_sqrt(c2);
+    mp_num_t sa  = mp_sqrt(a);
+    mp_num_t sb  = mp_sqrt(-b);
+    mp_num_t sc1 = mp_sqrt(c1);
+    mp_num_t sc2 = mp_sqrt(c2);
 
     EXPECT_TRUE(sa == sb);
     EXPECT_TRUE(sc1 == sc2);
     EXPECT_TRUE(sc1 == 5);
 
-    int_num_t ca  = mp_cbrt(a);
-    int_num_t cb  = mp_cbrt(-b);
-    int_num_t cc1 = mp_cbrt(c1);
-    int_num_t cc2 = mp_cbrt(c2);
-    int_num_t cd  = mp_cbrt(d);
+    mp_num_t ca  = mp_cbrt(a);
+    mp_num_t cb  = mp_cbrt(-b);
+    mp_num_t cc1 = mp_cbrt(c1);
+    mp_num_t cc2 = mp_cbrt(c2);
+    mp_num_t cd  = mp_cbrt(d);
 
     EXPECT_TRUE(ca == cb);
     EXPECT_TRUE(cc1 == cc2);
@@ -135,17 +137,17 @@ TEST(TestMultiPrecision, pow_sqrt_cbrt)
 
 TEST(TestMultiPrecision, solve_factor_p)
 {
-    int_num_t a = mp::mpq_rational(3);
-    int_num_t b = mp::mpq_rational{3};
+    mp_num_t a = mp::mpq_rational(3);
+    mp_num_t b = mp::mpq_rational{3};
 
-    int_num_t c = b - (a * a / 3);
+    mp_num_t c = b - (a * a / 3);
     EXPECT_TRUE(c == 0);
 }
 
 TEST(TestMultiprecision, formatters)
 {
 
-    int_num_t a = mp::mpq_rational{"1/3"};
+    mp_num_t a = mp::mpq_rational{"1/3"};
     EXPECT_STRCASEEQ("1/3", std::format("{}", a).c_str());
 
     a = mp_sqrt(mp::mpq_rational{2});

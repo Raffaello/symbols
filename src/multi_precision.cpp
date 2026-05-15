@@ -2,88 +2,88 @@
 
 #include "formatters.hpp"    // TODO: remove
 
-int_num_t operator-(const int_num_t& v)
+mp_num_t operator-(const mp_num_t& v)
 {
-    return std::visit([](auto&& x) -> int_num_t {
+    return std::visit([](auto&& x) -> mp_num_t {
         using T = std::decay_t<decltype(x)>;
-        return int_num_t{T(-x)};    // force evaluation into the correct type
+        return mp_num_t{T(-x)};    // force evaluation into the correct type
     },
                       v);
 }
 
-int_num_t operator-(const int_num_t& lhs, const int_num_t& rhs)
+mp_num_t operator-(const mp_num_t& lhs, const mp_num_t& rhs)
 {
-    return std::visit([](auto&& a, auto&& b) -> int_num_t {
+    return std::visit([](auto&& a, auto&& b) -> mp_num_t {
         using T = std::decay_t<decltype(a)>;
         using U = std::decay_t<decltype(b)>;
-        return int_num_t{T(a) - U(b)};
+        return mp_num_t{T(a) - U(b)};
     },
                       lhs,
                       rhs);
 }
 
-int_num_t operator+(const int_num_t& lhs, const int_num_t& rhs)
+mp_num_t operator+(const mp_num_t& lhs, const mp_num_t& rhs)
 {
-    return std::visit([](auto&& a, auto&& b) -> int_num_t {
+    return std::visit([](auto&& a, auto&& b) -> mp_num_t {
         using T = std::decay_t<decltype(a)>;
         using U = std::decay_t<decltype(b)>;
-        return int_num_t{T(a) + U(b)};
+        return mp_num_t{T(a) + U(b)};
     },
                       lhs,
                       rhs);
 }
 
-int_num_t operator*(const int_num_t& lhs, const int_num_t& rhs)
+mp_num_t operator*(const mp_num_t& lhs, const mp_num_t& rhs)
 {
-    return std::visit([](auto&& a, auto&& b) -> int_num_t {
+    return std::visit([](auto&& a, auto&& b) -> mp_num_t {
         using T = std::decay_t<decltype(a)>;
         using U = std::decay_t<decltype(b)>;
-        return int_num_t{T(a) * U(b)};
+        return mp_num_t{T(a) * U(b)};
     },
                       lhs,
                       rhs);
 }
 
-int_num_t operator*(const int_num_t& lhs, int rhs)
+mp_num_t operator*(const mp_num_t& lhs, int rhs)
 {
-    return lhs * int_num_t{mp::mpq_rational{rhs}};
+    return lhs * mp_num_t{mp::mpq_rational{rhs}};
 }
 
-int_num_t operator/(const int_num_t& lhs, const int_num_t& rhs)
+mp_num_t operator/(const mp_num_t& lhs, const mp_num_t& rhs)
 {
-    return std::visit([](auto&& a, auto&& b) -> int_num_t {
+    return std::visit([](auto&& a, auto&& b) -> mp_num_t {
         using T = std::decay_t<decltype(a)>;
         using U = std::decay_t<decltype(b)>;
-        return int_num_t{T(a) / U(b)};
+        return mp_num_t{T(a) / U(b)};
     },
                       lhs,
                       rhs);
 }
 
-int_num_t operator/(const int_num_t& lhs, int rhs)
+mp_num_t operator/(const mp_num_t& lhs, int rhs)
 {
-    return lhs / int_num_t{mp::mpq_rational(rhs)};
+    return lhs / mp_num_t{mp::mpq_rational(rhs)};
 }
 
-int_num_t& operator+=(int_num_t& lhs, const int_num_t& rhs)
+mp_num_t& operator+=(mp_num_t& lhs, const mp_num_t& rhs)
 {
     lhs = lhs + rhs;
     return lhs;
 }
 
-int_num_t& operator-=(int_num_t& lhs, const int_num_t& rhs)
+mp_num_t& operator-=(mp_num_t& lhs, const mp_num_t& rhs)
 {
     lhs = lhs - rhs;
     return lhs;
 }
 
-int_num_t& operator/=(int_num_t& lhs, const int_num_t& rhs)
+mp_num_t& operator/=(mp_num_t& lhs, const mp_num_t& rhs)
 {
     lhs = lhs / rhs;
     return lhs;
 }
 
-bool operator==(const int_num_t& lhs, const int_num_t& rhs)
+bool operator==(const mp_num_t& lhs, const mp_num_t& rhs)
 {
     return std::visit([](auto&& a, auto&& b) -> bool {
         using T = std::decay_t<decltype(a)>;
@@ -96,7 +96,7 @@ bool operator==(const int_num_t& lhs, const int_num_t& rhs)
                       rhs);
 }
 
-bool operator==(const int_num_t& lhs, const int& rhs)
+bool operator==(const mp_num_t& lhs, const int& rhs)
 {
     return std::visit([&](auto&& x) {
         using T = std::decay_t<decltype(x)>;
@@ -105,7 +105,7 @@ bool operator==(const int_num_t& lhs, const int& rhs)
                       lhs);
 }
 
-bool operator==(const int_num_t& lhs, const double& rhs)
+bool operator==(const mp_num_t& lhs, const double& rhs)
 {
     return std::visit([&](auto&& x) {
         using T = std::decay_t<decltype(x)>;
@@ -114,7 +114,7 @@ bool operator==(const int_num_t& lhs, const double& rhs)
                       lhs);
 }
 
-bool operator<(const int_num_t& lhs, const int_num_t& rhs)
+bool operator<(const mp_num_t& lhs, const mp_num_t& rhs)
 {
     return std::visit([](auto&& a, auto&& b) {
         using A = std::decay_t<decltype(a)>;
@@ -126,22 +126,39 @@ bool operator<(const int_num_t& lhs, const int_num_t& rhs)
                       rhs);
 }
 
-bool operator<(const int_num_t& lhs, int rhs)
+bool operator<(const mp_num_t& lhs, int rhs)
 {
-    return lhs < int_num_t{mp::mpq_rational{rhs}};
+    return lhs < mp_num_t{mp::mpq_rational{rhs}};
 }
 
-bool operator<=(const int_num_t& lhs, const int_num_t& rhs)
+bool operator<=(const mp_num_t& lhs, const mp_num_t& rhs)
 {
     return lhs < rhs || lhs == rhs;
 }
 
-// bool operator<=(const int_num_t& lhs, double rhs)
-// {
-//     return lhs <= int_num_t{mp::mpfr_float{rhs}};
-// }
+bool operator>(const mp_num_t& lhs, const mp_num_t& rhs)
+{
+    return std::visit([](auto&& a, auto&& b) {
+        using A = std::decay_t<decltype(a)>;
+        using B = std::decay_t<decltype(b)>;
 
-mp::mpfr_float to_mpfr_float(const int_num_t& x)
+        return A(a) > B(b);
+    },
+                      lhs,
+                      rhs);
+}
+
+bool operator>(const mp_num_t& lhs, int rhs)
+{
+    return lhs > mp_num_t{mp::mpq_rational{rhs}};
+}
+
+bool operator>=(const mp_num_t& lhs, const mp_num_t& rhs)
+{
+    return lhs > rhs || lhs == rhs;
+}
+
+mp::mpfr_float to_mpfr_float(const mp_num_t& x)
 {
     return std::visit([](auto&& x_) -> mp::mpfr_float {
         using T = std::decay_t<decltype(x_)>;

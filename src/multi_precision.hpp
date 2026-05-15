@@ -8,39 +8,40 @@
 namespace mp = boost::multiprecision;
 
 // typedef boost::multiprecision::mpfr_float ast_num_t;
-typedef boost::multiprecision::mpq_rational ast_num_t;               // AST number type
-using int_num_t = std::variant<mp::mpfr_float, mp::mpq_rational>;    // interpreter number type
+typedef boost::multiprecision::mpq_rational ast_num_t;              // AST number type
+using mp_num_t = std::variant<mp::mpfr_float, mp::mpq_rational>;    // interpreter number type
 
 constexpr int MPFR_PRECISION       = 192;
 constexpr int MPFR_FORMAT_DIGITS   = 18;
 constexpr int MPQ_PRECISION_DIGITS = 6;
 
-inline constexpr bool is_ast_t_rational = std::is_same_v<ast_num_t, mp::mpq_rational>;
-
 const boost::multiprecision::mpfr_float MPFR_EPSILON = 1e-14;
-const ast_num_t                         NAN_VALUE    = is_ast_t_rational ? ast_num_t("0") : ast_num_t("nan");
+const mp_num_t                          NAN_VALUE    = mp_num_t{mp::mpfr_float{"nan"}};
 
-int_num_t  operator-(const int_num_t& v);
-int_num_t  operator-(const int_num_t& lhs, const int_num_t& rhs);
-int_num_t  operator+(const int_num_t& lhs, const int_num_t& rhs);
-int_num_t  operator*(const int_num_t& lhs, const int_num_t& rhs);
-int_num_t  operator*(const int_num_t& lhs, int rhs);
-int_num_t  operator/(const int_num_t& lhs, const int_num_t& rhs);
-int_num_t  operator/(const int_num_t& lhs, int rhs);
-int_num_t& operator+=(int_num_t& lhs, const int_num_t& rhs);
-int_num_t& operator-=(int_num_t& lhs, const int_num_t& rhs);
-int_num_t& operator/=(int_num_t& lhs, const int_num_t& rhs);
-bool       operator==(const int_num_t& lhs, const int_num_t& rhs);
-bool       operator==(const int_num_t& lhs, const int& rhs);
-bool       operator==(const int_num_t& lhs, const double& rhs);
-bool       operator<(const int_num_t& lhs, const int_num_t& rhs);
-bool       operator<(const int_num_t& lhs, int rhs);
-bool       operator<=(const int_num_t& lhs, const int_num_t& rhs);
-// bool       operator<=(const int_num_t& lhs, double rhs);
+mp_num_t  operator-(const mp_num_t& v);
+mp_num_t  operator-(const mp_num_t& lhs, const mp_num_t& rhs);
+mp_num_t  operator+(const mp_num_t& lhs, const mp_num_t& rhs);
+mp_num_t  operator*(const mp_num_t& lhs, const mp_num_t& rhs);
+mp_num_t  operator*(const mp_num_t& lhs, int rhs);
+mp_num_t  operator/(const mp_num_t& lhs, const mp_num_t& rhs);
+mp_num_t  operator/(const mp_num_t& lhs, int rhs);
+mp_num_t& operator+=(mp_num_t& lhs, const mp_num_t& rhs);
+mp_num_t& operator-=(mp_num_t& lhs, const mp_num_t& rhs);
+mp_num_t& operator/=(mp_num_t& lhs, const mp_num_t& rhs);
+bool      operator==(const mp_num_t& lhs, const mp_num_t& rhs);
+bool      operator==(const mp_num_t& lhs, const int& rhs);
+bool      operator==(const mp_num_t& lhs, const double& rhs);
+bool      operator<(const mp_num_t& lhs, const mp_num_t& rhs);
+bool      operator<(const mp_num_t& lhs, int rhs);
+bool      operator<=(const mp_num_t& lhs, const mp_num_t& rhs);
+bool      operator>(const mp_num_t& lhs, const mp_num_t& rhs);
+bool      operator>(const mp_num_t& lhs, int rhs);
+bool      operator>=(const mp_num_t& lhs, const mp_num_t& rhs);
+// bool       operator<=(const mp_num_t& lhs, double rhs);
 
-// int_num_t& operator=(int_num_t& lhs, int rhs); // TODO refactor into a class to have it
+// mp_num_t& operator=(mp_num_t& lhs, int rhs); // TODO refactor into a class to have it
 // inline operator mp::mpfr_float(); // TODO: refactor into a class so it can be used automatically by the compiler
-mp::mpfr_float to_mpfr_float(const int_num_t& x);
+mp::mpfr_float to_mpfr_float(const mp_num_t& x);
 
 bool             mp_isWeird_rational(const mp::mpq_rational& q);
 mp::mpq_rational mp_parse_decimal(const std::string& s);
@@ -51,7 +52,7 @@ mp::mpq_rational mp_mpq_cbrt(const mp::mpq_rational& x);
 template <typename T>
 static bool mp_isWeird(const T& x)
 {
-    if constexpr (std::is_same_v<T, int_num_t>)
+    if constexpr (std::is_same_v<T, mp_num_t>)
     {
         if (auto q = std::get_if<mp::mpq_rational>(&x))
             return mp_isWeird(*q);
@@ -69,12 +70,12 @@ static auto mp_pow(const T& l, const U& r)
 {
     if constexpr (std::is_same_v<T, U>)
     {
-        if constexpr (std::is_same_v<int_num_t, T>)
+        if constexpr (std::is_same_v<mp_num_t, T>)
         {
-            return std::visit([](auto&& a, auto&& b) -> int_num_t {
+            return std::visit([](auto&& a, auto&& b) -> mp_num_t {
                 using V = std::decay_t<decltype(a)>;
                 using W = std::decay_t<decltype(b)>;
-                return int_num_t{mp_pow(V(a), W(b))};
+                return mp_num_t{mp_pow(V(a), W(b))};
             },
                               l,
                               r);
@@ -96,11 +97,11 @@ static auto mp_pow(const T& l, const U& r)
             return mp::pow(l, r);
         }
     }
-    else if constexpr (std::is_same_v<int_num_t, T>)
+    else if constexpr (std::is_same_v<mp_num_t, T>)
     {
-        return std::visit([&](auto&& a) -> int_num_t {
+        return std::visit([&](auto&& a) -> mp_num_t {
             using V = std::decay_t<decltype(a)>;
-            return int_num_t{mp_pow(V(a), r)};
+            return mp_num_t{mp_pow(V(a), r)};
         },
                           l);
     }
@@ -118,7 +119,7 @@ static auto mp_pow(const T& l, const U& r)
 template <typename T>
 static T mp_roundNear(const T& x)
 {
-    if constexpr (std::is_same_v<T, int_num_t>)
+    if constexpr (std::is_same_v<T, mp_num_t>)
     {
         if (auto q = std::get_if<mp::mpq_rational>(&x))
         {
@@ -126,7 +127,7 @@ static T mp_roundNear(const T& x)
                 return x;
         }
 
-        return int_num_t{mp_roundNear(to_mpfr_float(x))};
+        return mp_num_t{mp_roundNear(to_mpfr_float(x))};
     }
     else if constexpr (std::is_same_v<mp::mpq_rational, T>)
     {
@@ -141,7 +142,7 @@ static T mp_roundNear(const T& x)
 template <typename T>
 static mp::mpz_int mp_extract_mpz_int(const T& x)
 {
-    if constexpr (std::is_same_v<T, int_num_t>)
+    if constexpr (std::is_same_v<T, mp_num_t>)
     {
         if (auto q = std::get_if<mp::mpq_rational>(&x))
             return mp_extract_mpz_int(*q);
@@ -167,11 +168,11 @@ static mp::mpz_int mp_extract_mpz_int(const T& x)
 template <typename T>
 static auto mp_sqrt(const T& x)
 {
-    if constexpr (std::is_same_v<int_num_t, T>)
+    if constexpr (std::is_same_v<mp_num_t, T>)
     {
-        return std::visit([](auto&& a) -> int_num_t {
+        return std::visit([](auto&& a) -> mp_num_t {
             using U = std::decay_t<decltype(a)>;
-            return int_num_t{mp_sqrt(U(a))};
+            return mp_num_t{mp_sqrt(U(a))};
         },
                           x);
     }
@@ -188,11 +189,11 @@ static auto mp_sqrt(const T& x)
 template <typename T>
 static auto mp_cbrt(const T& x)
 {
-    if constexpr (std::is_same_v<int_num_t, T>)
+    if constexpr (std::is_same_v<mp_num_t, T>)
     {
-        return std::visit([](auto&& a) -> int_num_t {
+        return std::visit([](auto&& a) -> mp_num_t {
             using U = std::decay_t<decltype(a)>;
-            return int_num_t{mp_cbrt(U(a))};
+            return mp_num_t{mp_cbrt(U(a))};
         },
                           x);
     }
@@ -220,11 +221,11 @@ static auto mp_clamp(const T& x, const T& min, const T& max)
 template <typename T>
 static T mp_abs(const T& x)
 {
-    if constexpr (std::is_same_v<T, int_num_t>)
+    if constexpr (std::is_same_v<T, mp_num_t>)
     {
-        return std::visit([](auto&& a) -> int_num_t {
+        return std::visit([](auto&& a) -> mp_num_t {
             using U = std::decay_t<decltype(a)>;
-            return int_num_t{mp_abs(U(a))};
+            return mp_num_t{mp_abs(U(a))};
         },
                           x);
     }
@@ -241,7 +242,7 @@ static T mp_abs(const T& x)
 template <typename T>
 static bool mp_isZero(const T& x)
 {
-    if constexpr (std::is_same_v<T, int_num_t>)
+    if constexpr (std::is_same_v<T, mp_num_t>)
     {
         if (auto q = std::get_if<mp::mpq_rational>(&x))
         {

@@ -17,7 +17,7 @@ public:
 
 TEST_P(TestInterpreter, eval)
 {
-    const int_num_t expVal = mp_parse_decimal(expValStr);
+    const mp_num_t expVal = mp_parse_decimal(expValStr);
 
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
@@ -27,9 +27,7 @@ TEST_P(TestInterpreter, eval)
     parser.ast().print();
     ASSERT_TRUE(interpreter.eval(parser.ast()));
 
-    // TODO: it should have the exact value, so it is needed to use the GNU MP/GNU MPFR
     EXPECT_INT_NUM_T_NEAR(interpreter.lastValue(), expVal, MPFR_EPSILON);
-    // ASSERT_EQ(interpreter.lastValue(), expVal);
     ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 
     if (!sym.empty())

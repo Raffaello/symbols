@@ -32,7 +32,7 @@ std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
     const char* v = AST::LeafSymbol::getValue(node);
     if (v != nullptr)
     {
-        int_num_t n;
+        mp_num_t n;
         if (m_pSymbolTable->getSymbol(v, n))
         {
             m_lastValue = n;

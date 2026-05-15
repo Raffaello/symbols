@@ -9,7 +9,7 @@ size_t SymbolTable::key_max_length() const noexcept
     return key_max_length;
 }
 
-const char* SymbolTable::setSymbol(const AST::INode* pNode, const int_num_t& val)
+const char* SymbolTable::setSymbol(const AST::INode* pNode, const mp_num_t& val)
 {
     const char* sym = AST::LeafSymbol::getValue(pNode);
     if (sym != nullptr)

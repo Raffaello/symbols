@@ -59,7 +59,7 @@ struct std::formatter<boost::multiprecision::mpq_rational> : std::formatter<std:
 };
 
 template <>
-struct std::formatter<int_num_t> : std::formatter<std::string>
+struct std::formatter<mp_num_t> : std::formatter<std::string>
 {
     std::string_view spec;
 
@@ -84,7 +84,7 @@ struct std::formatter<int_num_t> : std::formatter<std::string>
         return formatter.format(z, ctx);
     }
 
-    auto format(const int_num_t& n, std::format_context& ctx) const
+    auto format(const mp_num_t& n, std::format_context& ctx) const
     {
         if (auto q_ = std::get_if<mp::mpq_rational>(&n))
         {
