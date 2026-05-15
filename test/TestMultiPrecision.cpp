@@ -146,7 +146,6 @@ TEST(TestMultiPrecision, solve_factor_p)
 
 TEST(TestMultiprecision, formatters)
 {
-
     mp_num_t a = mp::mpq_rational{"1/3"};
     EXPECT_STRCASEEQ("1/3", std::format("{}", a).c_str());
 
@@ -158,6 +157,13 @@ TEST(TestMultiprecision, formatters)
     a = mp::mpq_rational{"1000000/999999"};
     EXPECT_STRCASEEQ("1.000001000001", std::format("{}", a).c_str());
     EXPECT_STRCASEEQ("1.000", std::format("{:.3}", a).c_str());
+}
+
+TEST(TestMultiprecision, error)
+{
+    mp_num_t q = mp::mpq_rational(-1);
+
+    ASSERT_THROW(mp_sqrt(q), std::runtime_error);
 }
 
 int main(int argc, char** argv)

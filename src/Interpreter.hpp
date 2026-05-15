@@ -38,8 +38,6 @@ public:
 
     inline void               clearSymbols() noexcept;
     inline mp_num_t           lastValue() const noexcept;
-    inline mp::mpq_rational   lastValueRational() const noexcept;
-    inline mp::mpfr_float     lastValueFloat() const noexcept;
     inline std::string_view   lastExpr() const noexcept;
     inline const SymbolTable& symbolTable() const noexcept;
 };
@@ -47,16 +45,6 @@ public:
 inline mp_num_t Interpreter::lastValue() const noexcept
 {
     return m_lastValue;
-}
-
-inline mp::mpq_rational Interpreter::lastValueRational() const noexcept
-{
-    return std::get<mp::mpq_rational>(m_lastValue);
-}
-
-inline mp::mpfr_float Interpreter::lastValueFloat() const noexcept
-{
-    return std::get<mp::mpfr_float>(m_lastValue);
 }
 
 inline std::string_view Interpreter::lastExpr() const noexcept

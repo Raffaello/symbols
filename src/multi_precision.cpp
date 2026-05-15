@@ -219,14 +219,16 @@ mp::mpq_rational mp_mpq_sqrt(const mp::mpq_rational& x)
     const mpz_srcptr num = mpq_numref(x.backend().data());
     const mpz_srcptr den = mpq_denref(x.backend().data());
 
+    if (mpz_sgn(num) < 0)
+        throw std::runtime_error("can't compute sqrt of negative number");
+
     mp::mpq_rational q;
     mpz_t            num_root, den_root;
     mpz_init(num_root);
     mpz_init(den_root);
 
     // mpz_root returns 1 if exact, 0 if not
-    if (mpz_sgn(num) < 0)
-        throw std::runtime_error("can't compute sqrt of negative number");
+
 
     if (mpz_root(num_root, num, 2) && mpz_root(den_root, den, 2))
     {
