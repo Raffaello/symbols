@@ -1,7 +1,5 @@
 #include "multi_precision.hpp"
 
-#include "formatters.hpp"    // TODO: remove
-
 mp_num_t operator-(const mp_num_t& v)
 {
     return std::visit([](auto&& x) -> mp_num_t {
@@ -88,8 +86,6 @@ bool operator==(const mp_num_t& lhs, const mp_num_t& rhs)
     return std::visit([](auto&& a, auto&& b) -> bool {
         using T = std::decay_t<decltype(a)>;
         using U = std::decay_t<decltype(b)>;
-        auto sa = std::format("{}", T(a));
-        auto sb = std::format("{}", T(b));
         return T(a) == U(b);
     },
                       lhs,
