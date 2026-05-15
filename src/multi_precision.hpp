@@ -116,6 +116,11 @@ static auto mp_pow(const T& l, const U& r)
             return mp::pow(l, r);
         }
     }
+    else if constexpr (std::is_same_v<T, mp::mpq_rational> && std::is_integral_v<U>)
+    {
+        return mp_pow(l, mp::mpq_rational{r});
+    }
+
     else if constexpr (std::is_same_v<mp_num_t, T>)
     {
         return std::visit([&](auto&& a) -> mp_num_t {
@@ -175,8 +180,11 @@ static mp::mpz_int mp_extract_mpz_int(const T& x)
         mpz_srcptr  den_ptr = mpq_denref(x.backend().data());
         mpz_set(n.backend().data(), num_ptr);
         mpz_set(d.backend().data(), den_ptr);
-        mp::mpfr_float z = static_cast<mp::mpfr_float>(n) / static_cast<mp::mpz_int>(d);
-        return mp_extract_mpz_int(z);
+        // mp::mpfr_float z = static_cast<mp::mpfr_float>(n) / static_cast<mp::mpz_int>(d);
+        // return mp_extract_mpz_int(z);
+        mp::mpz_int q, r;
+        mpz_tdiv_qr(q.backend().data(), r.backend().data(), n.backend().data(), d.backend().data());
+        return q;
     }
     else
     {

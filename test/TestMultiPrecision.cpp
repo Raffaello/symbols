@@ -114,6 +114,7 @@ TEST(TestMultiPrecision, pow_sqrt_cbrt)
 
     EXPECT_TRUE(pa == pb);
     EXPECT_TRUE(pc1 == pc2);
+    EXPECT_TRUE(std::holds_alternative<mp::mpq_rational>(pc1));
 
     mp_num_t sa  = mp_sqrt(a);
     mp_num_t sb  = mp_sqrt(-b);

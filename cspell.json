@@ -20,6 +20,7 @@
         "libgtest",
         "libmpfr",
         "MPFR",
+        "mpztdiv",
         "Multiprecision",
         "Raffaello",
         "RNDN",
