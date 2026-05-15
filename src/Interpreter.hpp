@@ -37,12 +37,12 @@ public:
     bool unsetSymbol(const std::string& symbol) noexcept;
 
     inline void               clearSymbols() noexcept;
-    inline mp_num_t           lastValue() const noexcept;
+    inline const mp_num_t&    lastValue() const noexcept;
     inline std::string_view   lastExpr() const noexcept;
     inline const SymbolTable& symbolTable() const noexcept;
 };
 
-inline mp_num_t Interpreter::lastValue() const noexcept
+inline const mp_num_t& Interpreter::lastValue() const noexcept
 {
     return m_lastValue;
 }

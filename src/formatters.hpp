@@ -38,7 +38,20 @@ struct std::formatter<boost::multiprecision::mpfr_float> : std::formatter<std::s
             int  precision = 0;
             auto dot       = spec.find('.');
             if (dot != std::string::npos)
-                precision = std::stoi(spec.substr(dot + 1));
+            {
+                try
+                {
+                    precision = std::stoi(spec.substr(dot + 1));
+                }
+                catch (const std::invalid_argument&)
+                {
+                    throw std::format_error("invalid mpfr_float precision");
+                }
+                catch (const std::out_of_range&)
+                {
+                    throw std::format_error("invalid mpfr_float precision");
+                }
+            }
 
             oss << std::fixed << std::setprecision(precision) << x;
             s = oss.str();
