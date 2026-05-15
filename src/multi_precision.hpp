@@ -82,6 +82,25 @@ static auto mp_pow(const T& l, const U& r)
         }
         else if constexpr (std::is_same_v<mp::mpq_rational, T>)
         {
+            // if r has a denominator == 1
+            //       can be compute directly as a mpq
+            if (denominator(r) == 1)
+            {
+                int        exp = static_cast<int>(numerator(r));
+                const bool neg = exp < 0;
+                if (neg)
+                    exp = -exp;
+
+                const mp::mpz_int n = mp::pow(numerator(l), exp);
+                const mp::mpz_int d = mp::pow(denominator(l), exp);
+
+                if (neg)
+                    return mp::mpq_rational{d, n};
+                else
+                    return mp::mpq_rational{n, d};
+            }
+
+            // Non-integer exponent — fall back to float approximation.
             mp::mpq_rational q;
 
             mp::mpfr_float rf = r;
