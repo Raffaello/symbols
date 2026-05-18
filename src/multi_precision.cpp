@@ -224,8 +224,6 @@ mp::mpq_rational mp_mpq_sqrt(const mp::mpq_rational& x)
     mpz_init(den_root);
 
     // mpz_root returns 1 if exact, 0 if not
-
-
     if (mpz_root(num_root, num, 2) && mpz_root(den_root, den, 2))
     {
         q = mp::mpq_rational(num_root, den_root);
