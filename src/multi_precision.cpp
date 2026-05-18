@@ -270,3 +270,13 @@ mp::mpq_rational mp_mpq_cbrt(const mp::mpq_rational& x)
     mpz_clear(den_root);
     return q;
 }
+
+bool mp_is_nan(const mp_num_t& x)
+{
+    if (auto q = std::get_if<mp::mpq_rational>(&x))
+        return false;
+
+    auto z = std::get<mp::mpfr_float>(x);
+
+    return mpfr_nan_p(z.backend().data());
+}

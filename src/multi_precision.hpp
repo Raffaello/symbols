@@ -51,6 +51,8 @@ mp::mpfr_float   mp_round_near_mpfr(const mp::mpfr_float& x);
 mp::mpq_rational mp_mpq_sqrt(const mp::mpq_rational& x);
 mp::mpq_rational mp_mpq_cbrt(const mp::mpq_rational& x);
 
+bool mp_is_nan(const mp_num_t& x);
+
 template <typename T>
 static bool mp_isWeird(const T& x)
 {
@@ -69,7 +71,7 @@ static bool mp_isWeird(const T& x)
 
 // TODO: review / simplify
 template <typename T, typename U>
-static auto mp_pow(const T& l, const U& r)
+static mp_num_t mp_pow(const T& l, const U& r)
 {
     if constexpr (std::is_same_v<T, U>)
     {
@@ -114,7 +116,12 @@ static auto mp_pow(const T& l, const U& r)
                 }
 
                 if (neg)
-                    return mp::mpq_rational{d, n};
+                {
+                    if (n == 0)
+                        return NAN_VALUE;
+                    else
+                        return mp::mpq_rational{d, n};
+                }
                 else
                     return mp::mpq_rational{n, d};
             }

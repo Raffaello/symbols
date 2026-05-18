@@ -120,6 +120,9 @@ TEST(TestMultiPrecision, pow_sqrt_cbrt)
     EXPECT_TRUE(pc1 == pc2);
     EXPECT_TRUE(std::holds_alternative<mp::mpq_rational>(pc1));
 
+    auto nan = mp_pow(mp::mpq_rational{0}, -1);
+    EXPECT_TRUE(mp_is_nan(nan));
+
     mp_num_t sa  = mp_sqrt(a);
     mp_num_t sb  = mp_sqrt(-b);
     mp_num_t sc1 = mp_sqrt(c1);
