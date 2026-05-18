@@ -71,8 +71,10 @@ TEST(TestMultiPrecision, logic)
     w = mp::mpq_rational{"1000000000000000/999999999999999"};
     EXPECT_TRUE(mp_isWeird(w));
 
-    mp::mpz_int zi = mp_extract_mpz_int(w);
-    EXPECT_TRUE(zi == 1);
+    auto [q, r] = mp_convert_to_mpz_int(w);
+    EXPECT_EQ(q, 1);
+    EXPECT_EQ(r, mp::mpq_rational("1/999999999999999"));
+
 
     EXPECT_FALSE(w == 1);
     EXPECT_TRUE(mp_roundNear(w) == 1);
@@ -136,13 +138,18 @@ TEST(TestMultiPrecision, pow_sqrt_cbrt)
     EXPECT_TRUE(cd == 4);
 };
 
-TEST(TestMultiPrecision, solve_factor_p)
+TEST(TestMultiPrecision, solve_factor_p__convert_to)
 {
     mp_num_t a = mp::mpq_rational(3);
     mp_num_t b = mp::mpq_rational{3};
 
     mp_num_t c = b - (a * a / 3);
     EXPECT_TRUE(c == 0);
+
+    a           = mp::mpq_rational("17/5");
+    auto [q, r] = mp_convert_to_mpz_int(a);
+    EXPECT_EQ(q, 3);
+    EXPECT_EQ(r, mp::mpq_rational("2/5"));
 }
 
 TEST(TestMultiprecision, formatters)

@@ -9,7 +9,7 @@ namespace mp = boost::multiprecision;
 
 // typedef boost::multiprecision::mpfr_float ast_num_t;
 typedef boost::multiprecision::mpq_rational ast_num_t;              // AST number type
-using mp_num_t = std::variant<mp::mpfr_float, mp::mpq_rational>;    // interpreter number type
+using mp_num_t = std::variant<mp::mpfr_float, mp::mpq_rational>;    // multiprecision number type
 
 constexpr int MPFR_PRECISION       = 192;
 constexpr int MPFR_FORMAT_DIGITS   = 18;
@@ -82,8 +82,7 @@ static auto mp_pow(const T& l, const U& r)
         }
         else if constexpr (std::is_same_v<mp::mpq_rational, T>)
         {
-            // if r has a denominator == 1
-            //       can be compute directly as a mpq
+            // if r has a denominator == 1, it can be compute directly as a mpq
             if (denominator(r) == 1)
             {
                 int        exp = static_cast<int>(numerator(r));
@@ -164,31 +163,24 @@ static T mp_roundNear(const T& x)
 }
 
 template <typename T>
-static mp::mpz_int mp_extract_mpz_int(const T& x)
+static std::pair<mp::mpz_int, mp::mpq_rational> mp_convert_to_mpz_int(const T& x)
 {
     if constexpr (std::is_same_v<T, mp_num_t>)
     {
-        if (auto q = std::get_if<mp::mpq_rational>(&x))
-            return mp_extract_mpz_int(*q);
+        return std::visit(
+            [](const auto& z) {
+                auto q = z.template convert_to<mp::mpz_int>();
+                auto r = z - q;
 
-        return mp_extract_mpz_int<mp::mpfr_float>(to_mpfr_float(x));
-    }
-    else if constexpr (std::is_same_v<T, mp::mpq_rational>)
-    {
-        mp::mpz_int n, d;
-        mpz_srcptr  num_ptr = mpq_numref(x.backend().data());
-        mpz_srcptr  den_ptr = mpq_denref(x.backend().data());
-        mpz_set(n.backend().data(), num_ptr);
-        mpz_set(d.backend().data(), den_ptr);
-        // mp::mpfr_float z = static_cast<mp::mpfr_float>(n) / static_cast<mp::mpz_int>(d);
-        // return mp_extract_mpz_int(z);
-        mp::mpz_int q, r;
-        mpz_tdiv_qr(q.backend().data(), r.backend().data(), n.backend().data(), d.backend().data());
-        return q;
+                return std::pair<mp::mpz_int, mp::mpq_rational>{q, r};
+            },
+            x);
     }
     else
     {
-        return static_cast<mp::mpz_int>(mp_roundNear<mp::mpfr_float>(x));
+        auto q = static_cast<mp::mpz_int>(x);
+        auto r = x - q;
+        return {q, r};
     }
 }
 
