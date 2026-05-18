@@ -89,6 +89,7 @@ The evaluations is performed through rational numbers,
 to solve the equation it might switch to real values
 
 > TODO: all polynomials, rational equation, etc..
+> TODO: Simplify expression, e.g.: constant must be resolved numerically, etc..
 
 
 # REPL

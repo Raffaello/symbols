@@ -150,11 +150,15 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("a^x=0", "x"),
         std::make_tuple("x^a=0", "x"),
         std::make_tuple("1^x=0", "x"),
+
         std::make_tuple("x+1+a = 0", "x"),
         std::make_tuple("x+ 2*a = 0", "x"),
-        std::make_tuple("x=1/0", "x")
+        std::make_tuple("x=1/0", "x"),
 
-            ));
+        std::make_tuple("x=2^0.5", "x"),       // TODO: this should be solvable, need to simplify expression first
+        std::make_tuple("x=(2^0.5)^2", "x")    // TODO: this should be solvable, need to simplify expression first
+
+        ));
 
 int main(int argc, char** argv)
 {
