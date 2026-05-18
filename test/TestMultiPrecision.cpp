@@ -4,6 +4,8 @@
 #include "assertion_mp.hpp"
 
 #include <array>
+#include <format>
+#include <tuple>
 
 class TestMultiPrecision : public ::testing::TestWithParam<std::tuple<mp_num_t, mp_num_t, mp_num_t, mp_num_t, mp_num_t, mp_num_t>>
 {

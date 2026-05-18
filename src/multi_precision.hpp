@@ -4,6 +4,8 @@
 #include <boost/multiprecision/gmp.hpp>
 
 #include <variant>
+#include <string>
+#include <utility>
 
 namespace mp = boost::multiprecision;
 
@@ -65,6 +67,7 @@ static bool mp_isWeird(const T& x)
     return false;
 }
 
+// TODO: review / simplify
 template <typename T, typename U>
 static auto mp_pow(const T& l, const U& r)
 {
@@ -85,13 +88,30 @@ static auto mp_pow(const T& l, const U& r)
             // if r has a denominator == 1, it can be compute directly as a mpq
             if (denominator(r) == 1)
             {
-                int        exp = static_cast<int>(numerator(r));
-                const bool neg = exp < 0;
+
+                mp::mpz_int exp = numerator(r);
+                const bool  neg = exp < 0;
                 if (neg)
                     exp = -exp;
 
-                const mp::mpz_int n = mp::pow(numerator(l), exp);
-                const mp::mpz_int d = mp::pow(denominator(l), exp);
+                mp::mpz_int n      = 1;
+                mp::mpz_int d      = 1;
+                mp::mpz_int base_n = numerator(l);
+                mp::mpz_int base_d = denominator(l);
+
+                while (exp > 0)
+                {
+                    if (exp % 2 == 1)
+                    {
+                        n *= base_n;
+                        d *= base_d;
+                    }
+
+                    base_n *= base_n;
+                    base_d *= base_d;
+
+                    exp /= 2;
+                }
 
                 if (neg)
                     return mp::mpq_rational{d, n};
@@ -190,8 +210,7 @@ static auto mp_sqrt(const T& x)
     if constexpr (std::is_same_v<mp_num_t, T>)
     {
         return std::visit([](auto&& a) -> mp_num_t {
-            using U = std::decay_t<decltype(a)>;
-            return mp_num_t{mp_sqrt(U(a))};
+            return mp_sqrt(a);
         },
                           x);
     }
@@ -211,8 +230,7 @@ static auto mp_cbrt(const T& x)
     if constexpr (std::is_same_v<mp_num_t, T>)
     {
         return std::visit([](auto&& a) -> mp_num_t {
-            using U = std::decay_t<decltype(a)>;
-            return mp_num_t{mp_cbrt(U(a))};
+            return mp_cbrt(a);
         },
                           x);
     }
@@ -243,19 +261,12 @@ static T mp_abs(const T& x)
     if constexpr (std::is_same_v<T, mp_num_t>)
     {
         return std::visit([](auto&& a) -> mp_num_t {
-            using U = std::decay_t<decltype(a)>;
-            return mp_num_t{mp_abs(U(a))};
+            return mp_abs(a);
         },
                           x);
     }
-    else if constexpr (std::is_same_v<mp::mpq_rational, T>)
-    {
-        return mp::abs(x);
-    }
     else
-    {
         return mp::abs(x);
-    }
 }
 
 template <typename T>
@@ -263,16 +274,15 @@ static bool mp_isZero(const T& x)
 {
     if constexpr (std::is_same_v<T, mp_num_t>)
     {
-        if (auto q = std::get_if<mp::mpq_rational>(&x))
-        {
-            return *q == 0;
-        }
-        else
-            return mp_isZero<mp::mpfr_float>(std::get<mp::mpfr_float>(x));
+        return std::visit(
+            [](auto& z) {
+                return mp_isZero(z);
+            },
+            x);
     }
     else if constexpr (std::is_same_v<mp::mpq_rational, T>)
     {
-        return x == 0;
+        return x.is_zero();    // == 0;
     }
     else
     {
