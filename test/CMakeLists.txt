@@ -72,6 +72,13 @@ macro_test(
 )
 
 macro_test(
+    EXE TestMultiPrecision
+    FILES "TestMultiPrecision.cpp"
+    FIXTURES 
+    LINKS_PRIVATE "parser"
+)
+
+macro_test(
     EXE TestInterpreter
     FILES "TestInterpreter.cpp"
     FIXTURES 

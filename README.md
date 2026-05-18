@@ -4,6 +4,14 @@
 
 Symbolic Computation Educational Project.
 
+## Dependencies
+
+- Boost
+- GMP
+- MPFR
+
+Used for rational number computation.
+
 # Lexical Scanner
 
 > TODO: not completed yet
@@ -16,6 +24,7 @@ This is the NFA of the lexical scanner.
 # Parser
 
 > TODO not completed yet
+> TODO add rational number to be parsed as whole rational numbers (e.g. 1/2) alongside real numbers (e.g 0.5) ? (so it can output the same as user input eventually)
 
 The Grammar for the arithmetical expression is the following, it doesn't allow + or - chains operator like in C (`+-+-1` is valid in C, but i prefer a more mathematical approach so a user must write: `+(-(+(-1)))` eventually.
 
@@ -63,6 +72,9 @@ P    ::= (E) | SYMBOL | NUM
 # Interpreter
 
 Basic interpreter evaluating a single `AST` at time for now.
+The evaluation is performed through rational numbers.
+
+> TODO give a choice to display also real solutions?
 
 Not supporting solving equation, but only if those are reduced to what is considered an assignment, e.g:
  `x=1`, but not `x+1=2`
@@ -73,6 +85,8 @@ Not supporting solving equation, but only if those are reduced to what is consid
 # Solver
 
 Just a basic polynomial solver at the moment for cubic or lower polynomials.
+The evaluations is performed through rational numbers,
+to solve the equation it might switch to real values
 
 > TODO: all polynomials, rational equation, etc..
 
@@ -111,8 +125,8 @@ $solver> x+a=1, x
 
 NOTE: if the symbol is defined but it will be solve for, its numerical value will be ignored.
 
-> TODO: use rational numbers (GMP) instead of `double`
 > TODO: add complex numbers and solutions
+> TODO: Gröbner bases ?
 > TODO: solver should be able to define and assign values to symbols.
 > TODO: should solve for undefined symbol returning the generic symbol as a result, e.g: `x+1=a, x => x = a-1`
 > TODO: .... and so on

@@ -1,4 +1,5 @@
 #include "REPL.hpp"
+#include "formatters.hpp"
 
 #include <iostream>
 #include <format>
@@ -81,7 +82,7 @@ void REPL::printSymbolTable_() const noexcept
 
 void REPL::printLastValue_() const noexcept
 {
-    std::cout << std::format("| $? = {}\n", m_intr.lastValue());
+    std::cout << std::format("|> $? = {}\n", m_intr.lastValue());
 }
 
 void REPL::symbol_unset_(const std::string_view replCmd) noexcept

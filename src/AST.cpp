@@ -1,4 +1,5 @@
 #include "AST.hpp"
+#include "formatters.hpp"
 
 #include <cassert>
 #include <iostream>

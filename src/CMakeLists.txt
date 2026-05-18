@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
+find_library(GMP_LIBRARY NAMES gmp REQUIRED)
+find_library(MPFR_LIBRARY NAMES mpfr REQUIRED)
 
 add_library(lex_scanner)
 target_sources(lex_scanner PRIVATE
@@ -12,9 +14,15 @@ add_dependencies(parser lex_scanner)
 target_sources(parser PRIVATE
     ParserLL1.cpp
     AST.cpp
+    multi_precision.cpp
   )
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
-target_link_libraries(parser PUBLIC lex_scanner)
+target_link_libraries(parser PUBLIC
+    lex_scanner
+    boost_mp
+    ${GMP_LIBRARY}
+    ${MPFR_LIBRARY}
+ )
 
 add_library(interpreter)
 add_dependencies(interpreter parser)

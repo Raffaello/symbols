@@ -91,8 +91,8 @@ TEST_P(TestSolverSymbolSubstitution, Symbol_Simple_Substitution)
     ParserLL1  parser(scanner);
     Solver     solver(pSymbolTable);
 
-    (*pSymbolTable)["a"] = 10;
-    (*pSymbolTable)["b"] = 5;
+    (*pSymbolTable)["a"] = mp::mpq_rational{10};
+    (*pSymbolTable)["b"] = mp::mpq_rational{5};
 
 
     ASSERT_TRUE(parser.parse());
@@ -151,7 +151,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x^a=0", "x"),
         std::make_tuple("1^x=0", "x"),
         std::make_tuple("x+1+a = 0", "x"),
-        std::make_tuple("x+ 2*a = 0", "x")
+        std::make_tuple("x+ 2*a = 0", "x"),
+        std::make_tuple("x=1/0", "x")
 
             ));
 

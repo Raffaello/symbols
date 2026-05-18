@@ -1,8 +1,12 @@
 #pragma once
 
+#include "multi_precision.hpp"
+
 #include <memory>
 #include <list>
 #include <sstream>
+
+#include <boost/multiprecision/mpfr.hpp>
 
 class AST
 {
@@ -31,16 +35,16 @@ public:
 
     struct LeafNum : public INode
     {
-        double value;
+        ast_num_t value;
 
-        static std::unique_ptr<LeafNum> make(const double value)
+        static std::unique_ptr<LeafNum> make(const ast_num_t value)
         {
             auto n   = std::make_unique<LeafNum>();
             n->value = value;
             return std::move(n);
         }
 
-        static bool getValue(const INode* pNode, double& value)
+        static bool getValue(const INode* pNode, ast_num_t& value)
         {
             if (auto pNum = dynamic_cast<const LeafNum*>(pNode))
             {

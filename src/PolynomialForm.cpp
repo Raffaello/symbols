@@ -11,7 +11,7 @@ PolynomialForm::PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable)
         throw std::invalid_argument("symbol table is null");
 }
 
-double& PolynomialForm::operator[](size_t index)
+mp_num_t& PolynomialForm::operator[](size_t index)
 {
     if (m_coeffs.size() < index + 1)
         m_coeffs.resize(index + 1);
@@ -37,14 +37,14 @@ bool PolynomialForm::collect_poly_(const AST::INode* node, PolynomialForm& pf, s
 
 bool PolynomialForm::collect_poly_num_(const AST::INode* node, PolynomialForm& pf)
 {
-    double d = 0.0;
+    ast_num_t d = 0.0;
     if (!AST::LeafNum::getValue(node, d))
     {
         std::cerr << "ERROR: unable to get num\n";
         return false;
     }
 
-    pf[0] += d;
+    pf[0] += mp_num_t{d};
     return true;
 }
 
@@ -52,8 +52,8 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
 {
     if (!node->is_symbol(symbol))
     {
-        double d;
-        auto   sym_value = AST::LeafSymbol::getValue(node);
+        mp_num_t d;
+        auto     sym_value = AST::LeafSymbol::getValue(node);
         if (!m_pSymbolTable->getSymbol(sym_value, d))
         {
             std::cerr << std::format("ERROR: unable to get symbol '{}'\n", sym_value);
@@ -66,7 +66,7 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
     }
 
     // otherwise is the symbol to solve for
-    pf[1] += 1;
+    pf[1] += mp_num_t{ast_num_t{1}};
     return true;
 }
 
@@ -167,6 +167,12 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             }
 
             assert(deg2 == 0);
+            if (mp_isZero(pf2[0]))
+            {
+                std::cerr << "ERROR: division by zero\n";
+                return false;
+            }
+
             for (size_t i = 0; i < pf.size(); ++i)
                 pf[i] /= pf2[0];    // pf2[deg2];
 
@@ -190,9 +196,9 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 return false;
             }
 
-            if (pf2[0] == 0.0)
-                pf[0] += 1;
-            else if (pf2[0] == 1.0)
+            if (mp_isZero(pf2[0]))
+                pf[0] += mp_num_t{ast_num_t{1}};
+            else if (pf2[0] == 1)
             {
                 for (size_t i = 0; i < pf1.size(); ++i)
                     pf[i] += pf1[i];
@@ -200,17 +206,25 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             else
             {
                 // General integer exponentiation via repeated multiplication
-                int exponent = static_cast<int>(std::round(pf2[0]));
-                if (exponent - pf2[0] != 0.0)
+                auto [exponent, r] = mp_convert_to_mpz_int(pf2[0]);
+                if (r != 0)
+                {
+                    std::cerr << "ERROR exponent must be an integer\n";
                     return false;
+                }
+
+                if (exponent < 0)
+                {
+                    std::cerr << "ERROR: negative exponents are not supported in polynomial form\n";
+                    return false;
+                }
 
                 assert(exponent >= 2);
-
                 // result = pf1^exponent via repeated multiplication
                 PolynomialForm result(m_pSymbolTable);
-                result[0] = 1.0;    // start with 1
+                result[0] = mp_num_t{mp::mpq_rational{1}};    // start with 1
 
-                for (int e = 0; e < exponent; ++e)
+                for (mp::mpz_int e = 0; e < exponent; ++e)
                 {
                     PolynomialForm tmp(m_pSymbolTable);
                     for (size_t i = 0; i < result.size(); ++i)

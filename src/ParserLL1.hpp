@@ -4,8 +4,6 @@
 #include "Token.hpp"
 #include "AST.hpp"
 
-#include <stack>
-
 /**
  * Recursive Descent LL1 Parsers
  *

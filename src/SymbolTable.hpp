@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST.hpp"
+#include "multi_precision.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -24,15 +25,15 @@ private:
     //
     // or just keep a symbol defined as a = b + c, where b and c are other 2 symbols (undefined)
     // so this can allow substituion in an equation as well.
-    std::unordered_map<std::string, double> m_table;
+    std::unordered_map<std::string, mp_num_t> m_table;
 
 public:
-    inline const std::unordered_map<std::string, double>& table() const noexcept;
+    inline const std::unordered_map<std::string, mp_num_t>& table() const noexcept;
 
-    inline void    clear() noexcept;
-    inline bool    contains(const std::string& name) const noexcept;
-    inline double& operator[](const std::string& name);
-    inline size_t  erase(const std::string& name);
+    inline void      clear() noexcept;
+    inline bool      contains(const std::string& name) const noexcept;
+    inline mp_num_t& operator[](const std::string& name);
+    inline size_t    erase(const std::string& name);
 
     size_t key_max_length() const noexcept;
 
@@ -43,8 +44,8 @@ public:
      * @param val
      * @return const char* @c nullptr if it didn't set, symbol value (name) otherwise
      */
-    const char* setSymbol(const AST::INode* pNode, const double val);
-    bool        getSymbol(const std::string& name, double& val) const noexcept;
+    const char* setSymbol(const AST::INode* pNode, const mp_num_t& val);
+    bool        getSymbol(const std::string& name, mp_num_t& val) const noexcept;
 };
 
 inline void SymbolTable::clear() noexcept
@@ -52,7 +53,7 @@ inline void SymbolTable::clear() noexcept
     m_table.clear();
 }
 
-inline const std::unordered_map<std::string, double>& SymbolTable::table() const noexcept
+inline const std::unordered_map<std::string, mp_num_t>& SymbolTable::table() const noexcept
 {
     return m_table;
 }
@@ -62,7 +63,7 @@ inline bool SymbolTable::contains(const std::string& name) const noexcept
     return m_table.contains(name);
 }
 
-inline double& SymbolTable::operator[](const std::string& name)
+inline mp_num_t& SymbolTable::operator[](const std::string& name)
 {
     return m_table[name];
 }
@@ -72,7 +73,7 @@ inline size_t SymbolTable::erase(const std::string& name)
     return m_table.erase(name);
 }
 
-inline bool SymbolTable::getSymbol(const std::string& name, double& val) const noexcept
+inline bool SymbolTable::getSymbol(const std::string& name, mp_num_t& val) const noexcept
 {
     if (auto it = m_table.find(name); it != m_table.end())
     {

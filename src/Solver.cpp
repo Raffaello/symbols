@@ -1,4 +1,7 @@
 #include "Solver.hpp"
+#include "formatters.hpp"
+#include "multi_precision.hpp"
+
 
 #include <iostream>
 #include <format>
@@ -35,7 +38,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     if (!res)
         return false;
 
-    std::vector<double> sols;
+    std::vector<mp_num_t> sols;
     switch (pf.degree())
     {
     case -1:
@@ -50,25 +53,24 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         return true;
 
     case 1:    // linear
-        sols.emplace_back(-pf[0] / pf[1]);
+        sols.emplace_back(mp_num_t{-pf[0] / pf[1]});
         break;
-
     case 2:
     {
-        const double a = pf[2];
-        const double b = pf[1];
-        const double c = pf[0];
+        const mp_num_t a = pf[2];
+        const mp_num_t b = pf[1];
+        const mp_num_t c = pf[0];
 
-        const double delta = (b * b) - (4.0 * a * c);
+        const mp_num_t delta = (b * b) - (a * c * 4);
 
-        if (delta < 0.0)
+        if (delta < 0)
         {
             m_solution = "no real solutions, complex roots not supported yet";
             return true;
         }
 
-        const double sq_delta = std::sqrt(delta);
-        const double a2       = 2.0 * a;
+        const mp_num_t sq_delta = mp_sqrt(delta);
+        const mp_num_t a2       = a * 2;
         // sol 1
         sols.emplace_back((-b + sq_delta) / a2);
         // sol 2
@@ -80,47 +82,53 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     case 3:
     {
         // Cardano's formula
-        const double a = pf[2] / pf[3];
-        const double b = pf[1] / pf[3];
-        const double c = pf[0] / pf[3];
+        const mp_num_t a = pf[2] / pf[3];
+        const mp_num_t b = pf[1] / pf[3];
+        const mp_num_t c = pf[0] / pf[3];
 
-        const double aa = a * a;
-        const double p  = b - aa / 3.0;
-        const double q  = 2.0 * a * aa / 27.0 - a * b / 3.0 + c;
+        const mp_num_t aa = a * a;
+        const mp_num_t p  = b - (aa / 3);
+        const mp_num_t q  = (a * 2) * (aa / 27) - a * (b / 3) + c;
 
-        const double p3    = p * p * p;
-        const double delta = (q * q) / 4.0 + p3 / 27.0;
+        const mp_num_t p3    = p * p * p;
+        const mp_num_t delta = (q * q) / 4 + p3 / 27;
 
-        const double a_3 = a / 3.0;
-        const double q_2 = q / 2.0;
+        const mp_num_t a_3 = a / 3;
+        const mp_num_t q_2 = q / 2;
 
-        if (delta > 0.0)
+        if (delta < 0)
         {
-            // one real solution, two complex
-            const double sq_delta = std::sqrt(delta);
-            const double u        = std::cbrt(-q_2 + sq_delta);
-            const double v        = std::cbrt(-q_2 - sq_delta);
-            const double y        = u + v;
+            mp::mpfr_float PI;
+            mpfr_const_pi(PI.backend().data(), MPFR_RNDN);
 
-            sols.emplace_back(y - (a_3));
+            const mp_num_t r     = mp_sqrt(mp_num_t(-p / 3)) * 2;
+            const mp_num_t denom = mp_sqrt(mp_num_t(-p3 / 27));
+            mp_num_t       z     = -q_2 / denom;
+            z                    = mp_clamp(z, mp_num_t{mp::mpq_rational{-1}}, mp_num_t{mp::mpq_rational{+1}});
+
+            const mp::mpfr_float a_3f = to_mpfr_float(a_3);
+            const mp::mpfr_float phi  = mp::acos(to_mpfr_float(z));
+
+            sols.emplace_back(r * mp::cos(phi / 3) - a / 3);
+            sols.emplace_back(r * mp::cos((phi + (2 * PI)) / 3) - a_3f);
+            sols.emplace_back(r * mp::cos((phi + (4 * PI)) / 3) - a_3f);
         }
-        else if (std::fabs(delta) < SOLVER_EPSILON)    // if delta is zero (approx.)
+        else if (mp_isZero(delta))
         {
-            const double u = std::cbrt(-q_2);
-            sols.emplace_back((2.0 * u) - a_3);
+            const mp_num_t u = mp_cbrt(mp_num_t(-q_2));
+            sols.emplace_back((u * 2) - a_3);
             sols.emplace_back((-u) - a_3);
         }
-        else    // if (delta < 0.0)
+        else    // if (delta > 0.0)
         {
-            constexpr double PI = std::numbers::pi_v<double>;
+            // one real solution, two complex
+            const mp_num_t sq_delta = mp_sqrt(delta);
 
-            const double r     = 2.0 * std::sqrt(-p / 3.0);
-            const double denom = std::sqrt(-p3 / 27.0);
-            const double phi   = std::acos(std::clamp((-q_2) / denom, -1.0, 1.0));
+            const mp_num_t u = mp_cbrt(mp_num_t{-q_2 + sq_delta});
+            const mp_num_t v = mp_cbrt(mp_num_t{-q_2 - sq_delta});
+            const mp_num_t y = u + v;
 
-            sols.emplace_back(r * std::cos(phi / 3.0) - a / 3.0);
-            sols.emplace_back(r * std::cos((phi + 2.0 * PI) / 3.0) - a_3);
-            sols.emplace_back(r * std::cos((phi + 4.0 * PI) / 3.0) - a_3);
+            sols.emplace_back(y - (a_3));
         }
     }
     break;
@@ -136,13 +144,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     // round the solution for eventual numeric errors
     for (int i = 0; i < sols.size(); ++i)
     {
-        const double near = std::round(sols[i]);
-        if (std::fabs(sols[i] - near) < SOLVER_EPSILON)
-            sols[i] = near;
-
+        sols[i] = mp_roundNear(sols[i]);
         // To avoid having -0 as it is just 0
-        if (sols[i] == 0.0)
-            sols[i] = std::fabs(sols[i]);
+        if (mp_isZero(sols[i]))
+            sols[i] = mp::mpq_rational{0};
     }
 
     std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
@@ -150,7 +155,17 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
 
     m_solution = "";
     for (auto& d : sols)
-        m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
+    {
+        // check it is not weird rational
+        if (mp_isWeird(d))
+        {
+            const mp::mpfr_float f  = to_mpfr_float(d);
+            const mp::mpfr_float fr = mp_roundNear(f);
+            m_solution              = m_solution + std::format("{} = {}, ", for_symbol, fr);
+        }
+        else
+            m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
+    }
 
     m_solution.pop_back();
     m_solution.pop_back();
