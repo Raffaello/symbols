@@ -90,8 +90,8 @@ public:
     static mp_t                                     acos(const mp_t& x);
 };
 
-static const mp_t MPFR_EPSILON = 1e-14;
-static const mp_t NAN_VALUE    = mp::mpfr_float{"nan"};
+inline const mp_t MPFR_EPSILON = 1e-14;
+inline const mp_t NAN_VALUE    = mp::mpfr_float{"nan"};
 
 mp_t::mp_t(Integral auto v) : mp_t(mp::mpq_rational{v})
 {
