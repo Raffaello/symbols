@@ -2,7 +2,6 @@ include(FetchContent)
 include(ExternalProject)
 
 # Boost Multiprecision
-set(CMAKE_CXX_STANDARD 23)
 FetchContent_Declare(
     boost_mp
     GIT_REPOSITORY https://github.com/boostorg/multiprecision.git
@@ -15,5 +14,3 @@ add_library(boost_mp INTERFACE)
 target_include_directories(boost_mp INTERFACE
     ${boost_mp_SOURCE_DIR}/include
 )
-
-unset(CMAKE_CXX_STANDARD)

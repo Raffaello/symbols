@@ -1,6 +1,6 @@
 #pragma once
 
-#include "multi_precision.hpp"
+#include "mp_t.hpp"
 
 #include <format>
 #include <string>
@@ -30,7 +30,7 @@ struct std::formatter<boost::multiprecision::mpfr_float> : std::formatter<std::s
         std::string s;
         auto        out = ctx.out();
         if (spec.empty())
-            s = x.str(MPFR_FORMAT_DIGITS, std::ios_base::fmtflags(0));
+            s = x.str(mp_t::MPFR_FORMAT_DIGITS, std::ios_base::fmtflags(0));
         else
         {
             std::ostringstream oss;
@@ -72,7 +72,7 @@ struct std::formatter<boost::multiprecision::mpq_rational> : std::formatter<std:
 };
 
 template <>
-struct std::formatter<mp_num_t> : std::formatter<std::string>
+struct std::formatter<mp_t> : std::formatter<std::string>
 {
     std::string_view spec;
 
@@ -97,12 +97,13 @@ struct std::formatter<mp_num_t> : std::formatter<std::string>
         return formatter.format(z, ctx);
     }
 
-    auto format(const mp_num_t& n, std::format_context& ctx) const
+    auto format(const mp_t& n, std::format_context& ctx) const
     {
-        if (auto q_ = std::get_if<mp::mpq_rational>(&n))
+        const mp_t::num_t n_ = n;
+        if (auto q_ = std::get_if<mp::mpq_rational>(&n_))
         {
             auto& q = *q_;
-            if (mp_isWeird(q))
+            if (n.isWeird())
             {
                 mp::mpfr_float z = q;
 
@@ -112,7 +113,7 @@ struct std::formatter<mp_num_t> : std::formatter<std::string>
             return std::format_to(ctx.out(), "{}", q);
         }
 
-        auto x = std::get<mp::mpfr_float>(n);
+        auto x = mp::mpfr_float(n);
         return format_mpfr(x, ctx);
     }
 };

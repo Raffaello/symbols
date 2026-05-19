@@ -1,6 +1,5 @@
 #include "Interpreter.hpp"
 #include "formatters.hpp"
-#include "multi_precision.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -32,7 +31,7 @@ std::optional<bool> Interpreter::evalSym_(const AST::INode* node)
     const char* v = AST::LeafSymbol::getValue(node);
     if (v != nullptr)
     {
-        mp_num_t n;
+        mp_t n;
         if (m_pSymbolTable->getSymbol(v, n))
         {
             m_lastValue = n;
@@ -110,7 +109,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
             m_lastValue = l * r;
             break;
         case DIV:
-            if (mp_isZero(r))
+            if (r.isZero())
             {
                 std::cerr << std::format("ERROR: division by zero detected\n");
                 return false;
@@ -119,7 +118,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
             m_lastValue = l / r;
             break;
         case POW:
-            m_lastValue = mp_pow(l, r);
+            m_lastValue = l ^ r;
             break;
         default:
             std::cerr << std::format("ERROR: not supported operator '{}'\n", static_cast<int>(bin->op));
