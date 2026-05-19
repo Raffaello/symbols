@@ -1,6 +1,6 @@
 #include "mp_t.hpp"
 
-mp_t& mp_t::operator=(const mp_t& rhs) noexcept
+mp_t& mp_t::operator=(const mp_t& rhs)
 {
     m_value = rhs.m_value;
     return *this;
