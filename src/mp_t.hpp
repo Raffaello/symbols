@@ -11,8 +11,6 @@
 
 namespace mp = boost::multiprecision;
 
-
-// typedef boost::multiprecision::mpfr_float ast_num_t;
 typedef mp::mpq_rational ast_num_t;    // AST number type
 
 template <typename T>
@@ -73,7 +71,6 @@ private:
     static mp::mpq_rational mpq_sqrt_(const mp::mpq_rational& x);
     static mp::mpq_rational mpq_cbrt_(const mp::mpq_rational& x);
     static num_t            num_pow_(const mp::mpq_rational& l, const mp::mpq_rational& r);
-
 
 public:
     bool        is_nan() const noexcept;
