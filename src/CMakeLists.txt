@@ -11,7 +11,7 @@ target_include_directories(lex_scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_library(parser)
 add_dependencies(parser lex_scanner)
-target_sources(parser PUBLIC
+target_sources(parser PRIVATE
     ParserLL1.cpp
     AST.cpp
     mp_t.cpp
@@ -26,7 +26,7 @@ target_link_libraries(parser PUBLIC
 
 add_library(interpreter)
 add_dependencies(interpreter parser)
-target_sources(interpreter PUBLIC
+target_sources(interpreter PRIVATE
     SymbolTable.cpp
     Interpreter.cpp
   )
@@ -35,7 +35,7 @@ target_link_libraries(interpreter PUBLIC parser)
 
 add_library(solver)
 add_dependencies(solver parser)
-target_sources(solver PUBLIC
+target_sources(solver PRIVATE
     Solver.cpp
     PolynomialForm.cpp
   )
