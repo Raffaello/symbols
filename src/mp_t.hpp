@@ -30,9 +30,6 @@ public:
     static constexpr int MPFR_FORMAT_DIGITS   = 18;
     static constexpr int MPQ_PRECISION_DIGITS = 6;
 
-    // static const mp_t           MPFR_EPSILON(1e-14);
-    // static const mp::mpfr_float NAN_VALUE = mp::mpfr_float{"nan"};
-
 private:
     num_t m_value;
 
