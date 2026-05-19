@@ -32,8 +32,8 @@ private:
     num_t m_value;
 
 public:
-    mp_t() noexcept;
-    mp_t(mp_t&& n) noexcept;
+    mp_t();
+    mp_t(mp_t&& n);
 
     mp_t(const mp_t& n);
     mp_t(const num_t& n);
@@ -43,7 +43,7 @@ public:
     mp_t(FloatingPoint auto v);
     mp_t(const std::string& str);
 
-    mp_t& operator=(const mp_t& rhs) noexcept;
+    mp_t& operator=(const mp_t& rhs);
     mp_t  operator-() const;
     mp_t  operator-(const mp_t& rhs) const;
     mp_t  operator+(const mp_t& rhs) const;
@@ -76,9 +76,9 @@ public:
     bool        is_nan() const noexcept;
     bool        isWeird() const noexcept;
     bool        isZero() const noexcept;
-    std::string str() const noexcept;
+    std::string str() const;
 
-    void roundNear() noexcept;
+    void roundNear();
     void clamp(const mp_t& min, const mp_t& max) noexcept;
 
     static mp::mpq_rational                         parse_decimal(const std::string& s);

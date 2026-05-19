@@ -112,7 +112,7 @@ std::optional<bool> Interpreter::evalBin_(const AST::INode* node)
             if (r.isZero())
             {
                 std::cerr << std::format("ERROR: division by zero detected\n");
-                return false;
+                return false_();
             }
 
             m_lastValue = l / r;

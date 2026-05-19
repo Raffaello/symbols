@@ -116,10 +116,13 @@ TEST(Test_mp_t, pow_sqrt_cbrt)
     EXPECT_TRUE(c1 == c2);
     EXPECT_TRUE(c2 == c1);
 
-    mp_t pa  = a ^ 2;
-    mp_t pb  = b ^ 2;
-    mp_t pc1 = c1 ^ 2;
-    mp_t pc2 = c2 ^ 2;
+    mp_t pa   = a ^ 2;
+    mp_t pb   = b ^ 2;
+    mp_t pc1  = c1 ^ 2;
+    mp_t pc2  = c2 ^ 2;
+    mp_t pc1f = c1 ^ 2.5;
+    mp_t pc2f = c2 ^ 2.5;
+
 
     EXPECT_TRUE(pa == pb);
     EXPECT_TRUE(pc1 == pc2);
@@ -128,6 +131,10 @@ TEST(Test_mp_t, pow_sqrt_cbrt)
     EXPECT_TRUE(std::holds_alternative<mp::mpq_rational>(mp_t::num_t{pc1}));
     pc1n = mp::mpq_rational{10};
     EXPECT_FALSE(pc1 == 10);
+
+    EXPECT_TRUE(pc1f == pc2f);
+    EXPECT_TRUE(pc1f == 3125);
+    EXPECT_TRUE(pc2f == 3125);
 
     auto nan = mp_t(mp::mpq_rational{0}) ^ -1;
     EXPECT_TRUE(nan.is_nan());

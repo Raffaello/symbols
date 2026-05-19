@@ -73,7 +73,7 @@ mp_t mp_t::operator^(const mp_t& rhs) const
     }
 
     // all other cases
-    auto l = std::get<mp::mpfr_float>(m_value);
+    mp::mpfr_float l = *this;
     return std::visit([&](auto&& r) -> num_t {
         using T = std::decay_t<decltype(r)>;
         return mp::pow(l, T(r));
@@ -167,11 +167,11 @@ mp_t::operator const num_t&() const
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-mp_t::mp_t() noexcept : m_value(NAN_VALUE)
+mp_t::mp_t() : m_value(NAN_VALUE)
 {
 }
 
-mp_t::mp_t(mp_t&& n) noexcept : m_value(std::move(n.m_value))
+mp_t::mp_t(mp_t&& n) : m_value(std::move(n.m_value))
 {
 }
 
@@ -360,7 +360,7 @@ bool mp_t::isZero() const noexcept
     return mp::fabs(mp::mpfr_float{*this}) < MPFR_EPSILON;
 }
 
-std::string mp_t::str() const noexcept
+std::string mp_t::str() const
 {
     return std::visit(
         [](const auto& x) {
@@ -369,7 +369,7 @@ std::string mp_t::str() const noexcept
         m_value);
 }
 
-void mp_t::roundNear() noexcept
+void mp_t::roundNear()
 {
     if (auto q = std::get_if<mp::mpq_rational>(&m_value))
     {
