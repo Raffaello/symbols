@@ -83,11 +83,11 @@ public:
 
         inline const char value() const noexcept { return negate ? '-' : '+'; }
 
-        static std::unique_ptr<NodeUnary> make(const bool negate)
+        static std::unique_ptr<NodeUnary> make(const bool negate, std::unique_ptr<INode> node)
         {
             auto n    = std::make_unique<NodeUnary>();
             n->negate = negate;
-            n->n      = nullptr;
+            n->n      = std::move(node);
             return std::move(n);
         }
     };
@@ -112,8 +112,9 @@ public:
 private:
     std::unique_ptr<INode> m_pRoot = nullptr;
 
-    void to_string_(const INode* node, std::stringstream& ss, const int level) const;
-    void print_(const INode* node, const int indent);
+    std::unique_ptr<AST::INode> clone_(const INode* pNode);
+    void                        to_string_(const INode* node, std::stringstream& ss, const int level) const;
+    void                        print_(const INode* node, const int indent);
 
     bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
 
@@ -125,6 +126,9 @@ public:
     inline const INode* getRoot() const noexcept;
     void                setRoot(std::unique_ptr<INode>& root);
     bool                has_symbol(const std::string_view symbol) const noexcept;
+
+    std::unique_ptr<AST::INode> clone();
+    std::unique_ptr<INode>      clone(const INode* pNode);
 
     std::string to_string() const;
     void        print();

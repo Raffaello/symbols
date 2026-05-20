@@ -5,6 +5,55 @@
 #include <iostream>
 #include <format>
 
+std::unique_ptr<AST::INode> AST::clone_(const INode* pNode)
+{
+    if (pNode->is_num())
+    {
+        ast_num_t v;
+        if (!LeafNum::getValue(pNode, v))
+            return nullptr;
+
+        return LeafNum::make(v);
+    }
+    else if (pNode->is_symbol())
+    {
+        return LeafSymbol::make(LeafSymbol::getValue(pNode));
+    }
+    else if (pNode->is_unary())
+    {
+        auto pUny = dynamic_cast<const NodeUnary*>(pNode);
+        if (pUny == nullptr)
+            return nullptr;
+
+        auto pSubNodeClone = clone_(pUny->n.get());
+        if (pSubNodeClone == nullptr)
+            return nullptr;
+
+        return NodeUnary::make(pUny->negate, std::move(pSubNodeClone));
+    }
+    else if (pNode->is_expr())
+    {
+        auto pNodeBin = dynamic_cast<const NodeBin*>(pNode);
+        if (pNodeBin == nullptr)
+            return nullptr;
+
+        auto pNodeLeftClone = clone_(pNodeBin->l.get());
+        if (pNodeLeftClone == nullptr)
+            return nullptr;
+
+        auto pNodeRightClone = clone_(pNodeBin->r.get());
+        if (pNodeRightClone == nullptr)
+            return nullptr;
+
+        return NodeBin::make(pNodeBin->op, std::move(pNodeLeftClone), std::move(pNodeRightClone));
+    }
+    else
+    {
+        std::cerr << "ERROR: unknown node type to clone\n";
+        return nullptr;
+    }
+}
+
 void AST::to_string_(const INode* node, std::stringstream& ss, const int level) const
 {
     if (auto num = dynamic_cast<const LeafNum*>(node))
@@ -135,6 +184,20 @@ void AST::setRoot(std::unique_ptr<INode>& root)
 bool AST::has_symbol(const std::string_view symbol) const noexcept
 {
     return has_symbol_(getRoot(), symbol);
+}
+
+std::unique_ptr<AST::INode> AST::clone()
+{
+    return clone(getRoot());
+}
+
+std::unique_ptr<AST::INode> AST::clone(const INode* pNode)
+{
+    auto pNodeClone = clone_(pNode);
+    if (pNodeClone == nullptr)
+        return nullptr;
+
+    return std::move(pNodeClone);
 }
 
 std::string AST::to_string() const

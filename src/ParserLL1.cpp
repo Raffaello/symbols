@@ -150,14 +150,16 @@ std::unique_ptr<AST::INode> ParserLL1::factor_()
     if (p == nullptr)
         return nullptr;
 
-    if (u == nullptr)
+    if (!u.has_value())
         return p;
 
-    dynamic_cast<AST::NodeUnary*>(u.get())->n = std::move(p);
-    return u;
+    return AST::NodeUnary::make(u.value(), std::move(p));
+
+    // dynamic_cast<AST::NodeUnary*>(u.get())->n = std::move(p);
+    // return u;
 }
 
-std::unique_ptr<AST::INode> ParserLL1::unary_()
+std::optional<bool> ParserLL1::unary_()
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
@@ -165,13 +167,13 @@ std::unique_ptr<AST::INode> ParserLL1::unary_()
         if (!advance_())
         {
             std::cerr << std::format("ERROR: after: '{}'\n", t.value);
-            return nullptr;
+            return std::nullopt;
         }
 
-        return AST::NodeUnary::make(t.value == TOKEN_VALUE_MINUS);    // n->n     = nullptr;
+        return t.value == TOKEN_VALUE_MINUS;    // AST::NodeUnary::make(t.value == TOKEN_VALUE_MINUS);    // n->n     = nullptr;
     }
     else
-        return nullptr;
+        return std::nullopt;
 }
 
 std::unique_ptr<AST::INode> ParserLL1::pow_()
