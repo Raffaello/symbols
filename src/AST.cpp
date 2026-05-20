@@ -217,8 +217,6 @@ bool AST::updateNode_(const std::unique_ptr<AST::INode>* pCurNode, const INode* 
 
 AST::AST(const AST& other)
 {
-    // auto pNodeRoot = other.cloneRoot();
-    // setRoot(std::move(pNodeRoot));
     *this = other;
 }
 

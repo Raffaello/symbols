@@ -49,34 +49,6 @@ TEST(AST, update_root)
     ASSERT_EQ(10, v);
 }
 
-// class TestAST : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
-// {
-// public:
-//     const std::string line   = std::get<0>(GetParam());
-//     const std::string expAST = std::get<1>(GetParam());
-// };
-
-// TEST_P(TestAST, update_root_false)
-// {
-//     LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
-//     ParserLL1  parser(scanner);
-
-// ASSERT_TRUE(parser.parse());
-
-// auto& ast = parser.ast();
-// ast.print();
-// ast.updateNode()
-//     EXPECT_STREQ(ast.to_string().c_str(), expAST.data());
-// }
-
-// INSTANTIATE_TEST_SUITE_P(
-//     ParserLL1TestSuite,
-//     TestParserLL1,
-//     ::testing::Values(
-
-
-// ));
-
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

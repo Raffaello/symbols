@@ -76,8 +76,10 @@ bool Simplifier::reduce_expr_(AST& src, const AST::INode* pCurrent)
             pNodeUpd = AST::LeafNum::make(a * b);
             break;
         case DIV:
-            // TODO: div by zero check
-            pNodeUpd = AST::LeafNum::make(a / b);
+            if (b != 0)
+                pNodeUpd = AST::LeafNum::make(a / b);
+            else
+                return true;
             break;
         case POW:
             if (b == 0)
@@ -95,7 +97,7 @@ bool Simplifier::reduce_expr_(AST& src, const AST::INode* pCurrent)
         return src.updateNode(pCurrent, pNodeUpd);
     }
 
-    // TODO: nothing else to simplify at the moment
+    // nothing else to simplify at the moment (it won't be used)
     return true;
 }
 

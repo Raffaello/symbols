@@ -27,9 +27,9 @@ INSTANTIATE_TEST_SUITE_P(
     SimplifierTestSuite,
     TestSimplifier,
     ::testing::Values(
-        std::make_tuple("x+1+2*3", "(x + 1) + 6")
+        std::make_tuple("x+1+2*3", "(x + 1) + 6")    // it should be at least x + 7, but what is the point for this rule?
 
-            ));
+        ));
 
 int main(int argc, char** argv)
 {
