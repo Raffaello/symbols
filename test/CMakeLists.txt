@@ -86,6 +86,13 @@ macro_test(
 )
 
 macro_test(
+    EXE TestPolynomialForm
+    FILES "TestPolynomialForm.cpp"
+    FIXTURES 
+    LINKS_PRIVATE "solver"
+)
+
+macro_test(
     EXE TestSolver
     FILES "TestSolver.cpp"
     FIXTURES 

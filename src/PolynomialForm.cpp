@@ -252,6 +252,8 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 bool PolynomialForm::analyze(const AST::INode* node, const std::string& symbol)
 {
     m_degree = -2;
+    m_coeffs.clear();
+
     if (!collect_poly_(node, *this, symbol))
     {
         m_degree = -1;
