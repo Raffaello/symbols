@@ -79,6 +79,13 @@ macro_test(
 )
 
 macro_test(
+    EXE TestSimplifier
+    FILES "TestSimplifier.cpp"
+    FIXTURES
+    LINKS_PRIVATE "parser"
+)
+
+macro_test(
     EXE Test_mp_t
     FILES "Test_mp_t.cpp"
     FIXTURES

@@ -54,6 +54,17 @@ public:
 
             return false;
         }
+
+        static bool setValue(INode* pNode, const ast_num_t& value)
+        {
+            if (auto pNum = dynamic_cast<LeafNum*>(pNode))
+            {
+                pNum->value = value;
+                return true;
+            }
+
+            return false;
+        }
     };
 
     struct LeafSymbol : public INode
