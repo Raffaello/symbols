@@ -54,7 +54,7 @@ std::unique_ptr<AST::INode> AST::clone_(const INode* pNode)
     }
 }
 
-void AST::to_string_(const INode* node, std::stringstream& ss, const int level) const
+void AST::to_string_(const INode* node, std::stringstream& ss, const int level)
 {
     if (auto num = dynamic_cast<const LeafNum*>(node))
         ss << num->value;
@@ -154,7 +154,7 @@ void AST::print_(const INode* node, const int indent)
     std::cout << "<Unknown node>\n";
 }
 
-bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept
+bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol)
 {
     if (node->is_symbol(symbol))
         return true;
@@ -174,9 +174,65 @@ bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol) con
     return false;
 }
 
+bool AST::updateNode_(const std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
+{
+    if (pCurNode->get() == pNode)
+        return true;
+
+    // if num is a leaf
+    // if sym is a leaf
+    if (auto nodeUny = dynamic_cast<const NodeUnary*>(pCurNode->get()))
+    {
+        const bool res = updateNode_(&nodeUny->n, pNode, pNodeUpdate);
+        if (res)
+        {
+            auto nu = const_cast<NodeUnary*>(nodeUny);
+            nu->n   = std::move(pNodeUpdate);
+        }
+
+        return res;
+    }
+    else if (auto nodeBin = dynamic_cast<const NodeBin*>(pCurNode->get()))
+    {
+        auto b   = const_cast<NodeBin*>(nodeBin);
+        bool res = updateNode_(&nodeBin->l, pNode, pNodeUpdate);
+        if (res)
+        {
+            b->l = std::move(pNodeUpdate);
+            return true;
+        }
+
+        res = updateNode_(&nodeBin->r, pNode, pNodeUpdate);
+        if (res)
+        {
+            b->r = std::move(pNodeUpdate);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AST::setRoot(std::unique_ptr<INode>& root)
+AST::AST(const AST& other)
+{
+    // auto pNodeRoot = other.cloneRoot();
+    // setRoot(std::move(pNodeRoot));
+    *this = other;
+}
+
+AST& AST::operator=(const AST& other)
+{
+    if (this == &other)
+        return *this;
+
+    auto pNodeRoot = other.cloneRoot();
+    setRoot(std::move(pNodeRoot));
+    return *this;
+}
+
+void AST::setRoot(std::unique_ptr<INode> root)
 {
     m_pRoot = std::move(root);
 }
@@ -186,9 +242,19 @@ bool AST::has_symbol(const std::string_view symbol) const noexcept
     return has_symbol_(getRoot(), symbol);
 }
 
-std::unique_ptr<AST::INode> AST::clone()
+bool AST::updateNode(const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
 {
-    return clone(getRoot());
+    // special case if it is the root, doesn't allow to update it as it is an entirely new AST.
+    if (pNode == nullptr || pNodeUpdate == nullptr || pNode == getRoot())
+        return false;
+
+    // find node and its parent to replace it
+    return updateNode_(&m_pRoot, pNode, pNodeUpdate);
+}
+
+std::unique_ptr<AST::INode> AST::cloneRoot() const
+{
+    return AST::clone(getRoot());
 }
 
 std::unique_ptr<AST::INode> AST::clone(const INode* pNode)

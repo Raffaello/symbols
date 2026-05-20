@@ -37,7 +37,7 @@ public:
     {
         ast_num_t value;
 
-        static std::unique_ptr<LeafNum> make(const ast_num_t value)
+        static std::unique_ptr<INode> make(const ast_num_t value)
         {
             auto n   = std::make_unique<LeafNum>();
             n->value = value;
@@ -60,7 +60,7 @@ public:
     {
         std::string value;
 
-        static std::unique_ptr<LeafSymbol> make(const std::string& value)
+        static std::unique_ptr<INode> make(const std::string& value)
         {
             auto n   = std::make_unique<LeafSymbol>();
             n->value = value;
@@ -112,23 +112,31 @@ public:
 private:
     std::unique_ptr<INode> m_pRoot = nullptr;
 
-    std::unique_ptr<AST::INode> clone_(const INode* pNode);
-    void                        to_string_(const INode* node, std::stringstream& ss, const int level) const;
-    void                        print_(const INode* node, const int indent);
-
-    bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
+    static std::unique_ptr<AST::INode> clone_(const INode* pNode);
+    static void                        to_string_(const INode* node, std::stringstream& ss, const int level);
+    static void                        print_(const INode* node, const int indent);
+    static bool                        has_symbol_(const AST::INode* node, const std::string_view symbol);
+    static bool                        updateNode_(const std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate);
 
 public:
     AST()  = default;
     ~AST() = default;
 
+    AST(AST&&) noexcept   = default;
+    AST& operator=(AST&&) = default;
+
+    AST(const AST& other);
+    AST& operator=(const AST& other);
+
     inline bool         isEquation() const noexcept;
     inline const INode* getRoot() const noexcept;
-    void                setRoot(std::unique_ptr<INode>& root);
+    void                setRoot(std::unique_ptr<INode> root);
     bool                has_symbol(const std::string_view symbol) const noexcept;
 
-    std::unique_ptr<AST::INode> clone();
-    std::unique_ptr<INode>      clone(const INode* pNode);
+    bool updateNode(const INode* node, std::unique_ptr<INode>& updated_node);
+
+    std::unique_ptr<AST::INode>   cloneRoot() const;
+    static std::unique_ptr<INode> clone(const INode* pNode);
 
     std::string to_string() const;
     void        print();
