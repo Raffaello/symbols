@@ -26,6 +26,7 @@ public:
     {
         virtual ~INode() = default;
 
+        inline bool is_binary() const noexcept;
         inline bool is_expr() const noexcept;
         inline bool is_unary() const noexcept;
         inline bool is_symbol() const noexcept;
@@ -41,7 +42,7 @@ public:
         {
             auto n   = std::make_unique<LeafNum>();
             n->value = value;
-            return std::move(n);
+            return n;
         }
 
         static bool getValue(const INode* pNode, ast_num_t& value)
@@ -75,7 +76,7 @@ public:
         {
             auto n   = std::make_unique<LeafSymbol>();
             n->value = value;
-            return std::move(n);
+            return n;
         }
 
         static const char* getValue(const INode* pNode)
@@ -99,7 +100,7 @@ public:
             auto n    = std::make_unique<NodeUnary>();
             n->negate = negate;
             n->n      = std::move(node);
-            return std::move(n);
+            return n;
         }
     };
 
@@ -161,6 +162,11 @@ inline bool AST::isEquation() const noexcept
         return bin->op == AST::eOperators::EQUAL;
 
     return false;
+}
+
+inline bool AST::INode::is_binary() const noexcept
+{
+    return dynamic_cast<const AST::NodeBin*>(this) != nullptr;
 }
 
 inline bool AST::INode::is_expr() const noexcept

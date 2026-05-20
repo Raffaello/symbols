@@ -30,7 +30,8 @@ bool Simplifier::reduce_uny_(AST& src, const AST::INode* pCurrent)
         if (pNodeUny->negate)
             v = -v;
 
-        AST::LeafNum::setValue(pNodeUny->n.get(), v);
+        auto pNodeUpd = AST::LeafNum::make(v);
+        return src.updateNode(pCurrent, pNodeUpd);
     }
     else
         return reduce_(src, pNodeUny->n.get());

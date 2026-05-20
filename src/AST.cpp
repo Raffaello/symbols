@@ -31,7 +31,7 @@ std::unique_ptr<AST::INode> AST::clone_(const INode* pNode)
 
         return NodeUnary::make(pUny->negate, std::move(pSubNodeClone));
     }
-    else if (pNode->is_expr())
+    else if (pNode->is_binary())
     {
         auto pNodeBin = dynamic_cast<const NodeBin*>(pNode);
         if (pNodeBin == nullptr)
@@ -257,11 +257,14 @@ std::unique_ptr<AST::INode> AST::cloneRoot() const
 
 std::unique_ptr<AST::INode> AST::clone(const INode* pNode)
 {
+    if (pNode == nullptr)
+        return nullptr;
+
     auto pNodeClone = clone_(pNode);
     if (pNodeClone == nullptr)
         return nullptr;
 
-    return std::move(pNodeClone);
+    return pNodeClone;
 }
 
 std::string AST::to_string() const
