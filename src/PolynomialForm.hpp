@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 class PolynomialForm
 {
@@ -15,6 +16,7 @@ private:
 
     int               m_degree = -2;
     std::vector<mp_t> m_coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
+    // std::unordered_map<std::string, mp_t> m_coeffs;
 
     bool collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
     bool collect_poly_num_(const AST::INode* node, PolynomialForm& pf);
