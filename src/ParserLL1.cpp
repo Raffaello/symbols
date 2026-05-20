@@ -154,9 +154,6 @@ std::unique_ptr<AST::INode> ParserLL1::factor_()
         return p;
 
     return AST::NodeUnary::make(u.value(), std::move(p));
-
-    // dynamic_cast<AST::NodeUnary*>(u.get())->n = std::move(p);
-    // return u;
 }
 
 std::optional<bool> ParserLL1::unary_()
@@ -170,7 +167,7 @@ std::optional<bool> ParserLL1::unary_()
             return std::nullopt;
         }
 
-        return t.value == TOKEN_VALUE_MINUS;    // AST::NodeUnary::make(t.value == TOKEN_VALUE_MINUS);    // n->n     = nullptr;
+        return t.value == TOKEN_VALUE_MINUS;
     }
     else
         return std::nullopt;
