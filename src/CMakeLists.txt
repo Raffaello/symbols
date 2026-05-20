@@ -14,7 +14,7 @@ add_dependencies(parser lex_scanner)
 target_sources(parser PRIVATE
     ParserLL1.cpp
     AST.cpp
-    multi_precision.cpp
+    mp_t.cpp
   )
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(parser PUBLIC
@@ -43,9 +43,7 @@ target_include_directories(solver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(solver PUBLIC parser)
 
 add_executable(symbols main.cpp)
-target_compile_definitions(symbols PUBLIC
-)
-target_compile_options(symbols PRIVATE
+target_compile_options(symbols PUBLIC
     $<$<CXX_COMPILER_ID:GCC>: -Wall -Wextra>
 )
 

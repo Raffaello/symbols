@@ -2,7 +2,7 @@
 
 #include "AST.hpp"
 #include "SymbolTable.hpp"
-#include "multi_precision.hpp"
+#include "mp_t.hpp"
 
 
 #include <string>
@@ -18,7 +18,7 @@ private:
     std::shared_ptr<SymbolTable> m_pSymbolTable = nullptr;
 
     // TODO: the symbol table could contain the lastValue too as a special symbol / keyword for e.g $? or $1
-    mp_num_t    m_lastValue = NAN_VALUE;
+    mp_t        m_lastValue = NAN_VALUE;
     std::string m_lastExpr  = "";    // the result of the last resolved expression
 
     std::optional<bool> evalNum_(const AST::INode* node);
@@ -37,12 +37,12 @@ public:
     bool unsetSymbol(const std::string& symbol) noexcept;
 
     inline void               clearSymbols() noexcept;
-    inline const mp_num_t&    lastValue() const noexcept;
+    inline const mp_t&        lastValue() const noexcept;
     inline std::string_view   lastExpr() const noexcept;
     inline const SymbolTable& symbolTable() const noexcept;
 };
 
-inline const mp_num_t& Interpreter::lastValue() const noexcept
+inline const mp_t& Interpreter::lastValue() const noexcept
 {
     return m_lastValue;
 }

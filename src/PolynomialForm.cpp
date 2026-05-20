@@ -11,10 +11,10 @@ PolynomialForm::PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable)
         throw std::invalid_argument("symbol table is null");
 }
 
-mp_num_t& PolynomialForm::operator[](size_t index)
+mp_t& PolynomialForm::operator[](size_t index)
 {
     if (m_coeffs.size() < index + 1)
-        m_coeffs.resize(index + 1);
+        m_coeffs.resize(index + 1, 0);
 
     return m_coeffs[index];
 }
@@ -44,7 +44,7 @@ bool PolynomialForm::collect_poly_num_(const AST::INode* node, PolynomialForm& p
         return false;
     }
 
-    pf[0] += mp_num_t{d};
+    pf[0] += d;
     return true;
 }
 
@@ -52,8 +52,8 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
 {
     if (!node->is_symbol(symbol))
     {
-        mp_num_t d;
-        auto     sym_value = AST::LeafSymbol::getValue(node);
+        mp_t d;
+        auto sym_value = AST::LeafSymbol::getValue(node);
         if (!m_pSymbolTable->getSymbol(sym_value, d))
         {
             std::cerr << std::format("ERROR: unable to get symbol '{}'\n", sym_value);
@@ -66,7 +66,7 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
     }
 
     // otherwise is the symbol to solve for
-    pf[1] += mp_num_t{ast_num_t{1}};
+    pf[1] += 1;
     return true;
 }
 
@@ -167,7 +167,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             }
 
             assert(deg2 == 0);
-            if (mp_isZero(pf2[0]))
+            if (pf2[0].isZero())
             {
                 std::cerr << "ERROR: division by zero\n";
                 return false;
@@ -196,8 +196,8 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 return false;
             }
 
-            if (mp_isZero(pf2[0]))
-                pf[0] += mp_num_t{ast_num_t{1}};
+            if (pf2[0].isZero())
+                pf[0] += 1;
             else if (pf2[0] == 1)
             {
                 for (size_t i = 0; i < pf1.size(); ++i)
@@ -206,7 +206,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             else
             {
                 // General integer exponentiation via repeated multiplication
-                auto [exponent, r] = mp_convert_to_mpz_int(pf2[0]);
+                auto [exponent, r] = mp_t::convert_to_mpz_int(pf2[0]);
                 if (r != 0)
                 {
                     std::cerr << "ERROR exponent must be an integer\n";
@@ -222,7 +222,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 assert(exponent >= 2);
                 // result = pf1^exponent via repeated multiplication
                 PolynomialForm result(m_pSymbolTable);
-                result[0] = mp_num_t{mp::mpq_rational{1}};    // start with 1
+                result[0] = 1;    // start with 1
 
                 for (mp::mpz_int e = 0; e < exponent; ++e)
                 {

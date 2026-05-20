@@ -1,6 +1,6 @@
 #include "Solver.hpp"
 #include "formatters.hpp"
-#include "multi_precision.hpp"
+#include "mp_t.hpp"
 
 
 #include <iostream>
@@ -38,7 +38,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     if (!res)
         return false;
 
-    std::vector<mp_num_t> sols;
+    std::vector<mp_t> sols;
     switch (pf.degree())
     {
     case -1:
@@ -53,15 +53,15 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         return true;
 
     case 1:    // linear
-        sols.emplace_back(mp_num_t{-pf[0] / pf[1]});
+        sols.emplace_back(-pf[0] / pf[1]);
         break;
     case 2:
     {
-        const mp_num_t a = pf[2];
-        const mp_num_t b = pf[1];
-        const mp_num_t c = pf[0];
+        const mp_t a = pf[2];
+        const mp_t b = pf[1];
+        const mp_t c = pf[0];
 
-        const mp_num_t delta = (b * b) - (a * c * 4);
+        const mp_t delta = (b * b) - (a * c * 4);
 
         if (delta < 0)
         {
@@ -69,12 +69,12 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
             return true;
         }
 
-        const mp_num_t sq_delta = mp_sqrt(delta);
-        const mp_num_t a2       = a * 2;
+        const mp_t sq_delta = mp_t::sqrt(delta);
+        const mp_t a2       = a * 2;
         // sol 1
         sols.emplace_back((-b + sq_delta) / a2);
         // sol 2
-        if (delta != 0.0)
+        if (!delta.isZero())
             sols.emplace_back((-b - sq_delta) / a2);
     }
     break;
@@ -82,51 +82,50 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     case 3:
     {
         // Cardano's formula
-        const mp_num_t a = pf[2] / pf[3];
-        const mp_num_t b = pf[1] / pf[3];
-        const mp_num_t c = pf[0] / pf[3];
+        const mp_t a = pf[2] / pf[3];
+        const mp_t b = pf[1] / pf[3];
+        const mp_t c = pf[0] / pf[3];
 
-        const mp_num_t aa = a * a;
-        const mp_num_t p  = b - (aa / 3);
-        const mp_num_t q  = (a * 2) * (aa / 27) - a * (b / 3) + c;
+        const mp_t aa = a * a;
+        const mp_t p  = b - (aa / 3);
+        const mp_t q  = (a * 2) * (aa / 27) - a * (b / 3) + c;
 
-        const mp_num_t p3    = p * p * p;
-        const mp_num_t delta = (q * q) / 4 + p3 / 27;
+        const mp_t p3    = p * p * p;
+        const mp_t delta = (q * q) / 4 + p3 / 27;
 
-        const mp_num_t a_3 = a / 3;
-        const mp_num_t q_2 = q / 2;
+        const mp_t a_3 = a / 3;
+        const mp_t q_2 = q / 2;
 
         if (delta < 0)
         {
-            mp::mpfr_float PI;
-            mpfr_const_pi(PI.backend().data(), MPFR_RNDN);
+            mp::mpfr_float PI_;
+            mpfr_const_pi(PI_.backend().data(), MPFR_RNDN);
+            mp_t PI = PI_;
 
-            const mp_num_t r     = mp_sqrt(mp_num_t(-p / 3)) * 2;
-            const mp_num_t denom = mp_sqrt(mp_num_t(-p3 / 27));
-            mp_num_t       z     = -q_2 / denom;
-            z                    = mp_clamp(z, mp_num_t{mp::mpq_rational{-1}}, mp_num_t{mp::mpq_rational{+1}});
+            const mp_t r     = mp_t::sqrt(-p / 3) * 2;
+            const mp_t denom = mp_t::sqrt(-p3 / 27);
+            mp_t       z     = -q_2 / denom;
+            z.clamp(-1, +1);
 
-            const mp::mpfr_float a_3f = to_mpfr_float(a_3);
-            const mp::mpfr_float phi  = mp::acos(to_mpfr_float(z));
-
-            sols.emplace_back(r * mp::cos(phi / 3) - a / 3);
-            sols.emplace_back(r * mp::cos((phi + (2 * PI)) / 3) - a_3f);
-            sols.emplace_back(r * mp::cos((phi + (4 * PI)) / 3) - a_3f);
+            const mp_t phi = mp_t::acos(z);
+            sols.emplace_back(r * mp_t::cos(phi / 3) - a / 3);
+            sols.emplace_back(r * mp_t::cos((phi + (2 * PI)) / 3) - a_3);
+            sols.emplace_back(r * mp_t::cos((phi + (4 * PI)) / 3) - a_3);
         }
-        else if (mp_isZero(delta))
+        else if (delta.isZero())
         {
-            const mp_num_t u = mp_cbrt(mp_num_t(-q_2));
+            const mp_t u = mp_t::cbrt(-q_2);
             sols.emplace_back((u * 2) - a_3);
             sols.emplace_back((-u) - a_3);
         }
         else    // if (delta > 0.0)
         {
             // one real solution, two complex
-            const mp_num_t sq_delta = mp_sqrt(delta);
+            const mp_t sq_delta = mp_t::sqrt(delta);
 
-            const mp_num_t u = mp_cbrt(mp_num_t{-q_2 + sq_delta});
-            const mp_num_t v = mp_cbrt(mp_num_t{-q_2 - sq_delta});
-            const mp_num_t y = u + v;
+            const mp_t u = mp_t::cbrt(-q_2 + sq_delta);
+            const mp_t v = mp_t::cbrt(-q_2 - sq_delta);
+            const mp_t y = u + v;
 
             sols.emplace_back(y - (a_3));
         }
@@ -144,10 +143,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     // round the solution for eventual numeric errors
     for (int i = 0; i < sols.size(); ++i)
     {
-        sols[i] = mp_roundNear(sols[i]);
+        sols[i].roundNear();
         // To avoid having -0 as it is just 0
-        if (mp_isZero(sols[i]))
-            sols[i] = mp::mpq_rational{0};
+        if (sols[i].isZero())
+            sols[i] = 0;
     }
 
     std::sort(sols.begin(), sols.end() /*, std::greater<>()*/);
@@ -157,14 +156,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     for (auto& d : sols)
     {
         // check it is not weird rational
-        if (mp_isWeird(d))
-        {
-            const mp::mpfr_float f  = to_mpfr_float(d);
-            const mp::mpfr_float fr = mp_roundNear(f);
-            m_solution              = m_solution + std::format("{} = {}, ", for_symbol, fr);
-        }
-        else
-            m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
+        m_solution = m_solution + std::format("{} = {}, ", for_symbol, d);
     }
 
     m_solution.pop_back();

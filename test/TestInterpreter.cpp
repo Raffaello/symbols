@@ -17,7 +17,7 @@ public:
 
 TEST_P(TestInterpreter, eval)
 {
-    const mp_num_t expVal = mp_parse_decimal(expValStr);
+    const mp_t expVal = mp_t::parse_decimal(expValStr);
 
     LexScanner  scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1   parser(scanner);
@@ -27,11 +27,11 @@ TEST_P(TestInterpreter, eval)
     parser.ast().print();
     ASSERT_TRUE(interpreter.eval(parser.ast()));
 
-    EXPECT_INT_NUM_T_NEAR(interpreter.lastValue(), expVal, MPFR_EPSILON);
+    EXPECT_MP_T_NEAR(interpreter.lastValue(), expVal, MPFR_EPSILON);
     ASSERT_STREQ(interpreter.lastExpr().data(), expr.c_str());
 
     if (!sym.empty())
-        EXPECT_INT_NUM_T_NEAR(interpreter.symbolTable().table().at(sym), expVal, MPFR_EPSILON);
+        EXPECT_MP_T_NEAR(interpreter.symbolTable().table().at(sym), expVal, MPFR_EPSILON);
 }
 
 INSTANTIATE_TEST_SUITE_P(
