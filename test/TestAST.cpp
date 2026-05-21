@@ -34,7 +34,8 @@ TEST(AST, update_root_left_child)
     ASSERT_NE(nullptr, pNodeBin);
 
     // pNodeBin->l // number 1
-    auto      l = dynamic_cast<const AST::LeafNum*>(pNodeBin->l.get());
+    auto l = dynamic_cast<const AST::LeafNum*>(pNodeBin->l.get());
+    ASSERT_NE(nullptr, l);
     ast_num_t v;
     ASSERT_TRUE(l->getValue(l, v));
     ASSERT_EQ(1, v);
@@ -45,6 +46,7 @@ TEST(AST, update_root_left_child)
     ast.print();
 
     l = dynamic_cast<const AST::LeafNum*>(pNodeBin->l.get());
+    ASSERT_NE(nullptr, l);
     ASSERT_TRUE(l->getValue(l, v));
     ASSERT_EQ(10, v);
 }

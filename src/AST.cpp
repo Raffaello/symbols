@@ -181,41 +181,24 @@ bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol)
     return false;
 }
 
-bool AST::updateNode_(const std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
+bool AST::updateNode_(std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
 {
+    if (pCurNode == nullptr || pCurNode->get() == nullptr)
+        return false;
+
     if (pCurNode->get() == pNode)
+    {
+        *pCurNode = std::move(pNodeUpdate);
         return true;
+    }
 
     // if num is a leaf
     // if sym is a leaf
-    if (auto nodeUny = dynamic_cast<const NodeUnary*>(pCurNode->get()))
-    {
-        const bool res = updateNode_(&nodeUny->n, pNode, pNodeUpdate);
-        if (res)
-        {
-            auto nu = const_cast<NodeUnary*>(nodeUny);
-            nu->n   = std::move(pNodeUpdate);
-        }
-
-        return res;
-    }
-    else if (auto nodeBin = dynamic_cast<const NodeBin*>(pCurNode->get()))
-    {
-        auto b   = const_cast<NodeBin*>(nodeBin);
-        bool res = updateNode_(&nodeBin->l, pNode, pNodeUpdate);
-        if (res)
-        {
-            b->l = std::move(pNodeUpdate);
-            return true;
-        }
-
-        res = updateNode_(&nodeBin->r, pNode, pNodeUpdate);
-        if (res)
-        {
-            b->r = std::move(pNodeUpdate);
-            return true;
-        }
-    }
+    if (auto nodeUny = dynamic_cast<NodeUnary*>(pCurNode->get()))
+        return updateNode_(&nodeUny->n, pNode, pNodeUpdate);
+    else if (auto nodeBin = dynamic_cast<NodeBin*>(pCurNode->get()))
+        return updateNode_(&nodeBin->l, pNode, pNodeUpdate) ||
+               updateNode_(&nodeBin->r, pNode, pNodeUpdate);
 
     return false;
 }

@@ -97,6 +97,9 @@ public:
 
         static std::unique_ptr<NodeUnary> make(const bool negate, std::unique_ptr<INode> node)
         {
+            if (node == nullptr)
+                return nullptr;
+
             auto n    = std::make_unique<NodeUnary>();
             n->negate = negate;
             n->n      = std::move(node);
@@ -113,6 +116,9 @@ public:
 
         static std::unique_ptr<NodeBin> make(const eOperators op, std::unique_ptr<INode> l, std::unique_ptr<INode> r)
         {
+            if (l == nullptr || r == nullptr)
+                return nullptr;
+
             auto n = std::make_unique<NodeBin>();
             n->op  = op;
             n->l   = std::move(l);
@@ -128,7 +134,7 @@ private:
     static void                        to_string_(const INode* node, std::stringstream& ss, const int level);
     static void                        print_(const INode* node, const int indent);
     static bool                        has_symbol_(const AST::INode* node, const std::string_view symbol);
-    static bool                        updateNode_(const std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate);
+    static bool                        updateNode_(std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate);
 
 public:
     AST()  = default;
