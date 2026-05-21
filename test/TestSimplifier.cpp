@@ -27,7 +27,7 @@ INSTANTIATE_TEST_SUITE_P(
     SimplifierTestSuite,
     TestSimplifier,
     ::testing::Values(
-        std::make_tuple("x+1+2*3", "(x + 1) + 6"),    // it should be at least x + 7, but what is the point for this rule?
+        std::make_tuple("x+1+2*3", "(x + 1) + 6"),    // TODO: it should be at least x + 7, but what is the point for this rule?
         // std::make_tuple("-(-5)", "5"), // TODO: it should be 5
         std::make_tuple("10/2", "5"),
         std::make_tuple("2^0", "1"),
@@ -36,7 +36,36 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("(2+3)*4", "20"),
         std::make_tuple("2^1", "2"),
         std::make_tuple("10/4", "(5/2)"),
-        std::make_tuple("x*1", "x * 1")    // TODO: this should return just x
+        std::make_tuple("x+0", "x"),
+        std::make_tuple("x-0", "x"),
+        std::make_tuple("x*1", "x"),
+        std::make_tuple("x/1", "x"),
+        std::make_tuple("x^0", "1"),    // 0^0 = 1 in this case
+        std::make_tuple("x^1", "x"),
+        std::make_tuple("x+0", "x"),
+        std::make_tuple("0-x", "x"),
+        std::make_tuple("1*x", "x"),
+        std::make_tuple("1/x", "1 / x"),
+        std::make_tuple("0^x", "0^x"),    // 0^0 = 1 in this case
+        std::make_tuple("1^x", "1"),
+        std::make_tuple("0*x", "0"),
+        std::make_tuple("x*0", "0"),
+
+        std::make_tuple("0+x+0", "x"),
+        std::make_tuple("0-x-0", "x"),
+        std::make_tuple("1*x*1", "x"),
+
+        std::make_tuple("0-x+0", "x"),
+        std::make_tuple("0-x+0", "x"),
+        std::make_tuple("1*x/1", "x"),
+
+        std::make_tuple("0-x*1", "x"),
+        std::make_tuple("0+x/1", "x"),
+        std::make_tuple("1*x+0", "x"),
+
+
+        std::make_tuple("x*2", "x * 2")
+        // std::make_tuple("2*x*2", "4 * x") // TODO
 
         ));
 
