@@ -247,7 +247,7 @@ bool AST::has_symbol(const std::string_view symbol) const noexcept
 
 bool AST::updateNode(const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
 {
-    if (pNode == nullptr || pNodeUpdate == nullptr 
+    if (pNode == nullptr || pNodeUpdate == nullptr)
         return false;
 
     // special case if it is the root.
