@@ -183,7 +183,7 @@ bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol)
 
 bool AST::updateNode_(std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
 {
-    if (pCurNode == nullptr || pCurNode->get() == nullptr)
+    if (pCurNode == nullptr || pCurNode->get() == nullptr || pNodeUpdate == nullptr)
         return false;
 
     if (pCurNode->get() == pNode)
@@ -197,8 +197,13 @@ bool AST::updateNode_(std::unique_ptr<AST::INode>* pCurNode, const INode* pNode,
     if (auto nodeUny = dynamic_cast<NodeUnary*>(pCurNode->get()))
         return updateNode_(&nodeUny->n, pNode, pNodeUpdate);
     else if (auto nodeBin = dynamic_cast<NodeBin*>(pCurNode->get()))
-        return updateNode_(&nodeBin->l, pNode, pNodeUpdate) ||
-               updateNode_(&nodeBin->r, pNode, pNodeUpdate);
+    {
+        if (updateNode_(&nodeBin->l, pNode, pNodeUpdate))
+            return true;
+
+        if (updateNode_(&nodeBin->r, pNode, pNodeUpdate))
+            return true;
+    }
 
     return false;
 }

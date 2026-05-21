@@ -56,7 +56,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("1*x*1", "x"),
 
         std::make_tuple("0-x+0", "x"),
-        std::make_tuple("0-x+0", "x"),
+        std::make_tuple("0+x-0", "x"),
         std::make_tuple("1*x/1", "x"),
 
         std::make_tuple("0-x*1", "x"),
