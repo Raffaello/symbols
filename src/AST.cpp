@@ -17,6 +17,8 @@ std::unique_ptr<AST::INode> AST::clone_(const INode* pNode)
     }
     else if (pNode->is_symbol())
     {
+        // NOTE: nullptr is managed internally in make and
+        //       it will return nullptr in case of something goes wrong in getValue
         return LeafSymbol::make(LeafSymbol::getValue(pNode));
     }
     else if (pNode->is_unary())

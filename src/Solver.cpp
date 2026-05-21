@@ -135,7 +135,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     default:
         // Newton's method
         // todo
-        std::cout << std::format("Not implemented to solve polynomial of degree {}\n", pf.degree());
+        std::cerr << std::format("CRITICAL: Not implemented to solve polynomial of degree {}\n", pf.degree());
         return false;
         break;
     }
@@ -171,7 +171,7 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
     m_solution = "";
     if (!ast.has_symbol(for_symbol))
     {
-        std::cerr << std::format("Symbol to solve for '{}' not found in {}\n", for_symbol, ast.to_string());
+        std::cerr << std::format("ERROR: Symbol to solve for '{}' not found in {}\n", for_symbol, ast.to_string());
         return false;
     }
 
