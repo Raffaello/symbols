@@ -1,7 +1,7 @@
 #include "Simplifier.hpp"
 #include "mp_t.hpp"
 
-bool Simplifier::reduce_(AST& src, const AST::INode* pCurrent)
+bool Simplifier::reduce_(AST& src, AST::INode* pCurrent)
 {
     if (pCurrent->is_num())
         return true;
@@ -15,7 +15,7 @@ bool Simplifier::reduce_(AST& src, const AST::INode* pCurrent)
     return false;
 }
 
-bool Simplifier::reduce_uny_(AST& src, const AST::INode* pCurrent)
+bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
 {
     auto pNodeUny = dynamic_cast<const AST::NodeUnary*>(pCurrent);
     if (pNodeUny == nullptr)
@@ -37,7 +37,7 @@ bool Simplifier::reduce_uny_(AST& src, const AST::INode* pCurrent)
         return reduce_(src, pNodeUny->n.get());
 }
 
-bool Simplifier::reduce_expr_(AST& src, const AST::INode* pCurrent)
+bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
 {
     auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
@@ -80,7 +80,7 @@ bool Simplifier::reduce_expr_(AST& src, const AST::INode* pCurrent)
     return true;
 }
 
-bool Simplifier::reduce_expr_expr_num_(AST& src, const AST::INode** pCurrent)
+bool Simplifier::reduce_expr_expr_num_(AST& src, AST::INode** pCurrent)
 {
     if (pCurrent == nullptr)
         return false;
@@ -95,7 +95,7 @@ bool Simplifier::reduce_expr_expr_num_(AST& src, const AST::INode** pCurrent)
     // 3 factors might be simplified into 2 factor:
     // a*x*b => ab*x (2*x*2 = 4*x)
     // the simplest case if have the same operator, except pow or div as they are commutative.
-    auto pNodeBin2 = dynamic_cast<const AST::NodeBin*>(pNodeBin->l.get());
+    auto pNodeBin2 = dynamic_cast<AST::NodeBin*>(pNodeBin->l.get());
     if (pNodeBin2 == nullptr)
         return false;
 
@@ -173,20 +173,20 @@ bool Simplifier::reduce_expr_expr_num_(AST& src, const AST::INode** pCurrent)
     }
 
     if (lr2_swapped)
-        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(const_cast<AST::NodeBin*>(pNodeBin2)->r), std::move(AST::LeafNum::make(vr)));
+        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->r), std::move(AST::LeafNum::make(vr)));
     else
-        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(const_cast<AST::NodeBin*>(pNodeBin2)->l), std::move(AST::LeafNum::make(vr)));
+        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->l), std::move(AST::LeafNum::make(vr)));
 
     *pCurrent = pNodeUpd.get();
     return src.updateNode(pNodeBin, pNodeUpd);
 }
 
-bool Simplifier::reduce_expr_same_sym_(AST& src, const AST::INode** pCurrent)
+bool Simplifier::reduce_expr_same_sym_(AST& src, AST::INode** pCurrent)
 {
     if (pCurrent == nullptr)
         return false;
 
-    auto pNodeBin = dynamic_cast<const AST::NodeBin*>(*pCurrent);
+    auto pNodeBin = dynamic_cast<AST::NodeBin*>(*pCurrent);
     if (pNodeBin == nullptr)
         return true;
 
@@ -212,7 +212,7 @@ bool Simplifier::reduce_expr_same_sym_(AST& src, const AST::INode** pCurrent)
 
     case ADD:
         // x+x = 2*x
-        pNodeUpd = AST::NodeBin::make(MUL, std::move(const_cast<AST::NodeBin*>(pNodeBin)->l), AST::LeafNum::make(2));
+        pNodeUpd = AST::NodeBin::make(MUL, std::move(pNodeBin->l), AST::LeafNum::make(2));
         break;
     case SUB:
         // x-x = 0
@@ -220,7 +220,7 @@ bool Simplifier::reduce_expr_same_sym_(AST& src, const AST::INode** pCurrent)
         break;
     case MUL:
         // x*x = x^2
-        pNodeUpd = AST::NodeBin::make(POW, std::move(const_cast<AST::NodeBin*>(pNodeBin)->l), AST::LeafNum::make(2));
+        pNodeUpd = AST::NodeBin::make(POW, std::move(pNodeBin->l), AST::LeafNum::make(2));
         break;
     case DIV:
         // x/x = 1, assuming x!=0
@@ -235,7 +235,7 @@ bool Simplifier::reduce_expr_same_sym_(AST& src, const AST::INode** pCurrent)
     return src.updateNode(pNodeBin, pNodeUpd);
 }
 
-bool Simplifier::reduce_expr_num_num_(AST& src, const AST::INode** pCurrent)
+bool Simplifier::reduce_expr_num_num_(AST& src, AST::INode** pCurrent)
 {
     if (pCurrent == nullptr)
         return false;
@@ -303,7 +303,7 @@ bool Simplifier::reduce_expr_num_num_(AST& src, const AST::INode** pCurrent)
     return src.updateNode(pNodeBin, pNodeUpd);
 }
 
-bool Simplifier::reduce_expr_identity_and_special_cases_(AST& src, const AST::INode** pCurrent)
+bool Simplifier::reduce_expr_identity_and_special_cases_(AST& src, AST::INode** pCurrent)
 {
     if (pCurrent == nullptr)
         return false;
