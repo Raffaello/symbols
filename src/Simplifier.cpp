@@ -88,7 +88,15 @@ bool Simplifier::reduce_expr_(AST& src, const AST::INode* pCurrent)
             else if (b == 1)
                 pNodeUpd = AST::LeafNum::make(a);
             else
-                return true;
+            {
+                mp_t z = a;
+                z      = z ^ b;
+                if (!z.isRational() || z.isWeird())
+                    return true;
+
+                ast_num_t q = z;
+                pNodeUpd    = AST::LeafNum::make(q);
+            }
             break;
         case EQUAL:
             return true;

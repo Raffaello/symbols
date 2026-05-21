@@ -57,7 +57,12 @@ std::unique_ptr<AST::INode> AST::clone_(const INode* pNode)
 void AST::to_string_(const INode* node, std::stringstream& ss, const int level)
 {
     if (auto num = dynamic_cast<const LeafNum*>(node))
-        ss << num->value;
+    {
+        if (mp::denominator(num->value) == 1)
+            ss << num->value;
+        else
+            ss << "(" << num->value << ")";
+    }
     else if (auto sym = dynamic_cast<const LeafSymbol*>(node))
         ss << sym->value;
     else if (auto uni = dynamic_cast<const NodeUnary*>(node))
@@ -242,9 +247,15 @@ bool AST::has_symbol(const std::string_view symbol) const noexcept
 
 bool AST::updateNode(const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
 {
-    // special case if it is the root, doesn't allow to update it as it is an entirely new AST.
-    if (pNode == nullptr || pNodeUpdate == nullptr || pNode == getRoot())
+    if (pNode == nullptr || pNodeUpdate == nullptr 
         return false;
+
+    // special case if it is the root.
+    if (pNode == getRoot())
+    {
+        setRoot(std::move(pNodeUpdate));
+        return true;
+    }
 
     // find node and its parent to replace it
     return updateNode_(&m_pRoot, pNode, pNodeUpdate);

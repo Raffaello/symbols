@@ -29,7 +29,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("1", "1"),
         std::make_tuple("1.", "1"),
         std::make_tuple("1.0", "1"),
-        std::make_tuple("1.5", "3/2"),
+        std::make_tuple("1.5", "(3/2)"),
         std::make_tuple("x", "x"),
         std::make_tuple("(1)", "1"),
         std::make_tuple("(x)", "x"),
@@ -53,7 +53,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x=1+1", "x = 1 + 1"),
         std::make_tuple("x=1+a", "x = 1 + a"),
         std::make_tuple("1=a", "1 = a"),
-        std::make_tuple("x=(1 * 10)   / 2. -+ 4.1", "x = ((1 * 10) / 2) - (+41/10)"),
+        std::make_tuple("x=(1 * 10)   / 2. -+ 4.1", "x = ((1 * 10) / 2) - (+(41/10))"),
         std::make_tuple("a+b = x+1", "a + b = x + 1"),    // accepting equation, the interpreter will trigger an error though
         std::make_tuple("x = -(+(-(+(-a)))) * b", "x = (-(+(-(+(-a))))) * b"),
         std::make_tuple("1^1", "1^1"),

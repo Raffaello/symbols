@@ -32,9 +32,10 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("10/2", "5"),
         std::make_tuple("2^0", "1"),
         std::make_tuple("2^3", "8"),
+        std::make_tuple("2^3.1", "2^(31/10)"),
         std::make_tuple("(2+3)*4", "20"),
         std::make_tuple("2^1", "2"),
-        std::make_tuple("10/4", "5/2"),
+        std::make_tuple("10/4", "(5/2)"),
         std::make_tuple("x*1", "x * 1")    // TODO: this should return just x
 
         ));
