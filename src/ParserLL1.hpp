@@ -4,6 +4,9 @@
 #include "Token.hpp"
 #include "AST.hpp"
 
+#include <optional>
+#include <memory>
+
 /**
  * Recursive Descent LL1 Parsers
  *
@@ -37,7 +40,7 @@ private:
     std::unique_ptr<AST::INode> term_();
     std::unique_ptr<AST::INode> termPrime_(std::unique_ptr<AST::INode> left);
     std::unique_ptr<AST::INode> factor_();
-    std::unique_ptr<AST::INode> unary_();
+    std::optional<bool>         unary_();
     std::unique_ptr<AST::INode> pow_();
     std::unique_ptr<AST::INode> powPrime_(std::unique_ptr<AST::INode> left);
     std::unique_ptr<AST::INode> pred_();

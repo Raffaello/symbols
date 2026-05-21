@@ -26,6 +26,7 @@ public:
     {
         virtual ~INode() = default;
 
+        inline bool is_binary() const noexcept;
         inline bool is_expr() const noexcept;
         inline bool is_unary() const noexcept;
         inline bool is_symbol() const noexcept;
@@ -37,11 +38,11 @@ public:
     {
         ast_num_t value;
 
-        static std::unique_ptr<LeafNum> make(const ast_num_t value)
+        static std::unique_ptr<INode> make(const ast_num_t value)
         {
             auto n   = std::make_unique<LeafNum>();
             n->value = value;
-            return std::move(n);
+            return n;
         }
 
         static bool getValue(const INode* pNode, ast_num_t& value)
@@ -54,17 +55,28 @@ public:
 
             return false;
         }
+
+        static bool setValue(INode* pNode, const ast_num_t& value)
+        {
+            if (auto pNum = dynamic_cast<LeafNum*>(pNode))
+            {
+                pNum->value = value;
+                return true;
+            }
+
+            return false;
+        }
     };
 
     struct LeafSymbol : public INode
     {
         std::string value;
 
-        static std::unique_ptr<LeafSymbol> make(const std::string& value)
+        static std::unique_ptr<INode> make(const std::string& value)
         {
             auto n   = std::make_unique<LeafSymbol>();
             n->value = value;
-            return std::move(n);
+            return n;
         }
 
         static const char* getValue(const INode* pNode)
@@ -83,12 +95,12 @@ public:
 
         inline const char value() const noexcept { return negate ? '-' : '+'; }
 
-        static std::unique_ptr<NodeUnary> make(const bool negate)
+        static std::unique_ptr<NodeUnary> make(const bool negate, std::unique_ptr<INode> node)
         {
             auto n    = std::make_unique<NodeUnary>();
             n->negate = negate;
-            n->n      = nullptr;
-            return std::move(n);
+            n->n      = std::move(node);
+            return n;
         }
     };
 
@@ -112,19 +124,31 @@ public:
 private:
     std::unique_ptr<INode> m_pRoot = nullptr;
 
-    void to_string_(const INode* node, std::stringstream& ss, const int level) const;
-    void print_(const INode* node, const int indent);
-
-    bool has_symbol_(const AST::INode* node, const std::string_view symbol) const noexcept;
+    static std::unique_ptr<AST::INode> clone_(const INode* pNode);
+    static void                        to_string_(const INode* node, std::stringstream& ss, const int level);
+    static void                        print_(const INode* node, const int indent);
+    static bool                        has_symbol_(const AST::INode* node, const std::string_view symbol);
+    static bool                        updateNode_(const std::unique_ptr<AST::INode>* pCurNode, const INode* pNode, std::unique_ptr<INode>& pNodeUpdate);
 
 public:
     AST()  = default;
     ~AST() = default;
 
+    AST(AST&&) noexcept   = default;
+    AST& operator=(AST&&) = default;
+
+    AST(const AST& other);
+    AST& operator=(const AST& other);
+
     inline bool         isEquation() const noexcept;
     inline const INode* getRoot() const noexcept;
-    void                setRoot(std::unique_ptr<INode>& root);
+    void                setRoot(std::unique_ptr<INode> root);
     bool                has_symbol(const std::string_view symbol) const noexcept;
+
+    bool updateNode(const INode* node, std::unique_ptr<INode>& updated_node);
+
+    std::unique_ptr<AST::INode>   cloneRoot() const;
+    static std::unique_ptr<INode> clone(const INode* pNode);
 
     std::string to_string() const;
     void        print();
@@ -138,6 +162,11 @@ inline bool AST::isEquation() const noexcept
         return bin->op == AST::eOperators::EQUAL;
 
     return false;
+}
+
+inline bool AST::INode::is_binary() const noexcept
+{
+    return dynamic_cast<const AST::NodeBin*>(this) != nullptr;
 }
 
 inline bool AST::INode::is_expr() const noexcept

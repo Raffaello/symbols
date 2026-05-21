@@ -62,19 +62,25 @@ TEST(Test_mp_t, logic)
     EXPECT_TRUE(b == b2);    // mp::mpfr_float()
     EXPECT_TRUE(b2 == b);
 
+    EXPECT_FALSE(a.isRational());
+    EXPECT_TRUE(b.isRational());
+    EXPECT_FALSE(b2.isRational());
+
     mp_t w = mp::mpq_rational{"10000/9999"};
     EXPECT_FALSE(w.isWeird());
+    EXPECT_TRUE(w.isRational());
 
     w = mp::mpq_rational("123456/654321");
     EXPECT_TRUE(w.isWeird());
+    EXPECT_TRUE(w.isRational());
 
     w = mp::mpq_rational{"1000000000000000/999999999999999"};
     EXPECT_TRUE(w.isWeird());
+    EXPECT_TRUE(w.isRational());
 
     auto [q, r] = mp_t::convert_to_mpz_int(w);
     EXPECT_EQ(q, 1);
     EXPECT_EQ(r, mp::mpq_rational("1/999999999999999"));
-
 
     EXPECT_FALSE(w == mp_t(1));    // TODO: review when removing multi_precision.hpp
     w.roundNear();
