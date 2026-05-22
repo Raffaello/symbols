@@ -12,7 +12,8 @@
  *
  * Grammar:
  * S    ::= S' END
- * S'   ::= E | E = E
+ * S'   ::= E S''
+ * S''  ::= = E | e
  * E    ::= T E'
  * E'   ::= + T E' | - T E' | e
  * T    ::= F T'
@@ -35,6 +36,7 @@ private:
 
     std::unique_ptr<AST::INode> stmt_();
     std::unique_ptr<AST::INode> stmtPrime_();
+    std::unique_ptr<AST::INode> stmtSecond_(std::unique_ptr<AST::INode> left);
     std::unique_ptr<AST::INode> expr_();
     std::unique_ptr<AST::INode> exprPrime_(std::unique_ptr<AST::INode> left);
     std::unique_ptr<AST::INode> term_();

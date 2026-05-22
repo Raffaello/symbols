@@ -42,6 +42,11 @@ std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
     if (l == nullptr)
         return nullptr;
 
+    return stmtSecond_(std::move(l));
+}
+
+std::unique_ptr<AST::INode> ParserLL1::stmtSecond_(std::unique_ptr<AST::INode> left)
+{
     if (m_token.type == eTOKENS::EQUAL)
     {
         Token t = m_token;
@@ -55,10 +60,10 @@ std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        return AST::NodeBin::make(AST::eOperators::EQUAL, std::move(l), std::move(r));
+        return AST::NodeBin::make(AST::eOperators::EQUAL, std::move(left), std::move(r));
     }
 
-    return l;
+    return left;
 }
 
 std::unique_ptr<AST::INode> ParserLL1::expr_()
