@@ -3,6 +3,9 @@
 
 bool Simplifier::reduce_(AST& src, AST::INode* pCurrent)
 {
+    if (pCurrent == nullptr)
+        return false;
+
     if (pCurrent->is_num())
         return true;
     else if (pCurrent->is_symbol())
@@ -227,7 +230,7 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
         lr2_swapped = true;
     }
     else
-        return nullptr;    // error it shouldn't never reach here
+        return pCurrent;    // skip rule
 
     // r2 num, l2 sym, r num
     // (l2 _ r2) _ r

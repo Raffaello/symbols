@@ -166,6 +166,9 @@ void AST::print_(const INode* node, const int indent)
 
 bool AST::has_symbol_(const AST::INode* node, const std::string_view symbol)
 {
+    if (node == nullptr)
+        return false;
+
     if (node->is_symbol(symbol))
         return true;
     else if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
