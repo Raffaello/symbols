@@ -21,6 +21,9 @@ bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
     if (pNodeUny == nullptr)
         return false;
 
+    if (!reduce_(src, pNodeUny->n.get()))
+        return false;
+
     if (pNodeUny->n->is_num())
     {
         ast_num_t v;
@@ -33,8 +36,8 @@ bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
         auto pNodeUpd = AST::LeafNum::make(v);
         return src.updateNode(pCurrent, pNodeUpd);
     }
-    else
-        return reduce_(src, pNodeUny->n.get());
+
+    return true;
 }
 
 bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
@@ -388,6 +391,8 @@ AST::INode* Simplifier::reduce_expr_identity_and_special_cases_(AST& src, AST::I
             pNodeUpd = AST::LeafNum::make(0);
         else if (v == 1)
             pNodeUpd = AST::clone(l);
+        else if (v == -1)
+            pNodeUpd = AST::NodeUnary::make(true, AST::clone(l));
         else
             return pCurrent;
         break;
