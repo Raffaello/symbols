@@ -86,6 +86,10 @@ bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
 
         // l is num, r is sym
         std::unique_ptr<AST::INode> pNodeUpd = nullptr;
+        ast_num_t                   v;
+        if (!AST::LeafNum::getValue(l, v))
+            return false;
+
         switch (pNodeBin->op)
         {
             using enum AST::eOperators;
@@ -97,23 +101,13 @@ bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
 
         case ADD:
             // -(1 + x) = -l -r
-            {
-                ast_num_t v;
-                if (!AST::LeafNum::getValue(l, v))
-                    return false;
-
-                pNodeUpd = AST::NodeBin::make(SUB, AST::LeafNum::make(-v), AST::clone(r));
-            }
+            pNodeUpd = AST::NodeBin::make(SUB, AST::LeafNum::make(-v), AST::clone(r));
             break;
         case SUB:
-            // -(1-x) = x-1
-            {
-                ast_num_t v;
-                if (!AST::LeafNum::getValue(l, v))
-                    return false;
-
+            if (lr_swap)    // -(x-1) = 1-x
+                pNodeUpd = AST::NodeBin::make(SUB, AST::clone(l), AST::clone(r));
+            else            // -(1-x) = x-1
                 pNodeUpd = AST::NodeBin::make(SUB, AST::clone(r), AST::clone(l));
-            }
             break;
 
         case POW:
@@ -151,15 +145,14 @@ bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
     if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
         return false;
 
-    // this is the case like 2+x*4, or 2*x^2
+    // this should be for some missing cases
     // this case could be only simplified if it is in the form of:
-    // x+x*2 => x*3
+    // x*x^2 => x^3
     // {s1} [op1] {s1} [op2] {num} same symbols
     // case  num expr
     if (pNodeBin->l->is_num() && pNodeBin->r->is_expr())
     {
         // TODO
-        int i = 0;
     }
 
     // case expr uny

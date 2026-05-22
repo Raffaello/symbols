@@ -55,7 +55,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("0+x+0", "x"),
         std::make_tuple("0-x-0", "-x"),
         std::make_tuple("0-x+0", "-x"),
-        std::make_tuple("0+x+0", "x"),
+        std::make_tuple("0+x-0", "x"),
         std::make_tuple("1*x*1", "x"),
         std::make_tuple("1*x/1", "x"),
 
@@ -100,14 +100,23 @@ INSTANTIATE_TEST_SUITE_P(
 
         std::make_tuple("+(1-(+x))", "1 - x"),
         std::make_tuple("-(1-x)", "x - 1"),
+        std::make_tuple("-(x-1)", "1 - x"),
         std::make_tuple("+(-x+1)", "1 - x"),
         std::make_tuple("-(-x+1)", "x - 1"),
         std::make_tuple("(-x+1)*-1", "x - 1"),
         std::make_tuple("-1*(-x+1)", "x - 1"),
-
         std::make_tuple("(1+-x)", "1 - x"),
 
-        std::make_tuple("(x+y)+3", "(x + y) + 3")
+        std::make_tuple("(x+y)+3", "(x + y) + 3"),
+
+        std::make_tuple("3*x*4", "x * 12"),
+        std::make_tuple("-3*x*4*-1", "x * 12"),
+
+        std::make_tuple("(x*x)^2", "x^4"),
+        std::make_tuple("x*x^2", "x^3"),    // TODO
+        std::make_tuple("x*(x^2)", "x^3"),
+        std::make_tuple("-x*(x^2)", "-x^3"),
+        std::make_tuple("-x*x^2", "-x^3")
 
             ));
 

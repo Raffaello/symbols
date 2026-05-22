@@ -123,7 +123,7 @@ public:
             n->op  = op;
             n->l   = std::move(l);
             n->r   = std::move(r);
-            return std::move(n);
+            return n;
         }
     };
 

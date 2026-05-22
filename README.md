@@ -27,8 +27,8 @@ This is the NFA of the lexical scanner.
 > TODO add rational number to be parsed as whole rational numbers (e.g. 1/2) alongside real numbers (e.g 0.5) ? (so it can output the same as user input eventually)
 
 The Grammar for the arithmetical expression is the following,
-it doesn't allow + or - chains operator like in C (`+-+-1` is valid in C), but i prefer a more mathematical approach so a user must write: `+(-(+(-1)))` eventually.
-Besides this is allowed: `+-1` (that means '+ -1`) or `--1` (`- -1`) as the second term is interpreted as a whole, the previous sign is an operator instead.
+it doesn't allow `+` or `-` chains operator like in C (`+-+-1` is valid in C), but i prefer a more mathematical approach so a user must write: `+(-(+(-1)))` eventually.
+Besides, this is allowed: `+-1` (that means `+(-1)`) or `--1` (`-(-1)`) as the second term is interpreted as a whole, the previous sign is an operator instead.
 
 EBNF:
 
