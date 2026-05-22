@@ -13,6 +13,7 @@ private:
 
     static AST::INode* reduce_expr_expr_num_(AST& src, AST::INode* pCurrent);
 
+    static AST::INode* reduce_expr_uny_(AST& src, AST::INode* pCurrent);
     static AST::INode* reduce_expr_same_sym_(AST& src, AST::INode* pCurrent);
     static AST::INode* reduce_expr_num_num_(AST& src, AST::INode* pCurrent);
     static AST::INode* reduce_expr_identity_and_special_cases_(AST& src, AST::INode* pCurrent);

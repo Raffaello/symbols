@@ -10,7 +10,7 @@ public:
     const std::string expAST = std::get<1>(GetParam());
 };
 
-TEST_P(TestSimplifier, parser)
+TEST_P(TestSimplifier, reduce)
 {
     LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1  parser(scanner);
@@ -78,7 +78,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x*2*3", "x * 6"),
         std::make_tuple("2*x*3", "x * 6"),
         std::make_tuple("x-2-3", "x - 5"),
-        std::make_tuple("2-x-3", "-1 - x"),    // TODO: "(-x) - 1" => -1 - x is simplified more
+        std::make_tuple("2-x-3", "(-x) - 1"),    // TODO: "(-x) - 1" => -1 - x is simplified more, need to sort by polynomial degree too
         std::make_tuple("x+2+3", "x + 5"),
         std::make_tuple("2+x+3", "x + 5"),
 
@@ -92,12 +92,23 @@ INSTANTIATE_TEST_SUITE_P(
 
         std::make_tuple("-1*x", "-x"),
         std::make_tuple("x*-1", "-x"),
-        std::make_tuple("2+x*-1", "2-x"),    // TODO: this at the moment is 2 + (-x) correct, but expr and unary could be simplified
+        std::make_tuple("2+x*-1", "2 - x"),
         std::make_tuple("2-x*1", "2 - x"),
         std::make_tuple("2-x*0", "2"),
         std::make_tuple("2+(-x)*0", "2"),
 
-        std::make_tuple("-(2+3)", "-5")
+        std::make_tuple("-(2+3)", "-5"),
+        std::make_tuple("-(3-4)", "1"),
+
+        std::make_tuple("+(1-(+x))", "1 - x"),
+        std::make_tuple("-(1-x)", "x - 1"),
+        std::make_tuple("-(1-x)", "x - 1"),
+        std::make_tuple("+(-x+1)", "1 - x"),
+        std::make_tuple("-(-x+1)", "x - 1"),
+        std::make_tuple("(-x+1)*-1", "x - 1"),
+        std::make_tuple("-1*(-x+1)", "x - 1"),
+
+        std::make_tuple("(1+-x)", "1 - x")
 
             ));
 
