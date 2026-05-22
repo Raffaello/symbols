@@ -113,6 +113,7 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
     const AST::INode*           r2 = nullptr;
     bool                        lr2_swapped;
     std::unique_ptr<AST::INode> pNodeUpd = nullptr;
+    std::unique_ptr<AST::INode> pNode_r  = nullptr;
     if (pNodeBin2->r->is_num())
     {
         r2          = pNodeBin2->r.get();
@@ -149,11 +150,16 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
     case ADD:
         // x+n+m => x + (n+m)
         // n+x+m => x + (n+m)
-        [[fallthrough]];
-    case SUB:
-        // x-n-m => x - (n+m)
-        // n-x-m => x - (n+m)
         vr += vr2;
+        break;
+    case SUB:
+        if (lr2_swapped)    // n-x-m => -x - (n-m)
+        {
+            vr      -= vr2;
+            pNode_r  = AST::NodeUnary::make(true, AST::clone(pNodeBin2->r.get()));
+        }
+        else    // x-n-m => x - (n+m)
+            vr += vr2;
         break;
     case MUL:
         // x*n*m => nm*x
@@ -176,7 +182,9 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
         break;
     }
 
-    if (lr2_swapped)
+    if (pNode_r != nullptr)
+        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNode_r), std::move(AST::LeafNum::make(vr)));
+    else if (lr2_swapped)
         pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->r), std::move(AST::LeafNum::make(vr)));
     else
         pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->l), std::move(AST::LeafNum::make(vr)));
@@ -357,11 +365,21 @@ AST::INode* Simplifier::reduce_expr_identity_and_special_cases_(AST& src, AST::I
         using enum AST::eOperators;
 
     case ADD:
-        [[fallthrough]];
-    case SUB:
         if (v == 0)
             // It could move it instead of cloning, but...
             pNodeUpd = AST::clone(l);
+        else
+            return pCurrent;
+        break;
+    case SUB:
+        if (v == 0)
+        {
+            // e.g. 0-x => -x
+            if (lr_swap)
+                pNodeUpd = AST::NodeUnary::make(true, AST::clone(l));
+            else
+                pNodeUpd = AST::clone(l);
+        }
         else
             return pCurrent;
         break;
