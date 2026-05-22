@@ -7,6 +7,9 @@
 
 std::unique_ptr<AST::INode> AST::clone_(const INode* pNode)
 {
+    if (pNode == nullptr)
+        return nullptr;
+
     if (pNode->is_num())
     {
         ast_num_t v;

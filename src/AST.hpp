@@ -146,10 +146,11 @@ public:
     AST(const AST& other);
     AST& operator=(const AST& other);
 
-    inline bool   isEquation() const noexcept;
-    inline INode* getRoot() const noexcept;
-    void          setRoot(std::unique_ptr<INode> root);
-    bool          has_symbol(const std::string_view symbol) const noexcept;
+    inline bool         isEquation() const noexcept;
+    inline const INode* getRoot() const noexcept;
+    inline INode*       getRoot() noexcept;
+    void                setRoot(std::unique_ptr<INode> root);
+    bool                has_symbol(const std::string_view symbol) const noexcept;
 
     bool updateNode(const INode* node, std::unique_ptr<INode>& updated_node);
 
@@ -213,7 +214,12 @@ inline bool AST::INode::is_num() const noexcept
     return dynamic_cast<const AST::LeafNum*>(this);
 }
 
-inline AST::INode* AST::getRoot() const noexcept
+inline const AST::INode* AST::getRoot() const noexcept
+{
+    return m_pRoot.get();
+}
+
+inline AST::INode* AST::getRoot() noexcept
 {
     return m_pRoot.get();
 }

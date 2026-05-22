@@ -186,11 +186,11 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
     }
 
     if (pNode_r != nullptr)
-        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNode_r), std::move(AST::LeafNum::make(vr)));
+        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNode_r), AST::LeafNum::make(vr));
     else if (lr2_swapped)
-        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->r), std::move(AST::LeafNum::make(vr)));
+        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->r), AST::LeafNum::make(vr));
     else
-        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->l), std::move(AST::LeafNum::make(vr)));
+        pNodeUpd = AST::NodeBin::make(pNodeBin->op, std::move(pNodeBin2->l), AST::LeafNum::make(vr));
 
     auto pCur = pNodeUpd.get();
     if (!src.updateNode(pNodeBin, pNodeUpd))
@@ -449,7 +449,7 @@ bool Simplifier::reduce(AST& src)
     AST ast = src;
     if (reduce_(ast, ast.getRoot()))
     {
-        src = ast;
+        src = std::move(ast);
         return true;
     }
 

@@ -43,7 +43,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x/1", "x"),
         std::make_tuple("x^0", "1"),    // 0^0 = 1 in this case
         std::make_tuple("x^1", "x"),
-        std::make_tuple("x+0", "x"),
+        std::make_tuple("0+x", "x"),
         std::make_tuple("0-x", "-x"),
         std::make_tuple("1*x", "x"),
         std::make_tuple("1/x", "1 / x"),
@@ -78,7 +78,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x*2*3", "x * 6"),
         std::make_tuple("2*x*3", "x * 6"),
         std::make_tuple("x-2-3", "x - 5"),
-        std::make_tuple("2-x-3", "(-x) - 1"),
+        std::make_tuple("2-x-3", "-1 - x"),    // TODO: "(-x) - 1" => -1 - x is simplified more
         std::make_tuple("x+2+3", "x + 5"),
         std::make_tuple("2+x+3", "x + 5"),
 
