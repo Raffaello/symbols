@@ -113,12 +113,27 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("-3*x*4*-1", "x * 12"),
 
         std::make_tuple("(x*x)^2", "x^4"),
-        std::make_tuple("x*x^2", "x^3"),    // TODO
+        std::make_tuple("x*x^2", "x^3"),
         std::make_tuple("x*(x^2)", "x^3"),
-        std::make_tuple("-x*(x^2)", "-x^3"),
-        std::make_tuple("-x*x^2", "-x^3")
+        std::make_tuple("x^2*x", "x^3"),
+        std::make_tuple("2^x*x", "(2^x) * x"),
+        std::make_tuple("x*x^4", "x^5"),
+        // std::make_tuple("x*x^n", "x^(n+1)"),    // TODO
 
-            ));
+        std::make_tuple("x*(x*2)", "(x^2) * 2"),
+        std::make_tuple("x*(2*x)", "(x^2) * 2"),
+        std::make_tuple("(x*2)*x", "(x^2) * 2"),
+        std::make_tuple("(2*x)*x", "(x^2) * 2"),
+
+        std::make_tuple("x*(x/2)", "(x^2) / 2"),
+        std::make_tuple("(x/2)*x", "(x^2) / 2"),
+        std::make_tuple("x*(2/x)", "2"),    // assuming x!=0
+        std::make_tuple("(2/x)*x", "2")     // assuming x!=0
+
+        // std::make_tuple("-x*(x^2)", "-x^3"),    // TODO
+        // std::make_tuple("-x*x^2", "-x^3")       // TODO
+
+        ));
 
 int main(int argc, char** argv)
 {

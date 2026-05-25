@@ -144,6 +144,8 @@ bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
     pCurrent = reduce_expr_expr_num_(src, pCurrent);
     if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
         return false;
+    else if (pNodeBin == nullptr)
+        return true;
 
     // this should be for some missing cases
     // this case could be only simplified if it is in the form of:
@@ -159,21 +161,44 @@ bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
     pCurrent = reduce_expr_uny_(src, pCurrent);
     if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
         return false;
+    else if (pNodeBin == nullptr)
+        return true;
+
 
     // case same symbol
     pCurrent = reduce_expr_same_sym_(src, pCurrent);
     if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
         return false;
+    else if (pNodeBin == nullptr)
+        return true;
+
 
     // case NUM NUM
     pCurrent = reduce_expr_num_num_(src, pCurrent);
     if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
         return false;
+    else if (pNodeBin == nullptr)
+        return true;
+
 
     // if l or r is an identity num for the operation
     pCurrent = reduce_expr_identity_and_special_cases_(src, pCurrent);
     if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
         return false;
+    else if (pNodeBin == nullptr)
+        return true;
+
+    if ((pNodeBin->l->is_expr() && pNodeBin->r->is_symbol()) ||
+        (pNodeBin->r->is_expr() && pNodeBin->l->is_symbol()))
+        return reduce_expr_expr_sym_(src, pCurrent);
+
+    // all other situation when is an expr containing l expr and r expr
+    pCurrent = reduce_expr_expr_expr_(src, pCurrent);
+    if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
+        return false;
+    else if (pNodeBin == nullptr)
+        return true;
+
 
     // nothing else to simplify at the moment (it won't be used)
     return true;
@@ -181,12 +206,12 @@ bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
 
 AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
 {
-    if (pCurrent == nullptr)
-        return nullptr;
+    // if (pCurrent == nullptr)
+    //     return nullptr;
 
     auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
-        return nullptr;
+        return pCurrent;
 
     // TODO: missing the symmetric part of it l is num and r is expr
     if (!pNodeBin->l->is_expr() || !pNodeBin->r->is_num())
@@ -292,14 +317,176 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
     return pCur;
 }
 
-AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
+AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
 {
-    if (pCurrent == nullptr)
+    auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
+    if (pNodeBin == nullptr)
+        return pCurrent;
+
+    // possible simplification rules:
+    // x + (x+1) = 2*x + 1 // can be skipped
+    // x + (x/2) = skip
+    // x * (x+|-1) = skip
+    // x / (x +|- 1) = skip
+    // x * (x*2) = skip
+    // x +|- (x +|-|*) =  should be possible to do something
+    // x ^ (...) = skip
+    // .....
+    //......
+    // x - (x+1) = (0 + 1) => 1 from another rule there after
+    // x + (x*2) = 3*x
+    // x * (x/2) = 3/2 x (as number, not as expression)
+
+    // x * (x^2) = x^3
+    switch (pNodeBin->op)
+    {
+        using enum AST::eOperators;
+
+    default:
+        [[fallthrough]];
+    case NONE:
         return nullptr;
 
+    case ADD:
+        // TODO
+        return pCurrent;
+    case SUB:
+        // TODO
+        return pCurrent;
+    case MUL:
+        return reduce_expr_expr_sym_mul_(src, pCurrent);
+    case DIV:
+        // TODO
+        return pCurrent;
+    case POW:
+        return pCurrent;    // skip
+    }
+
+    return pCurrent;
+}
+
+AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent)
+{
     auto pNodeBin = dynamic_cast<AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
+        return pCurrent;
+
+    if (pNodeBin->op != AST::eOperators::MUL)
+        return pCurrent;
+
+    bool              swap_lr;
+    const AST::INode* l = nullptr;
+    AST::INode*       r = nullptr;
+    if (pNodeBin->l->is_symbol() && pNodeBin->r->is_expr())
+    {
+        l       = pNodeBin->l.get();
+        r       = pNodeBin->r.get();
+        swap_lr = false;
+    }
+    else if (pNodeBin->l->is_expr() && pNodeBin->r->is_symbol())
+    {
+        l       = pNodeBin->r.get();
+        r       = pNodeBin->l.get();
+        swap_lr = true;
+    }
+    else
+        return pCurrent;    // skip it for now
+
+    auto sym = AST::LeafSymbol::getValue(l);
+    if (sym == nullptr)
         return nullptr;
+
+    auto pNodeBinR = dynamic_cast<AST::NodeBin*>(r);
+    if (pNodeBinR == nullptr)
+        return nullptr;
+
+    bool              swap_r_lr;
+    const AST::INode* rl = nullptr;
+    const AST::INode* rr = nullptr;
+
+    // here can reduce only if there are 2 symbols and a num
+    if (pNodeBinR->l->is_symbol(sym) && pNodeBinR->r->is_num())
+    {
+        rl        = pNodeBinR->l.get();
+        rr        = pNodeBinR->r.get();
+        swap_r_lr = false;
+    }
+    else if (pNodeBinR->r->is_symbol(sym) && pNodeBinR->l->is_num())
+    {
+        rr        = pNodeBinR->l.get();
+        rl        = pNodeBinR->r.get();
+        swap_r_lr = true;
+    }
+    else
+        return pCurrent;    // skip it for now
+
+
+    // x * (x+1) = skip
+    // x * (x-1) = skip
+    // x * (x*2) = (x^2 * 2)
+    // x * (x/2) = (x^2 / 2)
+    // x * (x^2) = x^3
+
+    std::unique_ptr<AST::INode> pNodeUpd = nullptr;
+    // sym=l, sym=rl, num=rr
+    switch (pNodeBinR->op)
+    {
+        using enum AST::eOperators;
+
+    default:
+        [[fallthrough]];
+    case NONE:
+        return nullptr;
+
+    case ADD:
+        [[fallthrough]];
+    case SUB:
+        return pCurrent;    // skip
+    case MUL:
+        pNodeUpd = AST::NodeBin::make(
+            pNodeBinR->op,
+            AST::NodeBin::make(POW, AST::clone(l), AST::LeafNum::make(2)),
+            AST::clone(rr));
+        break;
+    case DIV:
+        if (swap_r_lr)    // x*(2/x) = 2
+        {
+            pNodeUpd = AST::clone(rr);
+        }
+        else    // x*(x/2) = x^2/2
+        {
+            pNodeUpd = AST::NodeBin::make(
+                pNodeBinR->op,
+                AST::NodeBin::make(POW, AST::clone(l), AST::LeafNum::make(2)),
+                AST::clone(rr));
+        }
+        break;
+    case POW:
+    {
+        if (swap_r_lr)
+            return pCurrent;    // x * 2^x => skip
+
+        ast_num_t v;
+        if (!AST::LeafNum::getValue(rr, v))
+            return nullptr;
+
+        pNodeUpd = AST::NodeBin::make(POW, AST::clone(l), AST::LeafNum::make(v + 1));
+    }
+    break;
+    }
+
+    auto pCur = pNodeUpd.get();
+    if (!src.updateNode(pCurrent, pNodeUpd))
+        return nullptr;
+
+    return pCur;
+}
+
+AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
+{
+    auto pNodeBin = dynamic_cast<AST::NodeBin*>(pCurrent);
+    if (pNodeBin == nullptr)
+        return pCurrent;
 
     bool              lr_swap;
     const AST::INode* l = nullptr;
@@ -612,10 +799,30 @@ AST::INode* Simplifier::reduce_expr_identity_and_special_cases_(AST& src, AST::I
     return pCur;
 }
 
+AST::INode* Simplifier::reduce_expr_expr_expr_(AST& src, AST::INode* pCurrent)
+{
+    auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
+    if (pNodeBin == nullptr)
+        return pCurrent;
+
+    // at this point i am skiping all the rules that could be simplified from all the other rules
+    // so in this case the 2 expression alone can't be reduced, e.g.:
+    // (2+x) * (2-x)
+    // (x^2)*(x^2)
+    // (x*2)*(x+1)
+    // etc...
+
+    // TODO
+    return pCurrent;
+}
+
 bool Simplifier::reduce_expr_helper_(AST& src, AST::INode* pCurrent, AST::NodeBin** pNodeBin)
 {
-    if (pCurrent == nullptr || pNodeBin == nullptr)
+    if (pCurrent == nullptr)
         return false;
+
+    if (pNodeBin == nullptr)
+        return true;    // nothing more to reduce in this case
 
     *pNodeBin = dynamic_cast<AST::NodeBin*>(pCurrent);
     if (*pNodeBin == nullptr)
