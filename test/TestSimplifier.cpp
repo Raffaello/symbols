@@ -125,13 +125,19 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("(x*2)*x", "(x^2) * 2"),
         std::make_tuple("(2*x)*x", "(x^2) * 2"),
 
+        std::make_tuple("x^1*(x*2)", "(x^2) * 2"),
+
         std::make_tuple("x*(x/2)", "(x^2) / 2"),
         std::make_tuple("(x/2)*x", "(x^2) / 2"),
         std::make_tuple("x*(2/x)", "2"),    // assuming x!=0
-        std::make_tuple("(2/x)*x", "2")     // assuming x!=0
+        std::make_tuple("(2/x)*x", "2"),    // assuming x!=0
 
-        // std::make_tuple("-x*(x^2)", "-x^3"),    // TODO
-        // std::make_tuple("-x*x^2", "-x^3")       // TODO
+        std::make_tuple("-x*x^2", "-(x^3)"),
+        std::make_tuple("-x*(x^2)", "-(x^3)"),
+        std::make_tuple("x*-x^2", "-(x^3)"),
+        std::make_tuple("x/-x^1", "-1")    // x != 0
+        // std::make_tuple("x/x^2", "x^-1") // TODO
+        // std::make_tuple("x/-x^2", "-(x^-1)")    // TODO
 
         ));
 

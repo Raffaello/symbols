@@ -13,7 +13,7 @@ private:
 
     static AST::INode* reduce_expr_expr_num_(AST& src, AST::INode* pCurrent);
     static AST::INode* reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent);
-    static AST::INode* reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent);
+    static AST::INode* reduce_expr_expr_sym_mul_(AST& src, AST::NodeBin* pNodeBin);
 
     static AST::INode* reduce_expr_uny_(AST& src, AST::INode* pCurrent);
     static AST::INode* reduce_expr_same_sym_(AST& src, AST::INode* pCurrent);

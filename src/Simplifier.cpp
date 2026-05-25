@@ -316,7 +316,7 @@ AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
 
 AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
 {
-    auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
+    auto pNodeBin = dynamic_cast<AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
         return pCurrent;
 
@@ -351,7 +351,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
         // TODO
         return pCurrent;
     case MUL:
-        return reduce_expr_expr_sym_mul_(src, pCurrent);
+        return reduce_expr_expr_sym_mul_(src, pNodeBin);
     case DIV:
         // TODO
         return pCurrent;
@@ -362,14 +362,13 @@ AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
     return nullptr;    // unteachable: like something is missing in this function
 }
 
-AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent)
+AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::NodeBin* pNodeBin)
 {
-    auto pNodeBin = dynamic_cast<AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
-        return pCurrent;
+        return nullptr;
 
     if (pNodeBin->op != AST::eOperators::MUL)
-        return pCurrent;
+        return pNodeBin;
 
     bool              swap_lr;
     const AST::INode* l = nullptr;
@@ -387,7 +386,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent
         swap_lr = true;
     }
     else
-        return pCurrent;    // skip it for now
+        return pNodeBin;    // skip it for now
 
     auto sym = AST::LeafSymbol::getValue(l);
     if (sym == nullptr)
@@ -415,7 +414,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent
         swap_r_lr = true;
     }
     else
-        return pCurrent;    // skip it for now
+        return pNodeBin;    // skip it for now
 
 
     // x * (x+1) = skip
@@ -438,7 +437,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent
     case ADD:
         [[fallthrough]];
     case SUB:
-        return pCurrent;    // skip
+        return pNodeBin;    // skip
     case MUL:
         pNodeUpd = AST::NodeBin::make(
             pNodeBinR->op,
@@ -461,7 +460,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent
     case POW:
     {
         if (swap_r_lr)
-            return pCurrent;    // x * 2^x => skip
+            return pNodeBin;    // x * 2^x => skip
 
         ast_num_t v;
         if (!AST::LeafNum::getValue(rr, v))
@@ -473,7 +472,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent
     }
 
     auto pCur = pNodeUpd.get();
-    if (!src.updateNode(pCurrent, pNodeUpd))
+    if (!src.updateNode(pNodeBin, pNodeUpd))
         return nullptr;
 
     return pCur;
@@ -516,6 +515,13 @@ AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
     // (a + b) - +c => a+b-c
     // (a _ b) - -( {expr} )
 
+    // (a _ b) _ u(c) =>
+    // (a _ b) + u(c) =>  (a _ b) u c
+    // (a _ b) - u(c) =>  (a _ b) -u c
+    // (a _ b) * u(c) => u[(a _ b) * c]
+    // (a _ b) / u(c) => u[(a _ b) / c]
+    // (a _ b) ^ u(c) => 1/((a _ b)^c) skip
+
     // Doing only the operator ADD and SUB for now
     // MUL and DIV could change the left expression for it but need a first, doesn't look a simplification at the moment
     std::unique_ptr<AST::INode> pNodeBinUpd = nullptr;
@@ -529,11 +535,18 @@ AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
         return nullptr;
 
     case POW:
-        [[fallthrough]];
+        return pCurrent;
+
     case DIV:
         [[fallthrough]];
     case MUL:
-        return pCurrent;
+        pNodeBinUpd = AST::NodeUnary::make(
+            pNodeUny->negate,
+            AST::NodeBin::make(
+                pNodeBin->op,
+                AST::clone(l),
+                AST::clone(pNodeUny->n.get())));
+        break;
 
     case ADD:
         // a + +|n b
@@ -542,15 +555,7 @@ AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
     case SUB:
         // +|-b - a => +b - a, -b - a
         if (lr_swap)
-        {
-            // if (pNodeUny->negate)
-            //     // pNodeBinUpd = AST::NodeBin::make(SUB, AST::clone(l), std::move(pNodeUny->n));
-            //     return pCurrent;    // skip, on the left unary operator, can't be simplified further
-            // else
-            //     pNodeBinUpd = AST::NodeBin::make(SUB, std::move(pNodeUny->n), AST::clone(l));
-
             return pCurrent;    // skip;
-        }
         else                    // a - +|-b
             pNodeBinUpd = AST::NodeBin::make(pNodeUny->negate ? ADD : SUB, AST::clone(l), std::move(pNodeUny->n));
         break;
