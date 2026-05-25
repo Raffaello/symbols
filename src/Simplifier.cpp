@@ -359,7 +359,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
         return pCurrent;    // skip
     }
 
-    return pCurrent;
+    return nullptr;    // unteachable: like something is missing in this function
 }
 
 AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::INode* pCurrent)
