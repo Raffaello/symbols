@@ -206,9 +206,6 @@ bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
 
 AST::INode* Simplifier::reduce_expr_expr_num_(AST& src, AST::INode* pCurrent)
 {
-    // if (pCurrent == nullptr)
-    //     return nullptr;
-
     auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
         return pCurrent;
@@ -568,9 +565,6 @@ AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
 
 AST::INode* Simplifier::reduce_expr_same_sym_(AST& src, AST::INode* pCurrent)
 {
-    if (pCurrent == nullptr)
-        return nullptr;
-
     auto pNodeBin = dynamic_cast<AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
         return pCurrent;
@@ -625,9 +619,6 @@ AST::INode* Simplifier::reduce_expr_same_sym_(AST& src, AST::INode* pCurrent)
 
 AST::INode* Simplifier::reduce_expr_num_num_(AST& src, AST::INode* pCurrent)
 {
-    if (pCurrent == nullptr)
-        return nullptr;
-
     auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
         return pCurrent;
@@ -697,9 +688,6 @@ AST::INode* Simplifier::reduce_expr_num_num_(AST& src, AST::INode* pCurrent)
 
 AST::INode* Simplifier::reduce_expr_identity_and_special_cases_(AST& src, AST::INode* pCurrent)
 {
-    if (pCurrent == nullptr)
-        return nullptr;
-
     auto pNodeBin = dynamic_cast<const AST::NodeBin*>(pCurrent);
     if (pNodeBin == nullptr)
         return pCurrent;
