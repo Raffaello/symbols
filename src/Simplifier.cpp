@@ -51,6 +51,17 @@ bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
         return src.updateNode(pCurrent, pNodeUpd);
     }
 
+    // case double unary (negation)
+    else if (pNodeUny->n->is_unary())
+    {
+        auto                        pNodeUnyChild = dynamic_cast<AST::NodeUnary*>(pNodeUny->n.get());
+        std::unique_ptr<AST::INode> pNodeUpd      = AST::NodeUnary::make(pNodeUny->negate ^ pNodeUnyChild->negate, AST::clone(pNodeUnyChild->n.get()));
+        auto                        pCur          = pNodeUpd.get();
+        if (!src.updateNode(pCurrent, pNodeUpd))
+            return false;
+
+        return reduce_(src, pCur);
+    }
     // case uny->expr
     else if (pNodeUny->n->is_expr())
     {
@@ -188,9 +199,11 @@ bool Simplifier::reduce_expr_(AST& src, AST::INode* pCurrent)
     else if (pNodeBin == nullptr)
         return true;
 
-    if ((pNodeBin->l->is_expr() && pNodeBin->r->is_symbol()) ||
-        (pNodeBin->r->is_expr() && pNodeBin->l->is_symbol()))
-        return reduce_expr_expr_sym_(src, pCurrent);
+    pCurrent = reduce_expr_expr_sym_(src, pCurrent);
+    if (!reduce_expr_helper_(src, pCurrent, &pNodeBin))
+        return false;
+    else if (pNodeBin == nullptr)
+        return true;
 
     // all other situation when is an expr containing l expr and r expr
     pCurrent = reduce_expr_expr_expr_(src, pCurrent);
@@ -320,6 +333,10 @@ AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
     if (pNodeBin == nullptr)
         return pCurrent;
 
+    if (!((pNodeBin->l->is_expr() && pNodeBin->r->is_symbol()) ||
+          (pNodeBin->r->is_expr() && pNodeBin->l->is_symbol())))
+        return pCurrent;
+
     // possible simplification rules:
     // x + (x+1) = 2*x + 1 // can be skipped
     // x + (x/2) = skip
@@ -354,7 +371,7 @@ AST::INode* Simplifier::reduce_expr_expr_sym_(AST& src, AST::INode* pCurrent)
         return reduce_expr_expr_sym_mul_(src, pNodeBin);
     case DIV:
         // TODO
-        return pCurrent;
+        return reduce_expr_expr_sym_div_(src, pNodeBin);
     case POW:
         return pCurrent;    // skip
     }
@@ -476,6 +493,12 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::NodeBin* pNodeB
         return nullptr;
 
     return pCur;
+}
+
+AST::INode* Simplifier::reduce_expr_expr_sym_div_(AST& src, AST::NodeBin* pNodeBin)
+{
+    // TODO
+    return pNodeBin;
 }
 
 AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
