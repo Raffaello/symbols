@@ -42,6 +42,11 @@ std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
     if (l == nullptr)
         return nullptr;
 
+    return stmtSecond_(std::move(l));
+}
+
+std::unique_ptr<AST::INode> ParserLL1::stmtSecond_(std::unique_ptr<AST::INode> left)
+{
     if (m_token.type == eTOKENS::EQUAL)
     {
         Token t = m_token;
@@ -55,10 +60,10 @@ std::unique_ptr<AST::INode> ParserLL1::stmtPrime_()
         if (r == nullptr)
             return nullptr;
 
-        return AST::NodeBin::make(AST::eOperators::EQUAL, std::move(l), std::move(r));
+        return AST::NodeBin::make(AST::eOperators::EQUAL, std::move(left), std::move(r));
     }
 
-    return l;
+    return left;
 }
 
 std::unique_ptr<AST::INode> ParserLL1::expr_()
@@ -150,14 +155,13 @@ std::unique_ptr<AST::INode> ParserLL1::factor_()
     if (p == nullptr)
         return nullptr;
 
-    if (u == nullptr)
+    if (!u.has_value())
         return p;
 
-    dynamic_cast<AST::NodeUnary*>(u.get())->n = std::move(p);
-    return u;
+    return AST::NodeUnary::make(u.value(), std::move(p));
 }
 
-std::unique_ptr<AST::INode> ParserLL1::unary_()
+std::optional<bool> ParserLL1::unary_()
 {
     if (m_token.type == eTOKENS::SUM_OP)
     {
@@ -165,13 +169,13 @@ std::unique_ptr<AST::INode> ParserLL1::unary_()
         if (!advance_())
         {
             std::cerr << std::format("ERROR: after: '{}'\n", t.value);
-            return nullptr;
+            return std::nullopt;
         }
 
-        return AST::NodeUnary::make(t.value == TOKEN_VALUE_MINUS);    // n->n     = nullptr;
+        return t.value == TOKEN_VALUE_MINUS;
     }
     else
-        return nullptr;
+        return std::nullopt;
 }
 
 std::unique_ptr<AST::INode> ParserLL1::pow_()
@@ -271,6 +275,6 @@ bool ParserLL1::parse()
     if (m_token.type == eTOKENS::ERROR)
         throw std::runtime_error("debug");    // it should never store a token error, as the lexer is reporting the error, here just return nullptr/false instead and it has store the last scanned token
 
-    m_ast.setRoot(root);
+    m_ast.setRoot(std::move(root));
     return true;
 }

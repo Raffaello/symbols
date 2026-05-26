@@ -76,6 +76,7 @@ public:
     bool        is_nan() const noexcept;
     bool        isWeird() const noexcept;
     bool        isZero() const noexcept;
+    bool        isRational() const noexcept;
     std::string str() const;
 
     void roundNear();

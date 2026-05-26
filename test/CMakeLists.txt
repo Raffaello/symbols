@@ -60,41 +60,55 @@ endmacro()
 macro_test(
     EXE TestLexScanner
     FILES "TestLexScanner.cpp"
-    FIXTURES 
+    FIXTURES
     LINKS_PRIVATE "lex_scanner"
+)
+
+macro_test(
+    EXE TestAST
+    FILES "TestAST.cpp"
+    FIXTURES
+    LINKS_PRIVATE "parser"
 )
 
 macro_test(
     EXE TestParserLL1
     FILES "TestParserLL1.cpp"
-    FIXTURES 
+    FIXTURES
+    LINKS_PRIVATE "parser"
+)
+
+macro_test(
+    EXE TestSimplifier
+    FILES "TestSimplifier.cpp"
+    FIXTURES
     LINKS_PRIVATE "parser"
 )
 
 macro_test(
     EXE Test_mp_t
     FILES "Test_mp_t.cpp"
-    FIXTURES 
+    FIXTURES
     LINKS_PRIVATE "parser"
 )
 
 macro_test(
     EXE TestInterpreter
     FILES "TestInterpreter.cpp"
-    FIXTURES 
+    FIXTURES
     LINKS_PRIVATE "interpreter"
 )
 
 macro_test(
     EXE TestPolynomialForm
     FILES "TestPolynomialForm.cpp"
-    FIXTURES 
+    FIXTURES
     LINKS_PRIVATE "solver"
 )
 
 macro_test(
     EXE TestSolver
     FILES "TestSolver.cpp"
-    FIXTURES 
+    FIXTURES
     LINKS_PRIVATE "solver"
 )

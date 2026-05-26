@@ -360,6 +360,11 @@ bool mp_t::isZero() const noexcept
     return mp::fabs(mp::mpfr_float{*this}) < MPFR_EPSILON;
 }
 
+bool mp_t::isRational() const noexcept
+{
+    return std::get_if<mp::mpq_rational>(&m_value) != nullptr;
+}
+
 std::string mp_t::str() const
 {
     return std::visit(
