@@ -138,13 +138,15 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x/-x^1", "-1"),    // x != 0
         // std::make_tuple("x/x^2", "x^-1") // TODO
         // std::make_tuple("x/-x^2", "-(x^-1)")    // TODO
-        // std::make_tuple("x^2/x", "x"), // TODO
 
         std::make_tuple("-x*-x", "x^2"),
         std::make_tuple("-x/-x", "1"),
+        std::make_tuple("-x*-x*-x", "-(x^3)"),
         std::make_tuple("-x*-x*-x*-x", "x^4")
+        // std::make_tuple("x^2/x", "x"), // TODO
+        // std::make_tuple("-x*-x*-x*-x/-x", "-x^3") // TODO
 
-            ));
+        ));
 
 int main(int argc, char** argv)
 {
