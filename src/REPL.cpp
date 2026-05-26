@@ -151,7 +151,7 @@ bool REPL::handleReplCmd(const std::string_view replCmd)
         symbols_clear_();
     else if (replCmd.starts_with(std::string(CMD_SYM_UNSET) + " "))
         symbol_unset_(replCmd);
-    else if (replCmd.starts_with(std::string(CMD_SIMPLIFY)))
+    else if (replCmd.starts_with(std::string(CMD_SIMPLIFY) + " ") || replCmd == CMD_SIMPLIFY)
         simplify_(replCmd);
     else
         return false;    // not processed

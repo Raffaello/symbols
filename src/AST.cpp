@@ -269,6 +269,9 @@ bool AST::convertToExpression()
     // LHS - RHS = 0
     // expr: LHS - RHS
     std::unique_ptr<AST::INode> n = AST::NodeBin::make(AST::eOperators::SUB, std::move(pRootBin->l), std::move(pRootBin->r));
+    if (n == nullptr)
+        return false;
+
     setRoot(std::move(n));
     return true;
 }
@@ -278,7 +281,13 @@ bool AST::convertToEquation()
     if (isEquation())
         return true;
 
+    if (m_pRoot == nullptr)
+        return false;
+
     std::unique_ptr<AST::INode> n = AST::NodeBin::make(AST::eOperators::EQUAL, std::move(m_pRoot), AST::LeafNum::make(0));
+    if (n == nullptr)
+        return false;
+
     setRoot(std::move(n));
     return true;
 }
