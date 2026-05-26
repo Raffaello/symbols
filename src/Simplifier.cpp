@@ -497,6 +497,12 @@ AST::INode* Simplifier::reduce_expr_expr_sym_mul_(AST& src, AST::NodeBin* pNodeB
 
 AST::INode* Simplifier::reduce_expr_expr_sym_div_(AST& src, AST::NodeBin* pNodeBin)
 {
+    if (pNodeBin == nullptr)
+        return nullptr;
+
+    if (pNodeBin->op != AST::eOperators::DIV)
+        return pNodeBin;
+
     // TODO
     return pNodeBin;
 }
@@ -849,9 +855,21 @@ bool Simplifier::reduce_expr_helper_(AST& src, AST::INode* pCurrent, AST::NodeBi
 
 bool Simplifier::reduce(AST& src)
 {
-    AST ast = src;
+    AST        ast        = src;
+    const bool isEquation = ast.isEquation();
+    if (isEquation)
+    {
+        if (!ast.convertToExpression())
+            return false;
+    }
+
     if (reduce_(ast, ast.getRoot()))
     {
+        if (isEquation)
+        {
+            if (!ast.convertToEquation())
+                return false;
+        }
         src = std::move(ast);
         return true;
     }

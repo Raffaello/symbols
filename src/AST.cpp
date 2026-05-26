@@ -257,6 +257,32 @@ bool AST::updateNode(const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
     return updateNode_(&m_pRoot, pNode, pNodeUpdate);
 }
 
+bool AST::convertToExpression()
+{
+    if (!isEquation())
+        return false;
+
+    auto pRootBin = dynamic_cast<NodeBin*>(getRoot());
+    if (pRootBin == nullptr)
+        return false;
+
+    // LHS - RHS = 0
+    // expr: LHS - RHS
+    std::unique_ptr<AST::INode> n = AST::NodeBin::make(AST::eOperators::SUB, std::move(pRootBin->l), std::move(pRootBin->r));
+    setRoot(std::move(n));
+    return true;
+}
+
+bool AST::convertToEquation()
+{
+    if (isEquation())
+        return true;
+
+    std::unique_ptr<AST::INode> n = AST::NodeBin::make(AST::eOperators::EQUAL, std::move(m_pRoot), AST::LeafNum::make(0));
+    setRoot(std::move(n));
+    return true;
+}
+
 std::unique_ptr<AST::INode> AST::cloneRoot() const
 {
     return AST::clone(getRoot());

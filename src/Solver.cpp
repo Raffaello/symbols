@@ -19,21 +19,8 @@ Solver::Solver(const std::shared_ptr<SymbolTable>& pSymbolTable) : m_pSymbolTabl
 
 bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_symbol)
 {
-    // TODO: avoid to const_cast, but for now is ok
-    auto node_ = const_cast<AST::INode*>(node);
-    auto bin   = dynamic_cast<AST::NodeBin*>(node_);
-    if (bin->op != AST::eOperators::EQUAL)
-        return false;
-
-    // LHS - RHS = 0
-    // expr: LHS - RHS
-    std::unique_ptr<AST::INode> n    = AST::NodeBin::make(AST::eOperators::SUB, std::move(bin->l), std::move(bin->r));
-    auto                        nbin = dynamic_cast<AST::NodeBin*>(n.get());
-
     PolynomialForm pf(m_pSymbolTable);
-    bool           res = pf.analyze(n.get(), std::string(for_symbol));
-    bin->l             = std::move(nbin->l);
-    bin->r             = std::move(nbin->r);
+    bool           res = pf.analyze(node, std::string(for_symbol));
 
     if (!res)
         return false;
@@ -181,7 +168,13 @@ bool Solver::solve(AST& ast, const std::string_view for_symbol)
         return false;
     }
 
-    // the operator here is = as it is an equation
+    if (!ast.convertToExpression())
+    {
+        std::cerr << std::format("ERROR: {} unable to convert to expression\n", ast.to_string());
+        return false;
+    }
+
+    // the operator here was = as it is an equation, converted to an expression LHS - RHS (= 0)
     if (!solve_equation_(ast.getRoot(), for_symbol))
     {
         std::cerr << std::format("ERROR: unable to solve equation: [{}, {}]\n", ast.to_string(), for_symbol);

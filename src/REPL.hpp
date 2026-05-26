@@ -21,6 +21,9 @@ private:
     static constexpr std::string_view CMD_SYM_CLEAR  = "sym_clear";
     static constexpr std::string_view CMD_EVAL       = "eval";
     static constexpr std::string_view CMD_SOLVER     = "solver";
+    static constexpr std::string_view CMD_SIMPLIFY   = "simplify";
+    static constexpr std::string_view ON             = "on";
+    static constexpr std::string_view OFF            = "off";
 
     enum class eType
     {
@@ -34,8 +37,9 @@ private:
     Interpreter                  m_intr         = Interpreter(m_pSymbolTable);
     Solver                       m_solver       = Solver(m_pSymbolTable);
 
-    eType m_type = eType::EVAL;
-    bool  m_quit = false;
+    eType m_type     = eType::EVAL;
+    bool  m_quit     = false;
+    bool  m_simplify = true;
 
     std::string              extract_args_(std::string_view s, std::string_view cmd);
     std::vector<std::string> splitString_(const std::string& str, char delimiter);
@@ -45,6 +49,7 @@ private:
     void printSymbolTable_() const noexcept;
     void printLastValue_() const noexcept;
     void symbol_unset_(const std::string_view replCmd) noexcept;
+    void simplify_(const std::string_view replCmd) noexcept;
     void symbols_clear_() noexcept;
 
     void printShellInputLine_() const;

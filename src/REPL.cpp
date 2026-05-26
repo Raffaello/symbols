@@ -1,5 +1,6 @@
 #include "REPL.hpp"
 #include "formatters.hpp"
+#include "Simplifier.hpp"
 
 #include <iostream>
 #include <format>
@@ -65,6 +66,7 @@ void REPL::help_() const noexcept
     std::cout << std::format(":{}\t\t => print the last computed value.\n", CMD_LAST_VALUE);
     std::cout << std::format(":{} [symbol]\t => unset a symbol requires a name after.\n", CMD_SYM_UNSET);
     std::cout << std::format(":{}\t => clear the symbol table.\n", CMD_SYM_CLEAR);
+    std::cout << std::format(":{}\t => show simplification step.\n", CMD_SIMPLIFY);
     std::cout << std::format("\n");
 }
 
@@ -90,6 +92,19 @@ void REPL::symbol_unset_(const std::string_view replCmd) noexcept
     auto s = extract_args_(replCmd, CMD_SYM_UNSET);
     if (m_intr.unsetSymbol(s))
         printSymbolTable_();
+}
+
+void REPL::simplify_(const std::string_view replCmd) noexcept
+{
+    auto s = extract_args_(replCmd, CMD_SIMPLIFY);
+    if (s.empty())
+        std::cout << std::format("{} is {}\n", CMD_SIMPLIFY, m_simplify ? ON : OFF);
+    else if (s == ON)
+        m_simplify = true;
+    else if (s == OFF)
+        m_simplify = false;
+    else
+        std::cout << std::format("{} requires on or off argument\n", CMD_SIMPLIFY);
 }
 
 void REPL::symbols_clear_() noexcept
@@ -136,6 +151,8 @@ bool REPL::handleReplCmd(const std::string_view replCmd)
         symbols_clear_();
     else if (replCmd.starts_with(std::string(CMD_SYM_UNSET) + " "))
         symbol_unset_(replCmd);
+    else if (replCmd.starts_with(std::string(CMD_SIMPLIFY)))
+        simplify_(replCmd);
     else
         return false;    // not processed
 
@@ -176,6 +193,12 @@ int REPL::runLoop()
             m_lex.setInput(std::make_unique<std::stringstream>(in));
             if (!m_parser.parse())
                 continue;
+
+            if (m_simplify)
+            {
+                if (Simplifier::reduce(m_parser.ast()))
+                    printShellOutputLine(m_parser.ast().to_string());
+            }
 
             switch (m_type)
             {

@@ -153,6 +153,8 @@ public:
     bool                has_symbol(const std::string_view symbol) const noexcept;
 
     bool updateNode(const INode* node, std::unique_ptr<INode>& updated_node);
+    bool convertToExpression();
+    bool convertToEquation();
 
     std::unique_ptr<AST::INode>   cloneRoot() const;
     static std::unique_ptr<INode> clone(const INode* pNode);
