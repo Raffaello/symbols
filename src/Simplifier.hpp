@@ -26,5 +26,5 @@ private:
     static bool reduce_expr_helper_(AST& src, AST::INode* pCurrent, AST::NodeBin** pNodeBin);
 
 public:
-    static bool reduce(AST& src);
+    static bool reduce(AST& src, bool reduce_equation);
 };

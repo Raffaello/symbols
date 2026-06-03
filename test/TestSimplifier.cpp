@@ -19,7 +19,7 @@ TEST_P(TestSimplifier, reduce)
     auto& ast = parser.ast();
     ast.print();
 
-    EXPECT_TRUE(Simplifier::reduce(ast));
+    EXPECT_TRUE(Simplifier::reduce(ast, true));
     EXPECT_STREQ(ast.to_string().c_str(), expAST.data());
 }
 
@@ -142,11 +142,27 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("-x*-x", "x^2"),
         std::make_tuple("-x/-x", "1"),
         std::make_tuple("-x*-x*-x", "-(x^3)"),
-        std::make_tuple("-x*-x*-x*-x", "x^4")
+        std::make_tuple("-x*-x*-x*-x", "x^4"),
         // std::make_tuple("x^2/x", "x"), // TODO
         // std::make_tuple("-x*-x*-x*-x/-x", "-x^3") // TODO
 
-        ));
+        std::make_tuple("x=1", "x - 1 = 0")
+
+            ));
+
+TEST(SimplifierTestSuite, no_reduce_equation)
+{
+    // std::make_tuple("x=1", "x = 1")
+    LexScanner scanner(std::make_unique<std::istringstream>("x=1"));
+    ParserLL1  parser(scanner);
+
+    ASSERT_TRUE(parser.parse());
+    auto& ast = parser.ast();
+    ast.print();
+
+    EXPECT_FALSE(Simplifier::reduce(ast, false));
+    EXPECT_STREQ(ast.to_string().c_str(), "x = 1");
+}
 
 int main(int argc, char** argv)
 {
