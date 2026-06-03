@@ -150,19 +150,35 @@ INSTANTIATE_TEST_SUITE_P(
 
             ));
 
-TEST(SimplifierTestSuite, no_reduce_equation)
+class TestSimplifier2 : public ::testing::TestWithParam<std::tuple<std::string, bool, std::string>>
 {
-    // std::make_tuple("x=1", "x = 1")
-    LexScanner scanner(std::make_unique<std::istringstream>("x=1"));
+public:
+    const std::string line   = std::get<0>(GetParam());
+    const bool        expRes = std::get<1>(GetParam());
+    const std::string expAST = std::get<2>(GetParam());
+};
+
+TEST_P(TestSimplifier2, reduce_no_equation)
+{
+    LexScanner scanner(std::make_unique<std::istringstream>(line.data()));
     ParserLL1  parser(scanner);
 
     ASSERT_TRUE(parser.parse());
     auto& ast = parser.ast();
     ast.print();
 
-    EXPECT_FALSE(Simplifier::reduce(ast, false));
-    EXPECT_STREQ(ast.to_string().c_str(), "x = 1");
+    EXPECT_EQ(expRes, Simplifier::reduce(ast, false));
+    EXPECT_STREQ(ast.to_string().c_str(), expAST.data());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    SimplifierTestSuite,
+    TestSimplifier2,
+    ::testing::Values(
+        std::make_tuple("x=1", false, "x = 1"),
+        std::make_tuple("x=1+2", false, "x = 1 + 2")
+
+            ));
 
 int main(int argc, char** argv)
 {
