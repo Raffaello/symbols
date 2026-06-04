@@ -853,10 +853,10 @@ bool Simplifier::reduce_expr_helper_(AST& src, AST::INode* pCurrent, AST::NodeBi
     return true;
 }
 
-bool Simplifier::reduce(AST& src)
+bool Simplifier::reduce(AST& src, bool reduce_equation)
 {
     AST        ast        = src;
-    const bool isEquation = ast.isEquation();
+    const bool isEquation = reduce_equation && ast.isEquation();
     if (isEquation)
     {
         if (!ast.convertToExpression())

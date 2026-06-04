@@ -184,8 +184,8 @@ int REPL::runLoop()
 
         // NOTE: split the input by ',',instead of doing a grammar for that,
         // prefer to doing at REPL level, (the grammar was done and then reverted, as that would have needed 2 grammars)
-        std::vector<std::string> inputs = splitString_(input, ',');
-
+        std::vector<std::string> inputs    = splitString_(input, ',');
+        const bool               reduce_eq = m_type == eType::SOLVER;
         for (size_t i = 0; i < inputs.size(); ++i)
         {
             const std::string& in = inputs[i];
@@ -196,7 +196,7 @@ int REPL::runLoop()
 
             if (m_simplify)
             {
-                if (Simplifier::reduce(m_parser.ast()))
+                if (Simplifier::reduce(m_parser.ast(), reduce_eq))
                     printShellOutputLine(m_parser.ast().to_string());
             }
 

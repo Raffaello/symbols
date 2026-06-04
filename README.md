@@ -99,7 +99,7 @@ to solve the equation it might switch to real values
 
 The REPL is the program using all other components.
 
-Switch among interpreter and solver, with `:eval` and `:solver` keywords.
+Switch among interpreter and solver, with `:eval` and `:solver` keywords, use `:help` for other commands.
 
 it supports the `,` comma operator for multiple statements in one line: in eval mode, each comma-separated statement is evaluated, e.g:
 
