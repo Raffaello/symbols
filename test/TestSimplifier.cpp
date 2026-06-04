@@ -172,7 +172,7 @@ TEST_P(TestSimplifier2, reduce_no_equation)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    SimplifierTestSuite,
+    SimplifierNotEquationTestSuite,
     TestSimplifier2,
     ::testing::Values(
         std::make_tuple("x=1", false, "x = 1"),
