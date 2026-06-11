@@ -25,6 +25,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     if (!res)
         return false;
 
+    if (!pf.simplify())
+        return false;
+
+    ast_num_t         v;
     std::vector<mp_t> sols;
     switch (pf.degree())
     {
@@ -32,46 +36,119 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         return false;
 
     case 0:    // no variables
-        if (pf[0] == 0)
+    {
+        if (pf[0].getRoot() == nullptr)
             m_solution = std::format("inf solutions");
+        if (pf[0].getRoot()->is_num())
+        {
+            if (!AST::LeafNum::getValue(pf[0].getRoot(), v))
+                return false;
+            if (v == 0)
+                m_solution = std::format("inf solutions");
+            else
+                m_solution = std::format("no solution");
+        }
+        else if (pf[0].getRoot()->is_symbol())
+            m_solution = std::format("{}", AST::LeafSymbol::getValue(pf[0].getRoot()));
         else
-            m_solution = std::format("no solution");
+        {
+            m_solution = std::format("is_expr={}, is_unary={} ????", pf[0].getRoot()->is_expr(), pf[0].getRoot()->is_unary());
+            return false;
+        }
 
         return true;
+    }
 
     case 1:    // linear
-        sols.emplace_back(-pf[0] / pf[1]);
+        if (pf[0].getRoot()->is_num() && pf[1].getRoot()->is_num())
+        {
+            ast_num_t a, b;
+            if (!AST::LeafNum::getValue(pf[0].getRoot(), a) || !AST::LeafNum::getValue(pf[1].getRoot(), b))
+                return false;
+
+            if (b.is_zero())
+            {
+                m_solution = std::format("no solution");
+                return true;
+            }
+            else
+                sols.emplace_back(-mp_t(a) / b);
+        }
+        else
+        {
+            m_solution = std::format("TODO: degree 1, pf[0], pf[1] are not both numbers");
+            return false;
+        }
         break;
     case 2:
     {
-        const mp_t a = pf[2];
-        const mp_t b = pf[1];
-        const mp_t c = pf[0];
-
-        const mp_t delta = (b * b) - (a * c * 4);
-
-        if (delta < 0)
+        if (!pf[0].getRoot()->is_num() || !pf[1].getRoot()->is_num() || !pf[2].getRoot()->is_num())
         {
-            m_solution = "no real solutions, complex roots not supported yet";
-            return true;
+            m_solution = std::format("TODO: degree 2,pf[0], pf[1],pf[2] are not only numbers");
+            return false;
         }
+        else
+        {
 
-        const mp_t sq_delta = mp_t::sqrt(delta);
-        const mp_t a2       = a * 2;
-        // sol 1
-        sols.emplace_back((-b + sq_delta) / a2);
-        // sol 2
-        if (!delta.isZero())
-            sols.emplace_back((-b - sq_delta) / a2);
+            // const mp_t a = pf[2];
+            // const mp_t b = pf[1];
+            // const mp_t c = pf[0];
+            ast_num_t a_, b_, c_;
+            if (!AST::LeafNum::getValue(pf[2].getRoot(), a_) ||
+                !AST::LeafNum::getValue(pf[1].getRoot(), b_) ||
+                !AST::LeafNum::getValue(pf[0].getRoot(), c_))
+                return false;
+
+            const mp_t a = a_;
+            const mp_t b = b_;
+            const mp_t c = c_;
+
+            const mp_t delta = (b * b) - (a * c * 4);
+
+            if (delta < 0)
+            {
+                m_solution = "no real solutions, complex roots not supported yet";
+                return true;
+            }
+
+            const mp_t sq_delta = mp_t::sqrt(delta);
+            const mp_t a2       = a * 2;
+            // sol 1
+            sols.emplace_back((-b + sq_delta) / a2);
+            // sol 2
+            if (!delta.isZero())
+                sols.emplace_back((-b - sq_delta) / a2);
+        }
     }
     break;
 
     case 3:
     {
+        if (!pf[0].getRoot()->is_num() || !pf[1].getRoot()->is_num() || !pf[2].getRoot()->is_num() || !pf[3].getRoot()->is_num())
+        {
+            m_solution = std::format("TODO: degree 2,pf[0], pf[1],pf[2],pf[3] are not only numbers");
+            return false;
+        }
+
         // Cardano's formula
-        const mp_t a = pf[2] / pf[3];
-        const mp_t b = pf[1] / pf[3];
-        const mp_t c = pf[0] / pf[3];
+        // const mp_t a = pf[2] / pf[3];
+        // const mp_t b = pf[1] / pf[3];
+        // const mp_t c = pf[0] / pf[3];
+        ast_num_t a_, b_, c_, d_;
+        if (!AST::LeafNum::getValue(pf[2].getRoot(), a_) ||
+            !AST::LeafNum::getValue(pf[1].getRoot(), b_) ||
+            !AST::LeafNum::getValue(pf[0].getRoot(), c_) ||
+            !AST::LeafNum::getValue(pf[3].getRoot(), d_))
+            return false;
+
+        const mp_t a = mp_t(a_) / d_;
+        const mp_t b = mp_t(b_) / d_;
+        const mp_t c = mp_t(c_) / d_;
+
+        auto a__ = a.str();
+        auto b__ = b.str();
+        auto c__ = c.str();
+        auto d__ = d_.str();
 
         const mp_t aa = a * a;
         const mp_t p  = b - (aa / 3);

@@ -11,12 +11,110 @@ PolynomialForm::PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable)
         throw std::invalid_argument("symbol table is null");
 }
 
-mp_t& PolynomialForm::operator[](size_t index)
+AST& PolynomialForm::operator[](size_t index)
 {
     if (m_coeffs.size() < index + 1)
-        m_coeffs.resize(index + 1, 0);
+        m_coeffs.resize(index + 1);
 
     return m_coeffs[index];
+}
+
+bool PolynomialForm::add(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
+{
+    if (pf[index].getRoot() == nullptr && pNode == nullptr)
+        pf[index].setRoot(AST::LeafNum::make(0));
+    else if (pf[index].getRoot() == nullptr)
+        pf[index].setRoot(std::move(pNode));
+    else if (pNode == nullptr)
+        return true;
+    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    {
+        ast_num_t a, b;
+        if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
+            return false;
+
+        pf[index].setRoot(AST::LeafNum::make(a + b));
+    }
+    else
+        pf[index].setRoot(AST::NodeBin::make(
+            AST::eOperators::ADD,
+            pf[index].cloneRoot(),
+            std::move(pNode)));
+
+
+    return true;
+}
+
+bool PolynomialForm::sub(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
+{
+    if (pf[index].getRoot() == nullptr && pNode == nullptr)
+        pf[index].setRoot(AST::LeafNum::make(0));
+    else if (pf[index].getRoot() == nullptr)
+        pf[index].setRoot(AST::NodeUnary::make(true, std::move(pNode)));
+    else if (pNode == nullptr)
+        return true;
+    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    {
+        ast_num_t a, b;
+        if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
+            return false;
+
+        pf[index].setRoot(AST::LeafNum::make(a - b));
+    }
+    else
+        pf[index].setRoot(AST::NodeBin::make(
+            AST::eOperators::SUB,
+            pf[index].cloneRoot(),
+            std::move(pNode)));
+
+    return true;
+}
+
+bool PolynomialForm::mul(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
+{
+    if (pf[index].getRoot() == nullptr || pNode == nullptr)
+        // simplify to zero
+        pf[index].setRoot(AST::LeafNum::make(0));
+    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    {
+        ast_num_t a, b;
+        if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
+            return false;
+
+        pf[index].setRoot(AST::LeafNum::make(a * b));
+    }
+    else
+        pf[index].setRoot(AST::NodeBin::make(
+            AST::eOperators::MUL,
+            pf[index].cloneRoot(),
+            std::move(pNode)));
+
+    return true;
+}
+
+bool PolynomialForm::div(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
+{
+    if (pf[index].getRoot() == nullptr)
+        // simplify to zero
+        pf[index].setRoot(AST::LeafNum::make(0));
+    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    {
+        ast_num_t a, b;
+        if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
+            return false;
+
+        if (b.is_zero())
+            return false;
+
+        pf[index].setRoot(AST::LeafNum::make(a / b));
+    }
+    else
+        pf[index].setRoot(AST::NodeBin::make(
+            AST::eOperators::DIV,
+            pf[index].cloneRoot(),
+            std::move(pNode)));
+
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,16 +133,18 @@ bool PolynomialForm::collect_poly_(const AST::INode* node, PolynomialForm& pf, s
     return false;
 }
 
-bool PolynomialForm::collect_poly_num_(const AST::INode* node, PolynomialForm& pf)
+bool PolynomialForm::collect_poly_num_(const AST::INode* pNode, PolynomialForm& pf)
 {
     ast_num_t d = 0.0;
-    if (!AST::LeafNum::getValue(node, d))
+    if (!AST::LeafNum::getValue(pNode, d))
     {
         std::cerr << "ERROR: unable to get num\n";
         return false;
     }
 
-    pf[0] += d;
+
+    // pf[0] += d;
+    add(0, pf, AST::LeafNum::make(d));
     return true;
 }
 
@@ -55,7 +155,8 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
     if (node->is_symbol(symbol))
     {
         // otherwise is the symbol to solve for
-        pf[1] += 1;
+        // pf[1] += 1;
+        add(1, pf, AST::LeafNum::make(1));
         return true;
     }
 
@@ -65,7 +166,8 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
     if (pf.m_pSymbolTable->getSymbol(sym_value, d))
     {
         // std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
-        pf[0] += d;
+        // pf[0] += d;
+        add(0, pf, AST::LeafNum::make(d));
         return true;
     }
 
@@ -85,12 +187,14 @@ bool PolynomialForm::collect_poly_uny_(const AST::INode* node, PolynomialForm& p
         if (uny->negate)
         {
             for (size_t i = 0; i < pf2.size(); ++i)
-                pf[i] -= pf2[i];
+                // pf[i] -= pf2[i];
+                sub(i, pf, pf2[i].cloneRoot());
         }
         else
         {
             for (size_t i = 0; i < pf2.size(); ++i)
-                pf[i] += pf2[i];
+                // pf[i] += pf2[i];
+                add(i, pf, pf2[i].cloneRoot());
         }
 
         return true;
@@ -116,7 +220,9 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 return false;
 
             for (size_t i = 0; i < pf2.size(); ++i)
-                pf[i] += pf2[i];
+                // pf[i] += pf2[i];
+                add(i, pf, pf2[i].cloneRoot());
+
             return true;
         }
 
@@ -129,7 +235,8 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 return false;
 
             for (size_t i = 0; i < pf2.size(); ++i)
-                pf[i] -= pf2[i];
+                // pf[i] -= pf2[i];
+                sub(i, pf, pf2[i].cloneRoot());
 
             return true;
         }
@@ -148,7 +255,16 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             for (size_t i = 0; i < pf1.size(); ++i)
             {
                 for (size_t j = 0; j < pf2.size(); ++j)
-                    pf[j + i] += pf1[i] * pf2[j];
+                // pf[j + i] += pf1[i] * pf2[j];
+                {
+
+                    add(j + i,
+                        pf,
+                        AST::NodeBin::make(
+                            AST::eOperators::MUL,
+                            pf1[i].cloneRoot(),
+                            pf2[j].cloneRoot()));
+                }
             }
 
             return true;
@@ -171,14 +287,16 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
             }
 
             assert(deg2 == 0);
-            if (pf2[0].isZero())
-            {
-                std::cerr << "ERROR: division by zero\n";
-                return false;
-            }
+            // if (pf2[0].isZero())
+            // {
+            //     std::cerr << "ERROR: division by zero\n";
+            //     return false;
+            // }
 
             for (size_t i = 0; i < pf.size(); ++i)
-                pf[i] /= pf2[0];    // pf2[deg2];
+                // pf[i] /= pf2[0];    // pf2[deg2];
+                if (!div(i, pf, pf2[0].cloneRoot()))
+                    return false;
 
             return true;
         }
@@ -200,45 +318,119 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                 return false;
             }
 
-            if (pf2[0].isZero())
-                pf[0] += 1;
-            else if (pf2[0] == 1)
+            // if (pf2[0].isZero())
+            //     pf[0] += 1;
+            // else if (pf2[0] == 1)
+            // {
+            //     for (size_t i = 0; i < pf1.size(); ++i)
+            //         pf[i] += pf1[i];
+            // }
+            // else
+            // {
+            //     // General integer exponentiation via repeated multiplication
+            //     auto [exponent, r] = mp_t::convert_to_mpz_int(pf2[0]);
+            //     if (r != 0)
+            //     {
+            //         std::cerr << "ERROR exponent must be an integer\n";
+            //         return false;
+            //     }
+
+            // if (exponent < 0)
+            // {
+            //     std::cerr << "ERROR: negative exponents are not supported in polynomial form\n";
+            //     return false;
+            // }
+
+            // assert(exponent >= 2);
+            // // result = pf1^exponent via repeated multiplication
+            // PolynomialForm result(pf.m_pSymbolTable);
+            // // result[0] = 1;    // start with 1
+            // result[0].setRoot(AST::LeafNum::make(1));
+
+            // for (mp::mpz_int e = 0; e < exponent; ++e)
+            // {
+            //     PolynomialForm tmp(pf.m_pSymbolTable);
+            //     for (size_t i = 0; i < result.size(); ++i)
+            //         for (size_t j = 0; j < pf1.size(); ++j)
+            //             // tmp[i + j] += result[i] * pf1[j];
+            //             add(
+            //                 i + j,
+            //                 tmp,
+            //                 AST::NodeBin::make(
+            //                     AST::eOperators::MUL,
+            //                     result[i].cloneRoot(),
+            //                     pf1[j].cloneRoot()));
+
+
+            // result = std::move(tmp);
+            // }
+
+            // for (size_t i = 0; i < result.size(); ++i)
+            //     // pf[i] += result[i];
+            //     add(i, pf, result[i].cloneRoot());
+            // }
+
+            if (pf2[0].getRoot()->is_num())
             {
-                for (size_t i = 0; i < pf1.size(); ++i)
-                    pf[i] += pf1[i];
+                ast_num_t v;
+                AST::LeafNum::getValue(pf2[0].getRoot(), v);
+                if (v == 0)
+                    add(0, pf, AST::LeafNum::make(1));
+                else if (v == 1)
+                {
+                    for (size_t i = 0; i < pf1.size(); ++i)
+                        // pf[i] += pf1[i];
+                        add(i, pf, pf1[i].cloneRoot());
+                }
+                else
+                {
+                    // General integer exponentiation via repeated multiplication
+                    auto [exponent, r] = mp_t::convert_to_mpz_int(v);
+                    if (r != 0)
+                    {
+                        std::cerr << "ERROR exponent must be an integer\n";
+                        return false;
+                    }
+
+                    if (exponent < 0)
+                    {
+                        std::cerr << "ERROR: negative exponents are not supported in polynomial form\n";
+                        return false;
+                    }
+
+                    assert(exponent >= 2);
+                    // result = pf1^exponent via repeated multiplication
+                    PolynomialForm result(pf.m_pSymbolTable);
+                    // result[0] = 1;    // start with 1
+                    result[0].setRoot(AST::LeafNum::make(1));
+
+                    for (mp::mpz_int e = 0; e < exponent; ++e)
+                    {
+                        PolynomialForm tmp(pf.m_pSymbolTable);
+                        for (size_t i = 0; i < result.size(); ++i)
+                            for (size_t j = 0; j < pf1.size(); ++j)
+                                // tmp[i + j] += result[i] * pf1[j];
+                                add(
+                                    i + j,
+                                    tmp,
+                                    AST::NodeBin::make(
+                                        AST::eOperators::MUL,
+                                        result[i].cloneRoot(),
+                                        pf1[j].cloneRoot()));
+
+
+                        result = std::move(tmp);
+                    }
+
+                    for (size_t i = 0; i < result.size(); ++i)
+                        // pf[i] += result[i];
+                        add(i, pf, result[i].cloneRoot());
+                }
             }
             else
             {
-                // General integer exponentiation via repeated multiplication
-                auto [exponent, r] = mp_t::convert_to_mpz_int(pf2[0]);
-                if (r != 0)
-                {
-                    std::cerr << "ERROR exponent must be an integer\n";
-                    return false;
-                }
-
-                if (exponent < 0)
-                {
-                    std::cerr << "ERROR: negative exponents are not supported in polynomial form\n";
-                    return false;
-                }
-
-                assert(exponent >= 2);
-                // result = pf1^exponent via repeated multiplication
-                PolynomialForm result(pf.m_pSymbolTable);
-                result[0] = 1;    // start with 1
-
-                for (mp::mpz_int e = 0; e < exponent; ++e)
-                {
-                    PolynomialForm tmp(pf.m_pSymbolTable);
-                    for (size_t i = 0; i < result.size(); ++i)
-                        for (size_t j = 0; j < pf1.size(); ++j)
-                            tmp[i + j] += result[i] * pf1[j];
-                    result = std::move(tmp);
-                }
-
-                for (size_t i = 0; i < result.size(); ++i)
-                    pf[i] += result[i];
+                // pf2[0] not a num, maybe a symbol? leave as it is. for now
+                std::cerr << std::format("DEBUG: pf2[0] not num? is_expr={}, is_unary={}, is_symbol={} => {}\n", pf2[0].getRoot()->is_expr(), pf2[0].getRoot()->is_unary(), pf2[0].getRoot()->is_symbol(), pf2[0].to_string());
             }
 
             return true;
@@ -278,7 +470,7 @@ int PolynomialForm::degree() noexcept
     for (size_t i = size(); i > 0; --i)
     {
         const auto i2 = i - 1;
-        if (m_coeffs[i2] != 0.0)
+        if (m_coeffs[i2].getRoot() != nullptr)
         {
             m_degree = i2;
             break;
@@ -286,4 +478,18 @@ int PolynomialForm::degree() noexcept
     }
 
     return m_degree;
-};
+}
+
+bool PolynomialForm::simplify()
+{
+    for (size_t i = 0; i < size(); ++i)
+    {
+        if (!Simplifier::reduce(m_coeffs[i], false))
+        {
+            std::cerr << std::format("ERROR: unable to simplify term of degree {}: {}", i, m_coeffs[i].to_string());
+            return false;
+        }
+    }
+
+    return true;
+}
