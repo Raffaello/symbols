@@ -152,7 +152,7 @@ public:
     void                setRoot(std::unique_ptr<INode> root);
     bool                has_symbol(const std::string_view symbol) const noexcept;
 
-    bool updateNode(const INode* node, std::unique_ptr<INode>& updated_node);
+    bool updateNode(const INode* pNode, std::unique_ptr<INode>& updated_node);
     bool convertToExpression();
     bool convertToEquation();
 
