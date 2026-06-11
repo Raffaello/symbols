@@ -62,7 +62,7 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
     // symbolic constant
     mp_t d;
     auto sym_value = AST::LeafSymbol::getValue(node);
-    if (m_pSymbolTable->getSymbol(sym_value, d))
+    if (pf.m_pSymbolTable->getSymbol(sym_value, d))
     {
         // std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
         pf[0] += d;
@@ -78,7 +78,7 @@ bool PolynomialForm::collect_poly_uny_(const AST::INode* node, PolynomialForm& p
 {
     if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
     {
-        PolynomialForm pf2(m_pSymbolTable);
+        PolynomialForm pf2(pf.m_pSymbolTable);
         if (!collect_poly_(uny->n.get(), pf2, symbol))
             return false;
 
@@ -109,7 +109,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
         case ADD:
         {
-            PolynomialForm pf2(m_pSymbolTable);
+            PolynomialForm pf2(pf.m_pSymbolTable);
             if (!collect_poly_(expr->l.get(), pf, symbol))
                 return false;
             if (!collect_poly_(expr->r.get(), pf2, symbol))
@@ -122,7 +122,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
         case SUB:
         {
-            PolynomialForm pf2(m_pSymbolTable);
+            PolynomialForm pf2(pf.m_pSymbolTable);
             if (!collect_poly_(expr->l.get(), pf, symbol))
                 return false;
             if (!collect_poly_(expr->r.get(), pf2, symbol))
@@ -136,7 +136,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
         case MUL:
         {
-            PolynomialForm pf1(m_pSymbolTable), pf2(m_pSymbolTable);
+            PolynomialForm pf1(pf.m_pSymbolTable), pf2(pf.m_pSymbolTable);
             if (!collect_poly_(expr->l.get(), pf1, symbol))
                 return false;
             if (!collect_poly_(expr->r.get(), pf2, symbol))
@@ -157,7 +157,7 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
         case DIV:
         {
-            PolynomialForm pf2(m_pSymbolTable);
+            PolynomialForm pf2(pf.m_pSymbolTable);
             if (!collect_poly_(expr->l.get(), pf, symbol))
                 return false;
             if (!collect_poly_(expr->r.get(), pf2, symbol))
@@ -186,8 +186,8 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
         case POW:
         {
-            PolynomialForm pf1(m_pSymbolTable);
-            PolynomialForm pf2(m_pSymbolTable);
+            PolynomialForm pf1(pf.m_pSymbolTable);
+            PolynomialForm pf2(pf.m_pSymbolTable);
             if (!collect_poly_(expr->l.get(), pf1, symbol))
                 return false;
             if (!collect_poly_(expr->r.get(), pf2, symbol))
@@ -225,12 +225,12 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
                 assert(exponent >= 2);
                 // result = pf1^exponent via repeated multiplication
-                PolynomialForm result(m_pSymbolTable);
+                PolynomialForm result(pf.m_pSymbolTable);
                 result[0] = 1;    // start with 1
 
                 for (mp::mpz_int e = 0; e < exponent; ++e)
                 {
-                    PolynomialForm tmp(m_pSymbolTable);
+                    PolynomialForm tmp(pf.m_pSymbolTable);
                     for (size_t i = 0; i < result.size(); ++i)
                         for (size_t j = 0; j < pf1.size(); ++j)
                             tmp[i + j] += result[i] * pf1[j];

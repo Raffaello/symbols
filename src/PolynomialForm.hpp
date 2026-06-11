@@ -16,11 +16,13 @@ private:
     int               m_degree = -2;
     std::vector<mp_t> m_coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
 
-    bool collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
-    bool collect_poly_num_(const AST::INode* node, PolynomialForm& pf);
-    bool collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
-    bool collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
-    bool collect_poly_expr_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    // std::vector<AST> m_pCoeffs;
+
+    static bool collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_num_(const AST::INode* node, PolynomialForm& pf);
+    static bool collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_expr_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
 
 public:
     PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable);
