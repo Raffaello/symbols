@@ -50,24 +50,28 @@ bool PolynomialForm::collect_poly_num_(const AST::INode* node, PolynomialForm& p
 
 bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
 {
-    if (!node->is_symbol(symbol))
-    {
-        mp_t d;
-        auto sym_value = AST::LeafSymbol::getValue(node);
-        if (!m_pSymbolTable->getSymbol(sym_value, d))
-        {
-            std::cerr << std::format("ERROR: unable to get symbol '{}'\n", sym_value);
-            return false;
-        }
+    assert(node->is_symbol());
 
+    if (node->is_symbol(symbol))
+    {
+        // otherwise is the symbol to solve for
+        pf[1] += 1;
+        return true;
+    }
+
+    // symbolic constant
+    mp_t d;
+    auto sym_value = AST::LeafSymbol::getValue(node);
+    if (m_pSymbolTable->getSymbol(sym_value, d))
+    {
         // std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
         pf[0] += d;
         return true;
     }
 
-    // otherwise is the symbol to solve for
-    pf[1] += 1;
-    return true;
+    // TODO: add symbol instead
+    std::cerr << std::format("ERROR: unable to get symbol '{}'\n", sym_value);
+    return false;
 }
 
 bool PolynomialForm::collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
