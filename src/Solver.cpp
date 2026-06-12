@@ -76,8 +76,38 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
         else
         {
-            m_solution = std::format("TODO: degree 1, pf[0], pf[1] are not both numbers");
-            return false;
+            if (pf[0].getRoot()->is_num())
+            {
+                ast_num_t v_;
+                if (!AST::LeafNum::getValue(pf[0].getRoot(), v_))
+                    return false;
+
+                mp_t v     = v_;
+                m_solution = std::format("{} = {} / ({})", for_symbol, -v, pf[1].to_string());
+            }
+            else if (pf[1].getRoot()->is_num())
+            {
+                ast_num_t v_;
+                if (!AST::LeafNum::getValue(pf[1].getRoot(), v_))
+                    return false;
+
+                mp_t v = -mp_t(v_);
+                if (v == 1)
+                    m_solution = std::format("{} = {}", for_symbol, pf[0].to_string());
+                else if (v == -1)
+                {
+                    m_solution = std::format("{} = -({})", for_symbol, pf[0].to_string());
+                }
+                else
+                    m_solution = std::format("{} = ({}) / {}", for_symbol, pf[0].to_string(), v);
+            }
+            else
+            {
+                m_solution = std::format("{} = ({}) / ({})", for_symbol, pf[0].to_string(), pf[1].to_string());
+            }
+
+
+            return true;
         }
         break;
     case 2:

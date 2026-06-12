@@ -17,11 +17,11 @@ private:
     int              m_degree = -2;
     std::vector<AST> m_coeffs;    // coeffs are stored in reverse order (c + bx + ax^2 + ...)
 
-    static bool collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
-    static bool collect_poly_num_(const AST::INode* node, PolynomialForm& pf);
-    static bool collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
-    static bool collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
-    static bool collect_poly_expr_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_num_(const AST::INode* pNode, PolynomialForm& pf);
+    static bool collect_poly_sym_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_uny_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol);
+    static bool collect_poly_expr_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol);
 
     static bool add(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode);
     static bool sub(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode);

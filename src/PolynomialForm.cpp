@@ -119,16 +119,16 @@ bool PolynomialForm::div(size_t index, PolynomialForm& pf, std::unique_ptr<AST::
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool PolynomialForm::collect_poly_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
+bool PolynomialForm::collect_poly_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol)
 {
-    if (node->is_num())
-        return collect_poly_num_(node, pf);
-    else if (node->is_symbol())
-        return collect_poly_sym_(node, pf, symbol);
-    else if (node->is_unary())
-        return collect_poly_uny_(node, pf, symbol);
-    else if (node->is_expr())
-        return collect_poly_expr_(node, pf, symbol);
+    if (pNode->is_num())
+        return collect_poly_num_(pNode, pf);
+    else if (pNode->is_symbol())
+        return collect_poly_sym_(pNode, pf, symbol);
+    else if (pNode->is_unary())
+        return collect_poly_uny_(pNode, pf, symbol);
+    else if (pNode->is_expr())
+        return collect_poly_expr_(pNode, pf, symbol);
 
     return false;
 }
@@ -148,11 +148,11 @@ bool PolynomialForm::collect_poly_num_(const AST::INode* pNode, PolynomialForm& 
     return true;
 }
 
-bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
+bool PolynomialForm::collect_poly_sym_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol)
 {
-    assert(node->is_symbol());
+    assert(pNode->is_symbol());
 
-    if (node->is_symbol(symbol))
+    if (pNode->is_symbol(symbol))
     {
         // otherwise is the symbol to solve for
         // pf[1] += 1;
@@ -162,7 +162,7 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
 
     // symbolic constant
     mp_t d;
-    auto sym_value = AST::LeafSymbol::getValue(node);
+    auto sym_value = AST::LeafSymbol::getValue(pNode);
     if (pf.m_pSymbolTable->getSymbol(sym_value, d))
     {
         // std::cout << std::format("Symbol: {} = {}\n", sym_value, d);
@@ -172,13 +172,16 @@ bool PolynomialForm::collect_poly_sym_(const AST::INode* node, PolynomialForm& p
     }
 
     // TODO: add symbol instead
-    std::cerr << std::format("ERROR: unable to get symbol '{}'\n", sym_value);
-    return false;
+
+    add(0, pf, AST::LeafSymbol::make(AST::LeafSymbol::getValue(pNode)));
+    return true;
+    // std::cerr << std::format("ERROR: unable to get symbol '{}'\n", sym_value);
+    // return false;
 }
 
-bool PolynomialForm::collect_poly_uny_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
+bool PolynomialForm::collect_poly_uny_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol)
 {
-    if (auto uny = dynamic_cast<const AST::NodeUnary*>(node))
+    if (auto uny = dynamic_cast<const AST::NodeUnary*>(pNode))
     {
         PolynomialForm pf2(pf.m_pSymbolTable);
         if (!collect_poly_(uny->n.get(), pf2, symbol))
@@ -203,9 +206,9 @@ bool PolynomialForm::collect_poly_uny_(const AST::INode* node, PolynomialForm& p
     return false;
 }
 
-bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& pf, std::string_view symbol)
+bool PolynomialForm::collect_poly_expr_(const AST::INode* pNode, PolynomialForm& pf, std::string_view symbol)
 {
-    if (auto expr = dynamic_cast<const AST::NodeBin*>(node))
+    if (auto expr = dynamic_cast<const AST::NodeBin*>(pNode))
     {
         switch (expr->op)
         {
@@ -427,10 +430,18 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
                         add(i, pf, result[i].cloneRoot());
                 }
             }
+            else if (pf2[0].getRoot()->is_symbol())
+            {
+                // pf1 polynomial form, pf2 a symbol, e.g. x^a, (1+x)^a
+                // TODO:
+                std::cerr << std::format("DEBUG: pf2[0] not num? is_expr={}, is_unary={}, is_symbol={} => {}\n", pf2[0].getRoot()->is_expr(), pf2[0].getRoot()->is_unary(), pf2[0].getRoot()->is_symbol(), pf2[0].to_string());
+                return false;
+            }
             else
             {
                 // pf2[0] not a num, maybe a symbol? leave as it is. for now
                 std::cerr << std::format("DEBUG: pf2[0] not num? is_expr={}, is_unary={}, is_symbol={} => {}\n", pf2[0].getRoot()->is_expr(), pf2[0].getRoot()->is_unary(), pf2[0].getRoot()->is_symbol(), pf2[0].to_string());
+                return false;
             }
 
             return true;
@@ -445,12 +456,12 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* node, PolynomialForm& 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool PolynomialForm::analyze(const AST::INode* node, const std::string& symbol)
+bool PolynomialForm::analyze(const AST::INode* pNode, const std::string& symbol)
 {
     m_degree = -2;
     m_coeffs.clear();
 
-    if (!collect_poly_(node, *this, symbol))
+    if (!collect_poly_(pNode, *this, symbol))
     {
         m_degree = -1;
         m_coeffs.clear();

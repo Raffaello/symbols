@@ -69,15 +69,21 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("(x+1)^3 = 0", "x", "x = -1"),
         std::make_tuple("x^3+ 2*x^2 -5*x^1 - 6*x^0 = 0", "x", "x = -3, x = -1, x = 2"),
 
-        std::make_tuple("(2*x+1)^3 = 1", "x", "x = 0")
+        std::make_tuple("(2*x+1)^3 = 1", "x", "x = 0"),
 
         // std::make_tuple("(x+1)^4 = 1", "x", "x = 0, x = ...")
 
-        // std::make_tuple("a=x", "x", "x = a"),
-        // std::make_tuple("a+1+0=x", "x", "x = a + 1"),
-        // std::make_tuple("a+1*1=x", "x", "x = a + 1"),
+        std::make_tuple("a=x", "x", "x = a"),
+        std::make_tuple("-a=x", "x", "x = -a"),
+        std::make_tuple("a+1+0=x", "x", "x = a + 1"),
+        std::make_tuple("a+1*1=x", "x", "x = a + 1"),
 
-        // std::make_tuple("x+1+a = 0", "x", "..")
+        std::make_tuple("x+1+a = 0", "x", "x = -(1 + a)"),
+        std::make_tuple("a+b=x", "x", "x = a + b"),
+        std::make_tuple("x+1+a = 0", "x", "x = -(1 + a)"),
+        std::make_tuple("x+ 2*a = 0", "x", "x = -(2 * a)")
+        // std::make_tuple("x^a=0", "x", "x = 0"),
+        // std::make_tuple("x^(a+b)=0", "x", "x = 0")
 
         ));
 
@@ -151,10 +157,11 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x^x=0", "x"),
         std::make_tuple("a^x=0", "x"),
         std::make_tuple("x^a=0", "x"),
+        std::make_tuple("x^(a+b)=0", "x"),
         std::make_tuple("1^x=0", "x"),
 
-        std::make_tuple("x+1+a = 0", "x"),
-        std::make_tuple("x+ 2*a = 0", "x"),
+        // std::make_tuple("x+1+a = 0", "x"),
+        // std::make_tuple("x+ 2*a = 0", "x"),
         std::make_tuple("x=1/0", "x"),
 
         std::make_tuple("x=2^0.5", "x"),       // TODO: this should be solvable, need to simplify expression first
