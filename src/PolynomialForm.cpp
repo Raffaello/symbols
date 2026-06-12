@@ -321,6 +321,9 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* pNode, PolynomialForm&
                 return false;
             }
 
+            if (pf2[0].getRoot() == nullptr)
+                pf2[0].setRoot(AST::LeafNum::make(0));
+
             // if (pf2[0].isZero())
             //     pf[0] += 1;
             // else if (pf2[0] == 1)

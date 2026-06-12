@@ -39,7 +39,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     {
         if (pf[0].getRoot() == nullptr)
             m_solution = std::format("inf solutions");
-        if (pf[0].getRoot()->is_num())
+        else if (pf[0].getRoot()->is_num())
         {
             if (!AST::LeafNum::getValue(pf[0].getRoot(), v))
                 return false;
@@ -60,6 +60,11 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     }
 
     case 1:    // linear
+        if (pf[0].getRoot() == nullptr)
+            pf[0].setRoot(AST::LeafNum::make(0));
+        if (pf[1].getRoot() == nullptr)
+            pf[1].setRoot(AST::LeafNum::make(0));
+
         if (pf[0].getRoot()->is_num() && pf[1].getRoot()->is_num())
         {
             ast_num_t a, b;
@@ -112,14 +117,20 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         break;
     case 2:
     {
+        if (pf[0].getRoot() == nullptr)
+            pf[0].setRoot(AST::LeafNum::make(0));
+        if (pf[1].getRoot() == nullptr)
+            pf[1].setRoot(AST::LeafNum::make(0));
+        if (pf[2].getRoot() == nullptr)
+            pf[1].setRoot(AST::LeafNum::make(0));
+
         if (!pf[0].getRoot()->is_num() || !pf[1].getRoot()->is_num() || !pf[2].getRoot()->is_num())
         {
-            m_solution = std::format("TODO: degree 2,pf[0], pf[1],pf[2] are not only numbers");
+            m_solution = std::format("TODO: degree 3: pf[0], pf[1],pf[2] are not only numbers");
             return false;
         }
         else
         {
-
             // const mp_t a = pf[2];
             // const mp_t b = pf[1];
             // const mp_t c = pf[0];
@@ -154,6 +165,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
 
     case 3:
     {
+
         if (!pf[0].getRoot()->is_num() || !pf[1].getRoot()->is_num() || !pf[2].getRoot()->is_num() || !pf[3].getRoot()->is_num())
         {
             m_solution = std::format("TODO: degree 2,pf[0], pf[1],pf[2],pf[3] are not only numbers");
