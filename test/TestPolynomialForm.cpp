@@ -41,7 +41,10 @@ TEST(PolynomialForm, operator_brackets)
     EXPECT_TRUE(pf[0].getRoot()->is_num());
     EXPECT_TRUE(AST::LeafNum::getValue(pf[0].getRoot(), v));
     EXPECT_EQ(v, exp_v[0]);
-    EXPECT_TRUE(pf[1].getRoot() == nullptr);
+    EXPECT_TRUE(pf[1].getRoot() != nullptr);
+    EXPECT_TRUE(pf[1].getRoot()->is_num());
+    EXPECT_TRUE(AST::LeafNum::getValue(pf[1].getRoot(), v));
+    EXPECT_TRUE(v.is_zero());
     EXPECT_TRUE(pf[2].getRoot()->is_num());
     EXPECT_TRUE(AST::LeafNum::getValue(pf[2].getRoot(), v));
     EXPECT_EQ(v, exp_v[2]);

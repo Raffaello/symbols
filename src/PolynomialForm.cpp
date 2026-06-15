@@ -14,16 +14,26 @@ PolynomialForm::PolynomialForm(const std::shared_ptr<SymbolTable>& pSymbolTable)
 AST& PolynomialForm::operator[](size_t index)
 {
     if (m_coeffs.size() < index + 1)
+    {
         m_coeffs.resize(index + 1);
+        for (size_t i = 0; i < index; ++i)
+        {
+            if (m_coeffs[i].getRoot() == nullptr)
+                m_coeffs[i].setRoot(std::move(AST::LeafNum::make(0)));
+        }
+
+        m_coeffs[index].setRoot(std::move(AST::LeafNum::make(0)));
+    }
 
     return m_coeffs[index];
 }
 
 bool PolynomialForm::add(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
 {
-    if (pf[index].getRoot() == nullptr && pNode == nullptr)
-        pf[index].setRoot(AST::LeafNum::make(0));
-    else if (pf[index].getRoot() == nullptr)
+    assert(pf[index].getRoot() != nullptr);
+    assert(pNode != nullptr);
+
+    if (pf[index].getRoot() == nullptr)
         pf[index].setRoot(std::move(pNode));
     else if (pNode == nullptr)
         return true;
@@ -47,13 +57,10 @@ bool PolynomialForm::add(size_t index, PolynomialForm& pf, std::unique_ptr<AST::
 
 bool PolynomialForm::sub(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
 {
-    if (pf[index].getRoot() == nullptr && pNode == nullptr)
-        pf[index].setRoot(AST::LeafNum::make(0));
-    else if (pf[index].getRoot() == nullptr)
-        pf[index].setRoot(AST::NodeUnary::make(true, std::move(pNode)));
-    else if (pNode == nullptr)
-        return true;
-    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    assert(pf[index].getRoot());
+    assert(pNode != nullptr);
+
+    if (pf[index].getRoot()->is_num() && pNode->is_num())
     {
         ast_num_t a, b;
         if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
@@ -72,10 +79,10 @@ bool PolynomialForm::sub(size_t index, PolynomialForm& pf, std::unique_ptr<AST::
 
 bool PolynomialForm::mul(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
 {
-    if (pf[index].getRoot() == nullptr || pNode == nullptr)
-        // simplify to zero
-        pf[index].setRoot(AST::LeafNum::make(0));
-    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    assert(pf[index].getRoot());
+    assert(pNode != nullptr);
+
+    if (pf[index].getRoot()->is_num() && pNode->is_num())
     {
         ast_num_t a, b;
         if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
@@ -94,10 +101,10 @@ bool PolynomialForm::mul(size_t index, PolynomialForm& pf, std::unique_ptr<AST::
 
 bool PolynomialForm::div(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
 {
-    if (pf[index].getRoot() == nullptr)
-        // TODO: simplify to zero, but it could be 0/0
-        pf[index].setRoot(AST::LeafNum::make(0));
-    else if (pf[index].getRoot()->is_num() && pNode->is_num())
+    assert(pf[index].getRoot());
+    assert(pNode != nullptr);
+
+    if (pf[index].getRoot()->is_num() && pNode->is_num())
     {
         ast_num_t a, b;
         if (!AST::LeafNum::getValue(pf[index].getRoot(), a) || !AST::LeafNum::getValue(pNode.get(), b))
@@ -487,12 +494,18 @@ int PolynomialForm::degree() noexcept
     m_degree = 0;    // default at this point is a 0=0 solution
     for (size_t i = size(); i > 0; --i)
     {
-        const auto i2 = i - 1;
-        if (m_coeffs[i2].getRoot() != nullptr)
-        {
-            m_degree = i2;
-            break;
-        }
+        const auto  i2    = i - 1;
+        const auto* pRoot = m_coeffs[i2].getRoot();
+        if (pRoot == nullptr)
+            continue;
+
+        // if it has been simplified to zero, just move on...
+        ast_num_t v;
+        if (pRoot->is_num() && AST::LeafNum::getValue(pRoot, v) && v.is_zero())
+            continue;
+
+        m_degree = i2;
+        break;
     }
 
     return m_degree;
