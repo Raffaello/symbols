@@ -241,6 +241,11 @@ bool AST::has_symbol(const std::string_view symbol) const noexcept
     return has_symbol_(getRoot(), symbol);
 }
 
+bool AST::has_symbol(const INode* pNode, const std::string_view symbol)
+{
+    return has_symbol_(pNode, symbol);
+}
+
 bool AST::updateNode(const INode* pNode, std::unique_ptr<INode>& pNodeUpdate)
 {
     if (pNode == nullptr || pNodeUpdate == nullptr)

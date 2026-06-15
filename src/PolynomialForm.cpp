@@ -464,15 +464,10 @@ bool PolynomialForm::analyze(const AST::INode* pNode, const std::string& symbol)
     m_degree = -2;
     m_coeffs.clear();
 
+    if (!AST::has_symbol(pNode, symbol))
     {
-        auto n = AST::clone(pNode);
-        AST  ast;
-        ast.setRoot(std::move(n));
-        if (!ast.has_symbol(symbol))
-        {
-            m_degree = -1;
-            return false;
-        }
+        m_degree = -1;
+        return false;
     }
 
     if (!collect_poly_(pNode, *this, symbol))

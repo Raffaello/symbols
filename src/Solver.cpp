@@ -187,11 +187,6 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         const mp_t b = mp_t(b_) / d_;
         const mp_t c = mp_t(c_) / d_;
 
-        auto a__ = a.str();
-        auto b__ = b.str();
-        auto c__ = c.str();
-        auto d__ = d_.str();
-
         const mp_t aa = a * a;
         const mp_t p  = b - (aa / 3);
         const mp_t q  = (a * 2) * (aa / 27) - a * (b / 3) + c;
