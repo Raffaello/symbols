@@ -151,8 +151,9 @@ public:
     inline INode*       getRoot() noexcept;
     void                setRoot(std::unique_ptr<INode> root);
     bool                has_symbol(const std::string_view symbol) const noexcept;
+    static bool         has_symbol(const INode* pNode, const std::string_view symbol);
 
-    bool updateNode(const INode* node, std::unique_ptr<INode>& updated_node);
+    bool updateNode(const INode* pNode, std::unique_ptr<INode>& updated_node);
     bool convertToExpression();
     bool convertToEquation();
 

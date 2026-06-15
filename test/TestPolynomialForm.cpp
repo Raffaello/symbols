@@ -23,20 +23,29 @@ TEST(PolynomialForm, operator_brackets)
 {
     PolynomialForm pf(std::make_shared<SymbolTable>());
 
-    pf[0] = 1;
-    pf[2] = 2;
+    pf[0].setRoot(AST::LeafNum::make(1));
+    pf[2].setRoot(AST::LeafNum::make(2));
 
     EXPECT_EQ(pf.degree(), 2);
     EXPECT_EQ(pf.size(), 3);
-    EXPECT_EQ(pf[0], 1);
-    EXPECT_EQ(pf[1], 0);
-    EXPECT_EQ(pf[2], 2);
+
+    ast_num_t v;
+    auto      exp_v = std::to_array({1, 0, 2});
+    EXPECT_TRUE(pf[0].getRoot()->is_num());
+    EXPECT_TRUE(AST::LeafNum::getValue(pf[0].getRoot(), v));
+    EXPECT_EQ(v, exp_v[0]);
+    EXPECT_TRUE(pf[1].getRoot() != nullptr);
+    EXPECT_TRUE(pf[1].getRoot()->is_num());
+    EXPECT_TRUE(AST::LeafNum::getValue(pf[1].getRoot(), v));
+    EXPECT_TRUE(v.is_zero());
+    EXPECT_TRUE(pf[2].getRoot()->is_num());
+    EXPECT_TRUE(AST::LeafNum::getValue(pf[2].getRoot(), v));
+    EXPECT_EQ(v, exp_v[2]);
 }
 
 TEST(PolynomialForm, analyze_null_tree)
 {
     PolynomialForm pf(std::make_shared<SymbolTable>());
-
     EXPECT_FALSE(pf.analyze(nullptr, ""));
 }
 
@@ -62,8 +71,17 @@ TEST_P(TestPolynomialForm, analyze)
 
     ASSERT_TRUE(pf.analyze(ast.getRoot(), sym));
     ASSERT_EQ(pf.degree(), degree);
+    ASSERT_TRUE(pf.simplify());
     for (size_t i = 0; i < pf.size(); ++i)
-        EXPECT_EQ(pf[i], coeffs[i]);
+    {
+        ast_num_t v;
+
+        ASSERT_TRUE(pf[i].getRoot()->is_num());
+        ASSERT_TRUE(AST::LeafNum::getValue(pf[i].getRoot(), v));
+        auto b = coeffs[i].str();
+        auto a = v.str();
+        EXPECT_EQ(mp_t(v), coeffs[i]);
+    }
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -72,7 +90,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_tuple("x - 1", "x", 1, std::vector<mp_t>{-1, 1}),
         std::make_tuple("x + x + x^2 + x*x + 1 -10 + 7 + x^5", "x", 5, std::vector<mp_t>{-2, 2, 2, 0, 0, 1})
-
 
             ));
 
