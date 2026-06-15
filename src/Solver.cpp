@@ -100,17 +100,12 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
                 if (v == 1)
                     m_solution = std::format("{} = {}", for_symbol, pf[0].to_string());
                 else if (v == -1)
-                {
                     m_solution = std::format("{} = -({})", for_symbol, pf[0].to_string());
-                }
                 else
                     m_solution = std::format("{} = ({}) / {}", for_symbol, pf[0].to_string(), v);
             }
             else
-            {
                 m_solution = std::format("{} = ({}) / ({})", for_symbol, pf[0].to_string(), pf[1].to_string());
-            }
-
 
             return true;
         }
@@ -140,12 +135,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
                 !AST::LeafNum::getValue(pf[0].getRoot(), c_))
                 return false;
 
-            const mp_t a = a_;
-            const mp_t b = b_;
-            const mp_t c = c_;
-
+            const mp_t a     = a_;
+            const mp_t b     = b_;
+            const mp_t c     = c_;
             const mp_t delta = (b * b) - (a * c * 4);
-
             if (delta < 0)
             {
                 m_solution = "no real solutions, complex roots not supported yet";

@@ -95,7 +95,7 @@ bool PolynomialForm::mul(size_t index, PolynomialForm& pf, std::unique_ptr<AST::
 bool PolynomialForm::div(size_t index, PolynomialForm& pf, std::unique_ptr<AST::INode> pNode)
 {
     if (pf[index].getRoot() == nullptr)
-        // simplify to zero
+        // TODO: simplify to zero, but it could be 0/0
         pf[index].setRoot(AST::LeafNum::make(0));
     else if (pf[index].getRoot()->is_num() && pNode->is_num())
     {
@@ -260,7 +260,6 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* pNode, PolynomialForm&
                 for (size_t j = 0; j < pf2.size(); ++j)
                 // pf[j + i] += pf1[i] * pf2[j];
                 {
-
                     add(j + i,
                         pf,
                         AST::NodeBin::make(
@@ -423,7 +422,6 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* pNode, PolynomialForm&
                                         AST::eOperators::MUL,
                                         result[i].cloneRoot(),
                                         pf1[j].cloneRoot()));
-
 
                         result = std::move(tmp);
                     }
