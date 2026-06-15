@@ -259,8 +259,8 @@ bool PolynomialForm::collect_poly_expr_(const AST::INode* pNode, PolynomialForm&
             if (!collect_poly_(expr->r.get(), pf2, symbol))
                 return false;
 
-            int deg1 = pf1.degree();    // pf1.coeffs.size() - 1;
-            int deg2 = pf2.degree();    // pf2.coeffs.size() - 1;
+            // int deg1 = pf1.degree();    // pf1.coeffs.size() - 1;
+            // int deg2 = pf2.degree();    // pf2.coeffs.size() - 1;
             // const size_t max_c = deg1 + deg2 + 1;
             for (size_t i = 0; i < pf1.size(); ++i)
             {
@@ -517,7 +517,7 @@ bool PolynomialForm::simplify()
     {
         if (!Simplifier::reduce(m_coeffs[i], false))
         {
-            std::cerr << std::format("ERROR: unable to simplify term of degree {}: {}", i, m_coeffs[i].to_string());
+            std::cerr << std::format("ERROR: unable to simplify term of degree {}: {}\n", i, m_coeffs[i].to_string());
             return false;
         }
     }
