@@ -154,8 +154,6 @@ bool PolynomialForm::collect_poly_num_(const AST::INode* pNode, PolynomialForm& 
         return false;
     }
 
-
-    // pf[0] += d;
     add(0, pf, AST::LeafNum::make(d));
     return true;
 }
