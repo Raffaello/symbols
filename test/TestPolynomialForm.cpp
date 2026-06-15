@@ -23,18 +23,11 @@ TEST(PolynomialForm, operator_brackets)
 {
     PolynomialForm pf(std::make_shared<SymbolTable>());
 
-    // pf[0] = 1;
-    // pf[2] = 2;
     pf[0].setRoot(AST::LeafNum::make(1));
     pf[2].setRoot(AST::LeafNum::make(2));
 
-
     EXPECT_EQ(pf.degree(), 2);
     EXPECT_EQ(pf.size(), 3);
-
-    // EXPECT_EQ(pf[0], 1);
-    // EXPECT_EQ(pf[1], 0);
-    // EXPECT_EQ(pf[2], 2);
 
     ast_num_t v;
     auto      exp_v = std::to_array({1, 0, 2});
@@ -53,7 +46,6 @@ TEST(PolynomialForm, operator_brackets)
 TEST(PolynomialForm, analyze_null_tree)
 {
     PolynomialForm pf(std::make_shared<SymbolTable>());
-
     EXPECT_FALSE(pf.analyze(nullptr, ""));
 }
 
@@ -81,7 +73,6 @@ TEST_P(TestPolynomialForm, analyze)
     ASSERT_EQ(pf.degree(), degree);
     ASSERT_TRUE(pf.simplify());
     for (size_t i = 0; i < pf.size(); ++i)
-    // EXPECT_EQ(pf[i], coeffs[i]);
     {
         ast_num_t v;
 
@@ -99,7 +90,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_tuple("x - 1", "x", 1, std::vector<mp_t>{-1, 1}),
         std::make_tuple("x + x + x^2 + x*x + 1 -10 + 7 + x^5", "x", 5, std::vector<mp_t>{-2, 2, 2, 0, 0, 1})
-
 
             ));
 

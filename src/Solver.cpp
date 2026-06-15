@@ -126,9 +126,6 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
         else
         {
-            // const mp_t a = pf[2];
-            // const mp_t b = pf[1];
-            // const mp_t c = pf[0];
             ast_num_t a_, b_, c_;
             if (!AST::LeafNum::getValue(pf[2].getRoot(), a_) ||
                 !AST::LeafNum::getValue(pf[1].getRoot(), b_) ||
@@ -166,9 +163,6 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
 
         // Cardano's formula
-        // const mp_t a = pf[2] / pf[3];
-        // const mp_t b = pf[1] / pf[3];
-        // const mp_t c = pf[0] / pf[3];
         ast_num_t a_, b_, c_, d_;
         if (!AST::LeafNum::getValue(pf[2].getRoot(), a_) ||
             !AST::LeafNum::getValue(pf[1].getRoot(), b_) ||
@@ -189,7 +183,6 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
 
         const mp_t a_3 = a / 3;
         const mp_t q_2 = q / 2;
-
         if (delta < 0)
         {
             mp::mpfr_float PI_;
