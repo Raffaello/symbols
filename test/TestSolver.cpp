@@ -75,7 +75,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         std::make_tuple("a=x", "x", "x = a"),
         std::make_tuple("x=a", "x", "x = a"),
-        std::make_tuple("x=-a", "x", "x = -a"),
+        std::make_tuple("x=-a", "x", "x = -(a)"),
         std::make_tuple("-a=x", "x", "x = -a"),
         std::make_tuple("a+1+0=x", "x", "x = a + 1"),
         std::make_tuple("a+1*1=x", "x", "x = a + 1"),
