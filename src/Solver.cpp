@@ -105,7 +105,13 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
                     else if (pf[0].getRoot()->is_symbol())
                         m_solution = std::format("{} = -{}", for_symbol, pf[0].to_string());
                     else
-                        m_solution = std::format("{} = -({})", for_symbol, pf[0].to_string());
+                    {
+                        pf[0].setRoot(AST::NodeUnary::make(true, pf[0].cloneRoot()));
+                        if (!Simplifier::reduce(pf[0], false))
+                            std::cerr << std::format("ERROR: unable to reduce {}\n", pf[0].to_string());
+
+                        m_solution = std::format("{} = {}", for_symbol, pf[0].to_string());
+                    }
                 }
                 else
                     m_solution = std::format("{} = ({}) / {}", for_symbol, pf[0].to_string(), v);
