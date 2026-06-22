@@ -149,7 +149,9 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x=1", "x - 1 = 0"),
         std::make_tuple("-a-b", "-(a + b)"),
         std::make_tuple("(-a)-b", "-(a + b)"),
-        std::make_tuple("(0-a)-b", "-(a + b)")
+        std::make_tuple("(0-a)-b", "-(a + b)"),
+        std::make_tuple("-(-a+1)", "a - 1"),
+        std::make_tuple("-(a-1)", "1 - a")
 
             ));
 

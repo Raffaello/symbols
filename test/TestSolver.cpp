@@ -87,7 +87,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("x=a+b", "x", "x = a + b"),
         std::make_tuple("x=-(a+b)", "x", "x = -(a + b)"),
         std::make_tuple("x=-a-b", "x", "x = -(a + b)"),
-        std::make_tuple("x=-a -(-b)", "x", "x = b - a")
+        std::make_tuple("x=-a -(-b)", "x", "x = b - a"),
+        std::make_tuple("x=-a+1", "x", "x = 1 - a")
 
         // std::make_tuple("x^a=0", "x", "x = 0")
         // std::make_tuple("x^(a+b)=0", "x", "x = 0")
