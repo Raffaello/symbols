@@ -160,8 +160,9 @@ public:
     std::unique_ptr<AST::INode>   cloneRoot() const;
     static std::unique_ptr<INode> clone(const INode* pNode);
 
-    std::string to_string() const;
-    void        print();
+    std::string        to_string() const;
+    static std::string to_string(const INode* pNode);
+    void               print();
 
     static char operator_to_string(const eOperators op);
 };

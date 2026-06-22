@@ -50,6 +50,10 @@ bool Simplifier::reduce_uny_(AST& src, AST::INode* pCurrent)
         auto pNodeUpd = AST::LeafNum::make(v);
         return src.updateNode(pCurrent, pNodeUpd);
     }
+    else if (pNodeUny->n->is_symbol())
+    {
+        // can't do anything here, need to be on an upper level eventually.
+    }
 
     // case double unary (negation)
     else if (pNodeUny->n->is_unary())
@@ -584,8 +588,19 @@ AST::INode* Simplifier::reduce_expr_uny_(AST& src, AST::INode* pCurrent)
     case SUB:
         // +|-b - a => +b - a, -b - a
         if (lr_swap)
-            return pCurrent;    // skip;
-        else                    // a - +|-b
+        {
+            if (!pNodeUny->negate)
+                return pCurrent;    // skip
+
+            if (l->is_num())
+                return pCurrent;    // skip
+
+            // (-a) - b => -(a+b)
+            pNodeBinUpd = AST::NodeUnary::make(
+                true,
+                AST::NodeBin::make(ADD, std::move(pNodeUny->n), AST::clone(l)));
+        }
+        else    // a - +|-b
             pNodeBinUpd = AST::NodeBin::make(pNodeUny->negate ? ADD : SUB, AST::clone(l), std::move(pNodeUny->n));
         break;
     }

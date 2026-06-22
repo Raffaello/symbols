@@ -74,10 +74,12 @@ bool PolynomialForm::sub(size_t index, PolynomialForm& pf, std::unique_ptr<AST::
         pf[index].setRoot(AST::LeafNum::make(a - b));
     }
     else
+    {
         pf[index].setRoot(AST::NodeBin::make(
             AST::eOperators::SUB,
             pf[index].cloneRoot(),
             std::move(pNode)));
+    }
 
     return true;
 }

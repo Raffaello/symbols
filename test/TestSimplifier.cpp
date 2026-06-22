@@ -146,7 +146,10 @@ INSTANTIATE_TEST_SUITE_P(
         // std::make_tuple("x^2/x", "x"), // TODO
         // std::make_tuple("-x*-x*-x*-x/-x", "-x^3") // TODO
 
-        std::make_tuple("x=1", "x - 1 = 0")
+        std::make_tuple("x=1", "x - 1 = 0"),
+        std::make_tuple("-a-b", "-(a + b)"),
+        std::make_tuple("(-a)-b", "-(a + b)"),
+        std::make_tuple("(0-a)-b", "-(a + b)")
 
             ));
 

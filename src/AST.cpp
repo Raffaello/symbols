@@ -322,6 +322,14 @@ std::string AST::to_string() const
     return ss.str();
 }
 
+std::string AST::to_string(const INode* pNode)
+{
+    std::stringstream ss;
+
+    to_string_(pNode, ss, 0);
+    return ss.str();
+}
+
 void AST::print()
 {
     print_(m_pRoot.get(), 0);

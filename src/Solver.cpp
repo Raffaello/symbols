@@ -37,9 +37,7 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
 
     case 0:    // no variables
     {
-        if (pf[0].getRoot() == nullptr)
-            m_solution = std::format("inf solutions");
-        else if (pf[0].getRoot()->is_num())
+        if (pf[0].getRoot()->is_num())
         {
             if (!AST::LeafNum::getValue(pf[0].getRoot(), v))
                 return false;
@@ -60,11 +58,6 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     }
 
     case 1:    // linear
-        if (pf[0].getRoot() == nullptr)
-            pf[0].setRoot(AST::LeafNum::make(0));
-        if (pf[1].getRoot() == nullptr)
-            pf[1].setRoot(AST::LeafNum::make(0));
-
         if (pf[0].getRoot()->is_num() && pf[1].getRoot()->is_num())
         {
             ast_num_t a, b;
@@ -100,7 +93,20 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
                 if (v == 1)
                     m_solution = std::format("{} = {}", for_symbol, pf[0].to_string());
                 else if (v == -1)
-                    m_solution = std::format("{} = -({})", for_symbol, pf[0].to_string());
+                {
+                    if (pf[0].getRoot()->is_unary())
+                    {
+                        auto* uny = dynamic_cast<AST::NodeUnary*>(pf[0].getRoot());
+                        if (uny->negate)
+                            m_solution = std::format("{} = {}", for_symbol, AST::to_string(uny->n.get()));
+                        else
+                            m_solution = std::format("{} = -({})", for_symbol, AST::to_string(uny->n.get()));
+                    }
+                    else if (pf[0].getRoot()->is_symbol())
+                        m_solution = std::format("{} = -{}", for_symbol, pf[0].to_string());
+                    else
+                        m_solution = std::format("{} = -({})", for_symbol, pf[0].to_string());
+                }
                 else
                     m_solution = std::format("{} = ({}) / {}", for_symbol, pf[0].to_string(), v);
             }
@@ -152,13 +158,11 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
         }
     }
     break;
-
     case 3:
     {
-
         if (!pf[0].getRoot()->is_num() || !pf[1].getRoot()->is_num() || !pf[2].getRoot()->is_num() || !pf[3].getRoot()->is_num())
         {
-            m_solution = std::format("TODO: degree 2,pf[0], pf[1],pf[2],pf[3] are not only numbers");
+            m_solution = std::format("TODO: degree 3; pf[0], pf[1], pf[2], pf[3] are not only numbers");
             return false;
         }
 
