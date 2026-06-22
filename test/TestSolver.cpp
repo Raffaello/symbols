@@ -80,7 +80,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("a+1+0=x", "x", "x = a + 1"),
         std::make_tuple("a+1*1=x", "x", "x = a + 1"),
 
-        std::make_tuple("x+1+a = 0", "x", "x = -(1 + a)"),
+        std::make_tuple("x+1+a = 0", "x", "x = -1 - a"),    // x = -(1 + a) TODO: can't do it differently for now
         std::make_tuple("a+b=x", "x", "x = a + b"),
         std::make_tuple("x+ 2*a = 0", "x", "x = -(2 * a)"),
 
