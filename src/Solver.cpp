@@ -97,12 +97,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
                     if (pf[0].getRoot()->is_unary())
                     {
                         auto* uny = dynamic_cast<AST::NodeUnary*>(pf[0].getRoot());
-                        AST   a;
-                        a.setRoot(std::move(uny->n));
                         if (uny->negate)
-                            m_solution = std::format("{} = {}", for_symbol, a.to_string());
+                            m_solution = std::format("{} = {}", for_symbol, AST::to_string(uny->n.get()));
                         else
-                            m_solution = std::format("{} = -({})", for_symbol, a.to_string());
+                            m_solution = std::format("{} = -({})", for_symbol, AST::to_string(uny->n.get()));
                     }
                     else if (pf[0].getRoot()->is_symbol())
                         m_solution = std::format("{} = -{}", for_symbol, pf[0].to_string());
