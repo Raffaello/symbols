@@ -28,6 +28,14 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     if (!pf.simplify())
         return false;
 
+    for (size_t i = 0; i < pf.size(); ++i)
+    {
+        assert(pf[i].getRoot() != nullptr);
+
+        if (!Simplifier::reduce(pf[i], false))
+            std::cerr << std::format("ERROR: unable to reduce {}\n", pf[i].to_string());
+    }
+
     ast_num_t         v;
     std::vector<mp_t> sols;
     switch (pf.degree())
@@ -37,9 +45,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
 
     case 0:    // no variables
     {
-        if (pf[0].getRoot() == nullptr)
-            m_solution = std::format("inf solutions");
-        else if (pf[0].getRoot()->is_num())
+        // if (pf[0].getRoot() == nullptr)
+        //     m_solution = std::format("inf solutions");
+        // else
+        if (pf[0].getRoot()->is_num())
         {
             if (!AST::LeafNum::getValue(pf[0].getRoot(), v))
                 return false;
@@ -60,10 +69,10 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
     }
 
     case 1:    // linear
-        if (pf[0].getRoot() == nullptr)
-            pf[0].setRoot(AST::LeafNum::make(0));
-        if (pf[1].getRoot() == nullptr)
-            pf[1].setRoot(AST::LeafNum::make(0));
+        // if (pf[0].getRoot() == nullptr)
+        //     pf[0].setRoot(AST::LeafNum::make(0));
+        // if (pf[1].getRoot() == nullptr)
+        //     pf[1].setRoot(AST::LeafNum::make(0));
 
         if (pf[0].getRoot()->is_num() && pf[1].getRoot()->is_num())
         {
@@ -107,12 +116,12 @@ bool Solver::solve_equation_(const AST::INode* node, const std::string_view for_
                         AST   a;
                         a.setRoot(std::move(uny->n));
                         if (uny->negate)
-                        {
                             m_solution = std::format("{} = {}", for_symbol, a.to_string());
-                        }
                         else
                             m_solution = std::format("{} = -({})", for_symbol, a.to_string());
                     }
+                    else if (pf[0].getRoot()->is_symbol())
+                        m_solution = std::format("{} = -{}", for_symbol, pf[0].to_string());
                     else
                         m_solution = std::format("{} = -({})", for_symbol, pf[0].to_string());
                 }
